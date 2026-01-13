@@ -1,53 +1,39 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
+//constants/theme.ts
 
-import { Platform } from 'react-native';
-
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
 
 export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
-  },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
-  },
-};
+  /* ================= Brand ================= */
+  primary: "#2FA2B9",        // Main brand color
+  primaryLight: "#F6F8FF",   // Lighter background / cards
+  primaryDark: "#23889B",    // Pressed / active state
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});
+  /* ================= States ================= */
+  success: "#06C270",
+  warning: "#FFCC00",
+  error: "#FF3B30",
+
+  /* ================= Dark ================= */
+  dark1: "#0B0C15",          // Main text (dark mode / headings)
+  dark2: "#333333",          // Secondary text
+
+  /* ================= Light ================= */
+  gray1: "#A0A0A0",          // Placeholder text
+  border: "#E0E0E0",         // Borders / dividers
+  background: "#FFFFFF",    // App background
+  surface: "#F9F9F9",        // Cards / sheets
+
+  /* ================= Buttons ================= */
+  buttonPrimary: "#2FA2B9",
+  buttonDisabled: "#D0D0D0",
+  buttonOutline: "#2FA2B9",
+
+  /* ================= Text ================= */
+  textPrimary: "#0B0C15",
+  textSecondary: "#333333",
+  textMuted: "#A0A0A0",
+  textOnPrimary: "#FFFFFF",
+
+  /* ================= Icons ================= */
+  iconActive: "#2FA2B9",
+  iconInactive: "#A0A0A0",
+};
