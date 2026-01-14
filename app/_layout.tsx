@@ -10,20 +10,23 @@ export const unstable_settings = {
   anchor: '(tabs)',
 };
 
+import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <ThemeProvider value={DefaultTheme}>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="(auth)" />
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
+      <PaperProvider>
+        <ThemeProvider value={DefaultTheme}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" options={{ title: 'Home' }} />
+            <Stack.Screen name="(tabs)" options={{ title: 'Tabs' }} />
+            <Stack.Screen name="(auth)" options={{ title: 'Authentication' }} />
+          </Stack>
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </PaperProvider>
     </SafeAreaProvider>
   );
 }

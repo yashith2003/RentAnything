@@ -1,11 +1,94 @@
-//app/(auth)/login.tsx
+// app/(auth)/login.tsx
 
-import { View, Text } from 'react-native';
+import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useState } from 'react';
+import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { Colors } from '@/constants/theme';
 
 export default function LoginScreen() {
+  const router = useRouter();
+  const [phoneNumber, setPhoneNumber] = useState('');
+
+  const handleLogin = () => {
+    console.log('Logging in with:', phoneNumber);
+    // Navigate to OTP verification page
+    router.push('/(auth)/otpPage');
+  };
+
+  const handleSignUpPress = () => {
+    router.push('/(auth)/accountTypePage');
+  };
+
   return (
-    <View>
-      <Text>Login</Text>
-    </View>
+    <SafeAreaView className="flex-1 bg-white">
+      <StatusBar style="dark" />
+      
+      <View className="flex-1 px-8 pt-4 pb-10">
+        {/* Logo Section */}
+        <View className="items-start">
+          <Image
+            source={require('../../assets/images/longLogo.png')}
+            style={{ width: 140, height: 40 }}
+            contentFit="contain"
+          />
+        </View>
+
+        {/* Header Section */}
+        <View className="mt-16 items-center">
+          <Text className="text-[32px] font-bold text-black text-center">Login</Text>
+          <Text className="text-base text-gray-500 mt-3 px-4 leading-6 text-center">
+            Fill your information below to login.
+          </Text>
+        </View>
+
+        {/* Form Section */}
+        <View className="mt-10">
+          <TextInput
+            placeholder="Phone number"
+            value={phoneNumber}
+            onChangeText={setPhoneNumber}
+            keyboardType="phone-pad"
+            className="bg-white px-4 py-4 text-base text-black"
+            style={{
+              borderWidth: 1,
+              borderColor: '#E5E5E5',
+              borderRadius: 12,
+              fontSize: 16,
+              color: '#000',
+            }}
+            placeholderTextColor="#9CA3AF"
+          />
+        </View>
+
+        {/* Action Button Section */}
+        <View className="mt-6">
+          <TouchableOpacity
+            onPress={handleLogin}
+            activeOpacity={0.8}
+            className="h-14 rounded-full justify-center items-center shadow-lg"
+            style={{ backgroundColor: Colors.primary }}
+          >
+            <Text className="text-white text-lg font-bold">Login</Text>
+          </TouchableOpacity>
+
+          {/* Footer Text */}
+          <View className="flex-row justify-center mt-6">
+            <Text className="text-sm text-gray-500">Didn't have an account? </Text>
+            <TouchableOpacity onPress={handleSignUpPress}>
+              <Text 
+                className="text-sm font-bold"
+                style={{ color: Colors.primary }}
+              >
+                Sign up
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </SafeAreaView>
   );
 }
