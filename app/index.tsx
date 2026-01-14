@@ -48,7 +48,7 @@ export default function OnboardingScreen() {
     if (currentIndex < onboardingData.length - 1) {
       flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
     } else {
-      router.replace('/(tabs)/home');
+      router.replace('/(auth)/languagePage');
     }
   };
 
