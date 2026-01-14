@@ -9,6 +9,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Colors } from '@/constants/theme';
 
+interface MenuItem {
+  icon: string;
+  iconType: string;
+  label: string;
+  onPress: () => void;
+  color?: string;
+  badge?: string;
+  rightText?: string;
+}
+
 export default function ProfileScreen() {
   const router = useRouter();
 
@@ -18,12 +28,12 @@ export default function ProfileScreen() {
     { label: 'Listing Items', value: '25' },
   ];
 
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     {
       icon: 'person-outline',
       iconType: 'ionicons',
       label: 'Profile Details',
-      onPress: () => router.push('/(tabs)/profileDetails'),
+      onPress: () => router.push('/profile/profileDetails'),
     },
     {
       icon: 'shield-checkmark-outline',
