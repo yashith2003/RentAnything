@@ -80,12 +80,12 @@ export default function HomeScreen() {
             style={{ width: 45, height: 45 }}
             contentFit="contain"
           />
-          <View className="flex-row items-center gap-x-">
+          <View className="flex-row items-center gap-x-4">
             <TouchableOpacity>
               <Image source={require('@/assets/icons/message.svg')} style={{ width: 22, height: 22 }} />
             </TouchableOpacity>
             <TouchableOpacity>
-              <Image source={require('@/assets/icons/notifications.svg')} style={{ width: 22, height: 22 }} />
+              <Image source={require('@/assets/icons/notifications.svg')} style={{ width: 21, height: 22 }} />
             </TouchableOpacity>
             <TouchableOpacity>
               <Image source={require('@/assets/icons/favourite.svg')} style={{ width: 22, height: 22 }} />
