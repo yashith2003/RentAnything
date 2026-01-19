@@ -39,13 +39,13 @@ export default function ProfileScreen() {
       icon: 'shield-checkmark-outline',
       iconType: 'ionicons',
       label: 'KYC',
-      onPress: () => console.log('KYC'),
+      onPress: () => router.push('/profile/kycPage'),
     },
     {
       icon: 'star-outline',
       iconType: 'ionicons',
       label: 'Reviews',
-      onPress: () => console.log('Reviews'),
+      onPress: () => router.push('/profile/reviewsPage'),
     },
     {
       icon: 'receipt-outline',
@@ -69,33 +69,33 @@ export default function ProfileScreen() {
       icon: 'wallet-outline',
       iconType: 'ionicons',
       label: 'Earnings',
-      onPress: () => console.log('Earnings'),
+      onPress: () => router.push('/profile/earnings' as any),
     },
     {
       icon: 'trophy',
       iconType: 'ionicons',
       label: 'Levels',
       badge: '🏆',
-      onPress: () => console.log('Levels'),
+      onPress: () => router.push('/profile/levels' as any),
     },
     {
       icon: 'help-circle-outline',
       iconType: 'ionicons',
       label: 'FAQs',
-      onPress: () => console.log('FAQs'),
+      onPress: () => router.push('/profile/faq' as any),
     },
     {
       icon: 'alert-circle-outline',
       iconType: 'ionicons',
       label: 'Incident Report',
-      onPress: () => console.log('Incident Report'),
+      onPress: () => router.push('/profile/incident' as any),
     },
     {
       icon: 'language-outline',
       iconType: 'ionicons',
       label: 'Language',
       rightText: 'English',
-      onPress: () => console.log('Language'),
+      onPress: () => router.push('/(auth)/languagePage' as any),
     },
     {
       icon: 'log-out-outline',
@@ -103,7 +103,7 @@ export default function ProfileScreen() {
       label: 'Logout',
       onPress: () => {
         // Navigate back to login
-        router.replace('/(auth)/login');
+        router.replace('/(auth)/login' as any);
       },
     },
   ];
