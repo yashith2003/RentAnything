@@ -1,7 +1,8 @@
+import SearchBar from '@/components/searchbar';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import React, { useState } from 'react';
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 type StatusType = 'upcoming' | 'inprogress' | 'completed' | 'cancelled';
 
@@ -98,18 +99,11 @@ export default function MyOrders() {
         </TouchableOpacity>
 
         {/* Search Bar */}
-        <View className="px-6 mb-4">
-          <View className="flex-row items-center bg-[#F9F9F9] rounded-2xl px-4 py-3 border border-gray-100">
-            <Ionicons name="search-outline" size={20} color="#A0A0A0" />
-            <TextInput
-              placeholder="Search"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              className="flex-1 ml-2 text-base font-medium"
-              placeholderTextColor="#A0A0A0"
-            />
-          </View>
-        </View>
+        <SearchBar
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          containerStyle={{ paddingHorizontal: 24, marginBottom: 16 }}
+        />
 
         {/* Status Tabs */}
         <View className="px-6 mb-4">
