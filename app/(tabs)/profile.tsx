@@ -95,7 +95,7 @@ export default function ProfileScreen() {
       iconType: 'ionicons',
       label: 'Language',
       rightText: 'English',
-      onPress: () => router.push('/(auth)/languagePage' as any),
+      onPress: () => router.push('/profile/languageChange' as any),
     },
     {
       icon: 'log-out-outline',
