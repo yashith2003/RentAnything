@@ -1,10 +1,11 @@
 //app/(tabs)/home.tsx
 
+import SearchBar from '@/components/searchbar';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
  
 
@@ -119,19 +120,11 @@ export default function HomeScreen() {
         </View>
 
         {/* Search Bar */}
-        <View className="flex-row items-center mb-6">
-          <View className="flex-1 flex-row items-center bg-[#F9F9F9] rounded-2xl px-4 py-3 border border-gray-100">
-            <Image source={require('@/assets/icons/searchIcon.svg')} style={{ width: 20, height: 20 }} tintColor="#A0A0A0" />
-            <TextInput
-              placeholder="Search"
-              className="flex-1 ml-2 text-base font-medium"
-              placeholderTextColor="#A0A0A0"
-            />
-          </View>
-          <TouchableOpacity className="ml-3 p-3 bg-white rounded-2xl border border-gray-100 shadow-sm shadow-black/5" style={{ elevation: 2 }}>
-            <Image source={require('@/assets/icons/filter.svg')} style={{ width: 24, height: 24 }} />
-          </TouchableOpacity>
-        </View>
+        <SearchBar 
+          placeholder="Search" 
+          showFilter={true} 
+          containerStyle={{ marginBottom: 24 }}
+        />
 
         {/* Trending Items Header */}
         <View className="flex-row items-center justify-between mb-4">
