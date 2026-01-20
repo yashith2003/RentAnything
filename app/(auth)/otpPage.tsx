@@ -30,7 +30,7 @@ export default function OTPPage() {
       setShowSuccess(true);
     } else {
       // You can add error handling here
-      alert('Invalid OTP. Please enter 1111');
+      alert('Invalid OTP. Please enter the valid OTP');
     }
   };
 

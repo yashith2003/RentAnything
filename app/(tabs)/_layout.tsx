@@ -28,7 +28,7 @@ export default function TabLayout() {
           shadowOpacity: 0,
           height: 65 + (insets.bottom > 0 ? insets.bottom - 10 : 0),
           paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
-          backgroundColor: Colors.background,
+          //backgroundColor: Colors.background,
         }
       }}>
       <Tabs.Screen
