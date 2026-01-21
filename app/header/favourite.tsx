@@ -1,11 +1,12 @@
 // app/header/favourite.tsx
 
+import SearchBar from '@/components/searchbar';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const favouriteItems = [
@@ -89,18 +90,7 @@ export default function FavouriteScreen() {
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
         {/* Search Bar */}
         <View className="px-6 mb-4">
-          <View className="flex-row items-center bg-white rounded-2xl px-4 py-3 border border-gray-100">
-            <Image
-              source={require('@/assets/icons/searchIcon.svg')}
-              style={{ width: 22, height: 22 }}
-              tintColor="#000"
-            />
-            <TextInput
-              placeholder="Search"
-              className="flex-1 ml-3 text-base text-gray-500"
-              placeholderTextColor="#A0A0A0"
-            />
-          </View>
+          <SearchBar placeholder="Search" />
         </View>
 
         {/* Grid of Saved Items */}
@@ -129,8 +119,8 @@ function SavedItemCard({ item }: { item: any }) {
       {/* Product Image */}
       <View className="relative">
         <Image source={{ uri: item.image }} style={{ width: '100%', height: 160 }} contentFit="cover" />
-        <TouchableOpacity className="absolute top-3 right-3 p-1.5 bg-white rounded-full">
-          <Ionicons name="heart" size={16} color="#FF4D4D" />
+        <TouchableOpacity className="absolute top-3 right-3 ">
+          <Ionicons name="heart" size={20} color="#FF4D4D" />
         </TouchableOpacity>
       </View>
 
