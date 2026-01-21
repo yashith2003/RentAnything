@@ -1,5 +1,6 @@
 //app/search/searchMap.tsx
 
+import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import React from 'react';
@@ -34,7 +35,7 @@ export default function SearchMap() {
 
         {/* Load More Items Button */}
         <View className="absolute top-4 w-full items-center">
-          <TouchableOpacity className="bg-white/90 border border-[#2FA2B9] px-6 py-2 rounded-full shadow-sm">
+          <TouchableOpacity className={`bg-white/90 border border-[#2FA2B9] px-${getTailwindSpacing(Spacing.pageHorizontal)} py-2 rounded-full shadow-sm`}>
             <Text className="text-[#2FA2B9] font-bold text-sm">Load more items</Text>
           </TouchableOpacity>
         </View>

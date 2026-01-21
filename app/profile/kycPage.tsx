@@ -1,5 +1,6 @@
 // app/profile/kycPage.tsx
 
+import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -56,7 +57,7 @@ export default function KYCPage() {
       key={item.label}
       onPress={item.onPress}
       activeOpacity={0.7}
-      className="flex-row items-center justify-between py-4 px-4 mb-3 bg-white border border-gray-200 rounded-2xl"
+      className={`flex-row items-center justify-between py-${getTailwindSpacing(Spacing.lg)} px-${getTailwindSpacing(Spacing.lg)} mb-3 bg-white border border-gray-200 rounded-2xl`}
     >
       <View className="flex-row items-center gap-3">
         <View
@@ -79,7 +80,7 @@ export default function KYCPage() {
       <StatusBar style="dark" />
 
       {/* Header */}
-      <View className="flex-row items-center justify-between px-6 py-4">
+      <View className={`flex-row items-center justify-between px-${getTailwindSpacing(Spacing.pageHorizontal)} py-${getTailwindSpacing(Spacing.lg)}`}>
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} color="#000" />
         </TouchableOpacity>
@@ -89,7 +90,7 @@ export default function KYCPage() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
+      <ScrollView className={`flex-1 px-${getTailwindSpacing(Spacing.pageHorizontal)}`} showsVerticalScrollIndicator={false}>
         {/* KYC Verification Header */}
         <View className="mb-6">
           <Text className="text-2xl font-bold text-black mb-3">

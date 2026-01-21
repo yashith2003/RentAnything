@@ -2,6 +2,7 @@
 
 import PopularCategories from '@/components/popularCategories';
 import SearchBar from '@/components/searchbar';
+import { PaddingStyles, Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -24,7 +25,7 @@ export default function SearchScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       {/* Header */}
-      <View className="flex-row items-center justify-between px-6 py-4">
+      <View className="flex-row items-center justify-between py-4" style={PaddingStyles.page}>
         <TouchableOpacity 
           onPress={() => router.back()} 
           className="w-10 h-10 items-center justify-center rounded-full bg-gray-50"
@@ -45,7 +46,7 @@ export default function SearchScreen() {
         {/* Top Part (Sticky in this layout conceptually) */}
         <View>
           {/* Category Chips */}
-          <View className="px-6">
+          <View style={PaddingStyles.page}>
             <PopularCategories 
               showTitle={false} 
               selectedCategory={selectedCategory} 
@@ -58,14 +59,14 @@ export default function SearchScreen() {
             value={searchQuery}
             onChangeText={setSearchQuery}
             showFilter={true}
-            containerStyle={{ paddingHorizontal: 24, marginBottom: 16 }}
+            containerStyle={{ paddingHorizontal: Spacing.pageHorizontal, marginBottom: Spacing.lg }}
           />
 
           {/* Filter Tags */}
-          <View className="flex-row items-center justify-between px-6 mb-4">
+          <View className="flex-row items-center justify-between mb-4" style={PaddingStyles.page}>
              <View className="flex-row gap-x-3">
                 {filters.map(filter => (
-                    <View key={filter.id} className="flex-row items-center bg-gray-50 px-4 py-2 rounded-xl border border-gray-100">
+                    <View key={filter.id} className={`flex-row items-center bg-gray-50 px-${getTailwindSpacing(Spacing.lg)} py-2 rounded-xl border border-gray-100`}>
                         <Text className="text-gray-600 text-sm mr-2">{filter.label}</Text>
                         <TouchableOpacity>
                             <Ionicons name="close" size={14} color="#666" />
@@ -79,7 +80,7 @@ export default function SearchScreen() {
           </View>
 
           {/* List/Map Toggle */}
-          <View className="flex-row items-center px-6 mb-6 gap-x-4">
+          <View className="flex-row items-center mb-6 gap-x-4" style={PaddingStyles.page}>
             <TouchableOpacity
                 onPress={() => setViewMode('list')}
                 className={`flex-1 py-3.5 rounded-full items-center border ${

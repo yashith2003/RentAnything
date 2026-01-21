@@ -1,6 +1,7 @@
 //app/search/searchList.tsx
 
 import ItemCard from '@/components/itemCard';
+import { PaddingStyles } from '@/constants/spacing';
 import React from 'react';
 import { ScrollView, Text, View } from 'react-native';
 
@@ -59,12 +60,12 @@ export default function SearchList() {
   return (
     <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
       {/* Products Count */}
-      <View className="px-6 mb-4">
+      <View className="mb-4" style={PaddingStyles.page}>
         <Text className="text-xl font-bold text-black">32 products found</Text>
       </View>
 
       {/* Products Grid */}
-      <View className="flex-row flex-wrap justify-between px-6 pb-10">
+      <View className="flex-row flex-wrap justify-between pb-10" style={PaddingStyles.page}>
         {searchResults.map((item) => (
           <ItemCard key={item.id} item={item} />
         ))}

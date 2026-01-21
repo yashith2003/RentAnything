@@ -1,5 +1,6 @@
 //app/search/filter.tsx
 
+import { PaddingStyles, Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -21,7 +22,7 @@ export default function FilterScreen() {
   const Chip = ({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) => (
     <TouchableOpacity
       onPress={onPress}
-      className={`px-4 py-2 rounded-xl mr-3 mb-3 border ${
+      className={`px-${getTailwindSpacing(Spacing.lg)} py-2 rounded-xl mr-3 mb-3 border ${
         selected ? 'bg-[#2FA2B9] border-[#2FA2B9]' : 'bg-white border-gray-100'
       }`}
     >
@@ -40,7 +41,7 @@ export default function FilterScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-      <View className="flex-row items-center justify-between px-6 py-4 border-b border-gray-50">
+      <View className="flex-row items-center justify-between py-4 border-b border-gray-50" style={PaddingStyles.page}>
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="close" size={24} color="#000" />
         </TouchableOpacity>
@@ -48,7 +49,7 @@ export default function FilterScreen() {
         <View style={{ width: 24 }} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} className="flex-1 px-6 pt-4">
+      <ScrollView showsVerticalScrollIndicator={false} className="flex-1 pt-4" style={PaddingStyles.page}>
         <Section title="Access to Rentals">
           <View className="flex-row flex-wrap">
             {['Delivery available', "Pickup at owner's location"].map((label) => (
@@ -86,7 +87,7 @@ export default function FilterScreen() {
               <Text className="text-xs text-gray-500 font-bold mb-2">Minimum</Text>
               <TextInput
                 value="10"
-                className="bg-white border border-gray-100 rounded-xl px-4 py-2 text-center font-bold"
+                className={`bg-white border border-gray-100 rounded-xl px-${getTailwindSpacing(Spacing.lg)} py-2 text-center font-bold`}
                 keyboardType="numeric"
               />
             </View>
@@ -94,7 +95,7 @@ export default function FilterScreen() {
               <Text className="text-xs text-gray-500 font-bold mb-2">Maximum</Text>
               <TextInput
                 value="500"
-                className="bg-white border border-gray-100 rounded-xl px-4 py-2 text-center font-bold"
+                className={`bg-white border border-gray-100 rounded-xl px-${getTailwindSpacing(Spacing.lg)} py-2 text-center font-bold`}
                 keyboardType="numeric"
               />
             </View>
@@ -166,7 +167,7 @@ export default function FilterScreen() {
         </Section>
 
         <Section title="Vehicle Type">
-          <TouchableOpacity className="flex-row items-center justify-between bg-white border border-gray-100 rounded-2xl px-4 py-3">
+          <TouchableOpacity className={`flex-row items-center justify-between bg-white border border-gray-100 rounded-2xl px-${getTailwindSpacing(Spacing.lg)} py-3`}>
             <Text className="text-gray-400 text-sm">Select vehicle type</Text>
             <Ionicons name="chevron-down" size={20} color="#666" />
           </TouchableOpacity>
@@ -176,14 +177,14 @@ export default function FilterScreen() {
           <View className="flex-row justify-between">
             <View className="flex-1 mr-4">
               <Text className="text-xs text-gray-500 font-bold mb-2">Pick-up Date</Text>
-              <View className="flex-row items-center justify-between bg-white border border-gray-100 rounded-xl px-4 py-2">
+              <View className={`flex-row items-center justify-between bg-white border border-gray-100 rounded-xl px-${getTailwindSpacing(Spacing.lg)} py-2`}>
                 <Text className="text-sm text-gray-400">2025-07-31</Text>
                 <Ionicons name="calendar-outline" size={18} color="#666" />
               </View>
             </View>
             <View className="flex-1">
               <Text className="text-xs text-gray-500 font-bold mb-2">Return Date</Text>
-              <View className="flex-row items-center justify-between bg-white border border-gray-100 rounded-xl px-4 py-2">
+              <View className={`flex-row items-center justify-between bg-white border border-gray-100 rounded-xl px-${getTailwindSpacing(Spacing.lg)} py-2`}>
                 <Text className="text-sm text-gray-400">2025-08-31</Text>
                 <Ionicons name="calendar-outline" size={18} color="#666" />
               </View>
@@ -255,7 +256,7 @@ export default function FilterScreen() {
           </View>
           <TextInput
             value="Rs:1000.00"
-            className="bg-white border border-gray-100 rounded-xl px-4 py-3 text-center font-bold text-gray-400"
+            className={`bg-white border border-gray-100 rounded-xl px-${getTailwindSpacing(Spacing.lg)} py-3 text-center font-bold text-gray-400`}
             editable={false}
           />
         </Section>
@@ -276,7 +277,7 @@ export default function FilterScreen() {
         <View className="h-20" />
       </ScrollView>
 
-      <View className="flex-row items-center px-6 py-4 border-t border-gray-50 bg-white">
+      <View className="flex-row items-center py-4 border-t border-gray-50 bg-white" style={PaddingStyles.page}>
         <TouchableOpacity className="flex-1 h-14 rounded-full border border-[#2FA2B9] items-center justify-center mr-4">
           <Text className="text-[#2FA2B9] font-bold">Clear all</Text>
         </TouchableOpacity>

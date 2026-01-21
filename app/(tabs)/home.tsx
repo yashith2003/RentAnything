@@ -1,11 +1,14 @@
 //app/(tabs)/home.tsx
 
 import ItemCard from '@/components/itemCard';
+import LocationDropdown from '@/components/LocationDropdown';
 import PopularCategories from '@/components/popularCategories';
 import SearchBar from '@/components/searchbar';
+import { Spacing, getTailwindSpacing } from '@/constants/spacing';
+import { useUser } from '@/context/userContext';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
  
@@ -60,15 +63,21 @@ const trendingItems = [
     delivery: true,
   },
 ];
-import { useUser } from '@/context/userContext';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { role } = useUser();
+  const [selectedCategory, setSelectedCategory] = useState('Electronic');
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState('Enter your location');
+
+  const handleLocationSelect = (location: string) => {
+    setSelectedLocation(location);
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-      <ScrollView showsVerticalScrollIndicator={false} className="px-4">
+      <ScrollView showsVerticalScrollIndicator={false} className={`px-${getTailwindSpacing(Spacing.pageHorizontal)}`}>
         {/* Header */}
         <View className="flex-row items-center justify-between py-4">
           <View className="flex-row items-center gap-x-2">
@@ -101,14 +110,21 @@ export default function HomeScreen() {
         </View>
 
         {/* Location Selector */}
-        <TouchableOpacity className="flex-row items-center bg-gray-50 rounded-2xl p-4 mb-6 border border-gray-100">
+        <TouchableOpacity 
+          className="flex-row items-center bg-gray-50 rounded-2xl p-4 mb-6 border border-gray-100"
+          onPress={() => setShowLocationDropdown(true)}
+        >
           <Image source={require('@/assets/icons/location.svg')} style={{ width: 20, height: 20 }} />
-          <Text className="flex-1 ml-3 text-gray-500 font-medium">Enter your location</Text>
+          <Text className="flex-1 ml-3 text-gray-500 font-medium">{selectedLocation}</Text>
           <Text className="text-gray-400 text-xs">▼</Text>
         </TouchableOpacity>
 
         {/* Popular Categories */}
-        <PopularCategories />
+        <PopularCategories 
+          showTitle={false} 
+          selectedCategory={selectedCategory} 
+          onSelectCategory={setSelectedCategory} 
+        />
 
         {/* Search Bar */}
         <SearchBar 
@@ -132,6 +148,13 @@ export default function HomeScreen() {
           ))}
         </View>
       </ScrollView>
+
+      {/* Location Dropdown Modal */}
+      <LocationDropdown
+        visible={showLocationDropdown}
+        onClose={() => setShowLocationDropdown(false)}
+        onSelectLocation={handleLocationSelect}
+      />
     </SafeAreaView>
   );
 }

@@ -1,5 +1,6 @@
 //app/profile/incident.tsx
 
+import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -90,7 +91,7 @@ export default function IncidentPage() {
       <StatusBar style="dark" />
 
       {/* Header */}
-      <View className="flex-row items-center justify-between px-6 py-4 mb-2">
+      <View className={`flex-row items-center justify-between px-${getTailwindSpacing(Spacing.pageHorizontal)} py-${getTailwindSpacing(Spacing.lg)} mb-2`}>
         <TouchableOpacity onPress={() => router.back()} className="w-10 h-10 items-center justify-center rounded-full bg-gray-50">
           <Ionicons name="chevron-back" size={24} color="#000" />
         </TouchableOpacity>
@@ -101,7 +102,7 @@ export default function IncidentPage() {
       </View>
 
       {/* Tabs */}
-      <View className="flex-row px-6 mb-4">
+      <View className={`flex-row px-${getTailwindSpacing(Spacing.pageHorizontal)} mb-4`}>
         <TouchableOpacity
           onPress={() => setActiveTab('Requests')}
           className={`flex-1 py-3 rounded-full mr-2 items-center justify-center ${
@@ -138,13 +139,13 @@ export default function IncidentPage() {
       </View>
 
       {/* Content Header */}
-      <View className="px-6 mb-4">
+      <View className={`px-${getTailwindSpacing(Spacing.pageHorizontal)} mb-4`}>
         <Text className="text-sm font-bold text-black">
           {items.length} Incident Requests {activeTab === 'Requests' ? 'Available' : 'Sent'}
         </Text>
       </View>
 
-      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
+      <ScrollView className={`flex-1 px-${getTailwindSpacing(Spacing.pageHorizontal)}`} showsVerticalScrollIndicator={false}>
         {items.map((item) => (
           <View
             key={item.id}

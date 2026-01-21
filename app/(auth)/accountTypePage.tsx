@@ -8,6 +8,7 @@ import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import PrimaryButton from '@/components/PrimaryButton';
+import { PaddingStyles } from '@/constants/spacing';
 import { useUser } from '@/context/userContext';
 
 export default function AccountTypePage() {
@@ -27,7 +28,7 @@ export default function AccountTypePage() {
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar style="dark" />
       
-      <View className="flex-1 px-8 pt-4 pb-10">
+      <View className="flex-1 pt-4 pb-10" style={PaddingStyles.page}>
         {/* Logo Section */}
         <View className="items-start">
           <Image

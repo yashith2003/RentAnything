@@ -68,7 +68,7 @@ export default function OTPPage() {
         style={{ position: 'absolute', width: 1, height: 1, opacity: 0 }}
       />
 
-      <Pressable className="flex-1 px-8 pt-4" onPress={Keyboard.dismiss}>
+      <Pressable className="flex-1 px-6 pt-4" onPress={Keyboard.dismiss}>
         {/* Logo Section */}
         <View className="items-start">
           <Image

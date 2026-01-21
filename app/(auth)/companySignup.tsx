@@ -18,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import CustomTextInput from '@/components/CustomTextInput';
 import PrimaryButton from '@/components/PrimaryButton';
+import { Spacing } from '@/constants/spacing';
 
 import SuccessPopup from '@/components/successPopup';
 
@@ -55,7 +56,7 @@ export default function CompanySignup() {
       >
         <ScrollView 
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingHorizontal: 32, paddingTop: 20, paddingBottom: 40, flexGrow: 1 }}
+          contentContainerStyle={{ paddingHorizontal: Spacing.pageHorizontal, paddingTop: Spacing.xl, paddingBottom: 40, flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
         >
           {/* Logo Section */}
@@ -70,7 +71,7 @@ export default function CompanySignup() {
           {/* Header Section */}
           <View style={{ marginTop: 48, alignItems: 'center' }}>
             <Text style={{ fontSize: 32, fontWeight: '700', color: '#000' }}>Sign Up</Text>
-            <Text style={{ fontSize: 16, color: '#6B7280', marginTop: 8, textAlign: 'center', paddingHorizontal: 16 }}>
+            <Text style={{ fontSize: 16, color: '#6B7280', marginTop: 8, textAlign: 'center', paddingHorizontal: Spacing.lg }}>
               Fill your information below to Sign Up
             </Text>
           </View>

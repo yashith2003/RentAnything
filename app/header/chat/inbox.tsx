@@ -1,5 +1,6 @@
 //app/header/chat/inbox.tsx
 
+import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -147,7 +148,7 @@ export default function InboxScreen() {
       <StatusBar style="dark" />
 
       {/* Header */}
-      <View className="flex-row items-center justify-between px-6 py-4">
+      <View className={`flex-row items-center justify-between px-${getTailwindSpacing(Spacing.pageHorizontal)} py-${getTailwindSpacing(Spacing.lg)}`}>
         <TouchableOpacity
           onPress={() => router.back()}
           className="w-10 h-10 rounded-full border border-gray-200 items-center justify-center"
@@ -165,7 +166,7 @@ export default function InboxScreen() {
       </View>
 
       {/* Tabs */}
-      <View className="flex-row px-6 border-b border-gray-100">
+      <View className={`flex-row px-${getTailwindSpacing(Spacing.pageHorizontal)} border-b border-gray-100`}>
         <TouchableOpacity
           onPress={() => setActiveTab('customer')}
           className={`pb-3 mr-6 ${
@@ -200,8 +201,8 @@ export default function InboxScreen() {
       </View>
 
       {/* Search Bar */}
-      <View className="px-6 py-4">
-        <View className="flex-row items-center bg-transparent border border-gray-200 rounded-2xl h-12 px-4">
+      <View className={`px-${getTailwindSpacing(Spacing.pageHorizontal)} py-${getTailwindSpacing(Spacing.lg)}`}>
+        <View className={`flex-row items-center bg-transparent border border-gray-200 rounded-2xl h-12 px-${getTailwindSpacing(Spacing.lg)}`}>
           <Ionicons name="search-outline" size={20} color="#999" style={{ marginRight: 8 }} />
           <TextInput
             className="flex-1 text-base text-black h-full"
@@ -218,7 +219,7 @@ export default function InboxScreen() {
         data={chatData}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
-        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24 }}
+        contentContainerStyle={{ paddingHorizontal: Spacing.pageHorizontal, paddingBottom: Spacing.xxl }}
         showsVerticalScrollIndicator={false}
       />
     </SafeAreaView>
