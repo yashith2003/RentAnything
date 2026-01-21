@@ -28,6 +28,7 @@ export default function IndividualSignup() {
 
   const handleVerifyEmail = () => {
     console.log('Verifying email for:', formData);
+    router.push('/(auth)/otpPage');
   };
 
   const handleLoginPress = () => {

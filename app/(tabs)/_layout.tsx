@@ -10,9 +10,12 @@ import { Colors } from '@/constants/theme';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useUser } from '@/context/userContext';
+
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
+  const { role } = useUser();
 
   return (
     <Tabs
@@ -57,9 +60,11 @@ export default function TabLayout() {
           ),
         }}
       />
+      {/* Dynamic Tab based on role - only for companies */}
       <Tabs.Screen
         name="add-listing"
         options={{
+          href: role === 'company' ? '/add-listing' : null,
           title: 'Add Listing',
           tabBarIcon: ({ color }) => (
             <Image 

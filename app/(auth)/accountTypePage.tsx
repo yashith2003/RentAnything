@@ -9,10 +9,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Colors } from '@/constants/theme';
 
+import { useUser } from '@/context/userContext';
+
 export default function AccountTypePage() {
   const router = useRouter();
+  const { setRole } = useUser();
 
   const handleSelectType = (type: 'individual' | 'company') => {
+    setRole(type);
     if (type === 'individual') {
       router.push('/(auth)/individualSignup');
     } else {
