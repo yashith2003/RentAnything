@@ -5,18 +5,21 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import {
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text, // Add Text back
+  TouchableOpacity,
+  View
 } from 'react-native';
-import { TextInput } from 'react-native-paper';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Colors } from '@/constants/theme';
+import CustomTextInput from '@/components/CustomTextInput';
+import PrimaryButton from '@/components/PrimaryButton';
+
+import SuccessPopup from '@/components/successPopup';
 
 export default function IndividualSignup() {
   const router = useRouter();
@@ -26,9 +29,16 @@ export default function IndividualSignup() {
     address: '',
   });
 
+  const [showSuccess, setShowSuccess] = useState(false);
+
   const handleVerifyEmail = () => {
     console.log('Verifying email for:', formData);
-    router.push('/(auth)/otpPage');
+    setShowSuccess(true);
+  };
+
+  const handleSuccessNext = () => {
+    setShowSuccess(false);
+    router.push('/(auth)/phoneNumberPage');
   };
 
   const handleLoginPress = () => {
@@ -66,78 +76,52 @@ export default function IndividualSignup() {
 
           {/* Form Section */}
           <View style={{ marginTop: 40 }}>
-            <TextInput
-              label="Full Name"
+            <CustomTextInput
+              placeholder="Full Name"
               value={formData.fullName}
               onChangeText={(text) => setFormData({ ...formData, fullName: text })}
-              mode="outlined"
-              style={{ backgroundColor: '#fff', marginBottom: 16 }}
-              textColor="#000"
-              outlineColor="#E0E0E0"
-              activeOutlineColor={Colors.primary}
-              outlineStyle={{ borderRadius: 16, borderWidth: 1.5 }}
-              theme={{ roundness: 16 }}
             />
 
-            <TextInput
-              label="Email Address"
+            <CustomTextInput
+              placeholder="Email Address"
               value={formData.email}
               onChangeText={(text) => setFormData({ ...formData, email: text })}
-              mode="outlined"
               keyboardType="email-address"
-              style={{ backgroundColor: '#fff', marginBottom: 16 }}
-              textColor="#000"
-              outlineColor="#E0E0E0"
-              activeOutlineColor={Colors.primary}
-              outlineStyle={{ borderRadius: 16, borderWidth: 1.5 }}
-              theme={{ roundness: 16 }}
             />
 
-            <TextInput
-              label="Address"
+            <CustomTextInput
+              placeholder="Address"
               value={formData.address}
               onChangeText={(text) => setFormData({ ...formData, address: text })}
-              mode="outlined"
-              style={{ backgroundColor: '#fff', marginBottom: 16 }}
-              textColor="#000"
-              outlineColor="#E0E0E0"
-              activeOutlineColor={Colors.primary}
-              outlineStyle={{ borderRadius: 16, borderWidth: 1.5 }}
-              theme={{ roundness: 16 }}
             />
           </View>
 
+
           {/* Action Button Section */}
           <View style={{ marginTop: 40 }}>
-            <TouchableOpacity
-              onPress={handleVerifyEmail}
-              activeOpacity={0.8}
-              style={{ 
-                height: 56, 
-                borderRadius: 28, 
-                justifyContent: 'center', 
-                alignItems: 'center', 
-                backgroundColor: Colors.primary,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-                elevation: 3
-              }}
-            >
-                <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>Verify email</Text>
-            </TouchableOpacity>
+            <PrimaryButton 
+              title="Verify email" 
+              onPress={handleVerifyEmail} 
+            />
+
 
             {/* Footer Text */}
             <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 24 }}>
               <Text style={{ fontSize: 14, color: '#6B7280' }}>Already have an account? </Text>
               <TouchableOpacity onPress={handleLoginPress}>
-                <Text style={{ fontSize: 14, fontWeight: '700', color: Colors.primary }}>Login.</Text>
+                <Text style={{ fontSize: 14, fontWeight: '700', color: '#2FA2B9' }}>Login.</Text>
               </TouchableOpacity>
+
             </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      <SuccessPopup 
+        visible={showSuccess} 
+        onNext={handleSuccessNext}
+        title="Registration Successful!"
+        message="Your account information has been saved. Please provide your phone number to continue with verification."
+      />
     </SafeAreaView>
   );
 }

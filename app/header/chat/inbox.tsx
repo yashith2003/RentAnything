@@ -1,3 +1,4 @@
+//app/header/chat/inbox.tsx
 
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';

@@ -4,11 +4,10 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Colors } from '@/constants/theme';
-
+import PrimaryButton from '@/components/PrimaryButton';
 import { useUser } from '@/context/userContext';
 
 export default function AccountTypePage() {
@@ -51,29 +50,26 @@ export default function AccountTypePage() {
         {/* Account Selection Buttons */}
         <View className="mt-12 gap-y-4">
           {/* Individual User Button */}
-          <TouchableOpacity
+          <PrimaryButton
+            title="Individual User"
             onPress={() => handleSelectType('individual')}
-            activeOpacity={0.8}
-            className="h-14 rounded-full justify-center items-center shadow-sm"
-            style={{ backgroundColor: Colors.primary }}
-          >
-            <Text className="text-white text-lg font-bold">
-              Individual User
-            </Text>
-          </TouchableOpacity>
+            style={{ 
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.1,
+              shadowRadius: 2,
+              elevation: 2
+            }}
+          />
 
           {/* Company Button */}
-          <TouchableOpacity
+          <PrimaryButton
+            title="Company"
+            variant="outlined"
             onPress={() => handleSelectType('company')}
-            activeOpacity={0.7}
-            className="h-14 rounded-full justify-center items-center border-[1.5px]"
-            style={{ borderColor: Colors.primary }}
-          >
-            <Text className="text-lg font-bold" style={{ color: Colors.primary }}>
-              Company
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
+
       </View>
     </SafeAreaView>
   );

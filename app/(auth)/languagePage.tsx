@@ -7,7 +7,8 @@ import React, { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Colors } from '@/constants/theme';
+import PrimaryButton from '@/components/PrimaryButton';
+
 
 const languages = [
   { id: 'en', label: 'English' },
@@ -54,18 +55,21 @@ export default function LanguagePage() {
                         key={lang.id}
                         onPress={() => setSelectedLanguage(lang.id)}
                         activeOpacity={0.7}
-                        className={`h-14 rounded-full justify-center items-center border-[1.5px] ${
-                            isSelected 
-                                ? 'bg-white border-[#2FA2B9]' 
-                                : 'bg-gray-50 border-gray-100'
-                        }`}
-                        style={isSelected ? { borderColor: Colors.primary } : {}}
+                        style={{
+                            height: 58,
+                            borderRadius: 30,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            borderWidth: 1.5,
+                            borderColor: isSelected ? '#2FA2B9' : '#F3F4F6',
+                            backgroundColor: isSelected ? '#FFFFFF' : '#F9FAFB',
+                        }}
                     >
                         <Text 
                             className={`text-lg font-semibold ${
                                 isSelected ? 'text-[#2FA2B9]' : 'text-gray-400'
                             }`}
-                            style={isSelected ? { color: Colors.primary } : {}}
+                            style={isSelected ? { color: '#2FA2B9' } : {}}
                         >
                             {lang.label}
                         </Text>
@@ -76,14 +80,10 @@ export default function LanguagePage() {
 
         {/* Next Button Section - Pushed to the bottom */}
         <View className="mt-auto">
-            <TouchableOpacity
-                onPress={handleNext}
-                activeOpacity={0.8}
-                className="h-14 rounded-full justify-center items-center shadow-lg"
-                style={{ backgroundColor: Colors.primary }}
-            >
-                <Text className="text-white text-lg font-bold">Next</Text>
-            </TouchableOpacity>
+            <PrimaryButton 
+              title="Next" 
+              onPress={handleNext} 
+            />
         </View>
       </View>
     </SafeAreaView>

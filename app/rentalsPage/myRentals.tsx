@@ -1,3 +1,5 @@
+//app/rentalPage/myRentals.tsx
+
 import SearchBar from '@/components/searchbar';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';

@@ -1,3 +1,5 @@
+//context/userContext.tsx
+
 import React, { createContext, ReactNode, useContext, useState } from 'react';
 
 export type UserRole = 'individual' | 'company' | null;

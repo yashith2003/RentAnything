@@ -1,3 +1,5 @@
+//app/search/searchList.tsx
+
 import ItemCard from '@/components/itemCard';
 import React from 'react';
 import { ScrollView, Text, View } from 'react-native';
