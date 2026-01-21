@@ -29,6 +29,7 @@ export default function CompanySignup() {
 
   const handleVerifyEmail = () => {
     console.log('Verifying email for:', formData);
+    router.push('/(auth)/otpPage');
   };
 
   const handleLoginPress = () => {

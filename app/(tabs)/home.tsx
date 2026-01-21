@@ -60,20 +60,30 @@ const trendingItems = [
     delivery: true,
   },
 ];
+import { useUser } from '@/context/userContext';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { role } = useUser();
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <ScrollView showsVerticalScrollIndicator={false} className="px-4">
         {/* Header */}
         <View className="flex-row items-center justify-between py-4">
-          <Image
-            source={require('@/assets/images/logo.png')}
-            style={{ width: 45, height: 45 }}
-            contentFit="contain"
-          />
+          <View className="flex-row items-center gap-x-2">
+            <Image
+              source={require('@/assets/images/logo.png')}
+              style={{ width: 45, height: 45 }}
+              contentFit="contain"
+            />
+            <View>
+              <Text className="text-xs text-gray-400 font-medium">
+                {role === 'company' ? 'Company Account' : 'Individual Account'}
+              </Text>
+              <Text className="text-sm font-bold text-black">Welcome Back!</Text>
+            </View>
+          </View>
           <View className="flex-row items-center gap-x-4">
             <TouchableOpacity onPress={() => router.push('/header/chat/inbox')}>
               <Image source={require('@/assets/icons/message.svg')} style={{ width: 22, height: 22 }} />
