@@ -1,3 +1,5 @@
+//app/profile/incident.tsx
+
 import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';

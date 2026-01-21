@@ -1,3 +1,5 @@
+//app/(tabs)/search.tsx
+
 import PopularCategories from '@/components/popularCategories';
 import SearchBar from '@/components/searchbar';
 import { Ionicons } from '@expo/vector-icons';

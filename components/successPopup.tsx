@@ -1,8 +1,8 @@
 // components/successPopup.tsx
 
-import { Colors } from '@/constants/theme';
 import React from 'react';
-import { Modal, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, Text, View } from 'react-native';
+import PrimaryButton from './PrimaryButton';
 
 interface SuccessPopupProps {
   visible: boolean;
@@ -40,14 +40,10 @@ export default function SuccessPopup({
           </Text>
 
           {/* Next Button */}
-          <TouchableOpacity
-            onPress={onNext}
-            activeOpacity={0.8}
-            className="w-full h-14 rounded-full justify-center items-center"
-            style={{ backgroundColor: Colors.primary }}
-          >
-            <Text className="text-white text-lg font-bold">Next</Text>
-          </TouchableOpacity>
+          <PrimaryButton 
+            title="Next" 
+            onPress={onNext} 
+          />
         </View>
       </View>
     </Modal>

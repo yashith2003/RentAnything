@@ -1,35 +1,32 @@
-// app/(auth)/otpPage.tsx
-
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Keyboard, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import PrimaryButton from '@/components/PrimaryButton';
 import SuccessPopup from '@/components/successPopup';
-import { Colors } from '@/constants/theme';
 
 export default function OTPPage() {
   const router = useRouter();
   const [otp, setOtp] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
+  const inputRef = useRef<TextInput>(null);
 
-  const handleNumberPress = (num: string) => {
-    if (otp.length < 4) {
-      setOtp(otp + num);
-    }
-  };
-
-  const handleBackspace = () => {
-    setOtp(otp.slice(0, -1));
-  };
+  // Auto-focus the input when screen mounts
+  useEffect(() => {
+    const timer = setTimeout(() => {
+        inputRef.current?.focus();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleNext = () => {
     if (otp === '1111') {
+      Keyboard.dismiss();
       setShowSuccess(true);
     } else {
-      // You can add error handling here
       alert('Invalid OTP. Please enter the valid OTP');
     }
   };
@@ -41,7 +38,12 @@ export default function OTPPage() {
 
   const handleResend = () => {
     console.log('Resend OTP');
-    // Add resend logic here
+    setOtp('');
+    inputRef.current?.focus();
+  };
+
+  const handleInputContent = () => {
+      inputRef.current?.focus();
   };
 
   // Display only first 4 digits in the boxes
@@ -54,7 +56,17 @@ export default function OTPPage() {
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar style="dark" />
 
-      <View className="flex-1 px-8 pt-4">
+      {/* Hidden Input for Keyboard Control */}
+      <TextInput
+        ref={inputRef}
+        value={otp}
+        onChangeText={setOtp}
+        maxLength={4}
+        keyboardType="number-pad"
+        style={{ position: 'absolute', width: 1, height: 1, opacity: 0 }}
+      />
+
+      <Pressable className="flex-1 px-8 pt-4" onPress={Keyboard.dismiss}>
         {/* Logo Section */}
         <View className="items-start">
           <Image
@@ -75,29 +87,30 @@ export default function OTPPage() {
         </View>
 
         {/* OTP Input Boxes */}
-        <View className="flex-row justify-center gap-4 mt-10">
+        <Pressable 
+            onPress={handleInputContent}
+            className="flex-row justify-center gap-4 mt-10"
+        >
           {displayOtp.map((digit, index) => (
             <View
               key={index}
-              className="w-16 h-16 bg-white border border-gray-200 rounded-2xl justify-center items-center"
+              className={`w-16 h-16 bg-white border rounded-2xl justify-center items-center ${
+                  index === otp.length ? 'border-[#2FA2B9] border-2' : 'border-gray-200'
+              }`}
             >
               <Text className="text-2xl font-semibold text-black">
                 {digit}
               </Text>
             </View>
           ))}
-        </View>
+        </Pressable>
 
         {/* Next Button */}
         <View className="mt-8">
-          <TouchableOpacity
-            onPress={handleNext}
-            activeOpacity={0.8}
-            className="h-14 rounded-full justify-center items-center"
-            style={{ backgroundColor: Colors.primary }}
-          >
-            <Text className="text-white text-lg font-bold">Next</Text>
-          </TouchableOpacity>
+          <PrimaryButton 
+            title="Next" 
+            onPress={handleNext} 
+          />
 
           {/* Resend Link */}
           <View className="flex-row justify-center mt-6">
@@ -107,96 +120,14 @@ export default function OTPPage() {
             <TouchableOpacity onPress={handleResend}>
               <Text
                 className="text-sm font-bold"
-                style={{ color: Colors.primary }}
+                style={{ color: '#2FA2B9' }}
               >
                 Resend
               </Text>
             </TouchableOpacity>
           </View>
         </View>
-
-        {/* Spacer */}
-        <View className="flex-1" />
-
-        {/* Custom Keyboard */}
-        <View className="pb-6">
-          {/* Form Message */}
-          <View className="items-center mb-4">
-            <Text className="text-sm text-gray-400">Form Message</Text>
-            <Text className="text-sm text-gray-600 font-medium">6930</Text>
-          </View>
-
-          {/* Number Pad */}
-          <View className="gap-3">
-            {/* Row 1 */}
-            <View className="flex-row justify-between gap-3">
-              {['1', '2', '3'].map((num) => (
-                <TouchableOpacity
-                  key={num}
-                  onPress={() => handleNumberPress(num)}
-                  activeOpacity={0.7}
-                  className="flex-1 h-16 bg-white border border-gray-200 rounded-2xl justify-center items-center"
-                >
-                  <Text className="text-2xl font-semibold text-black">
-                    {num}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            {/* Row 2 */}
-            <View className="flex-row justify-between gap-3">
-              {['4', '5', '6'].map((num) => (
-                <TouchableOpacity
-                  key={num}
-                  onPress={() => handleNumberPress(num)}
-                  activeOpacity={0.7}
-                  className="flex-1 h-16 bg-white border border-gray-200 rounded-2xl justify-center items-center"
-                >
-                  <Text className="text-2xl font-semibold text-black">
-                    {num}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            {/* Row 3 */}
-            <View className="flex-row justify-between gap-3">
-              {['7', '8', '9'].map((num) => (
-                <TouchableOpacity
-                  key={num}
-                  onPress={() => handleNumberPress(num)}
-                  activeOpacity={0.7}
-                  className="flex-1 h-16 bg-white border border-gray-200 rounded-2xl justify-center items-center"
-                >
-                  <Text className="text-2xl font-semibold text-black">
-                    {num}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            {/* Row 4 */}
-            <View className="flex-row justify-between gap-3">
-              <View className="flex-1" />
-              <TouchableOpacity
-                onPress={() => handleNumberPress('0')}
-                activeOpacity={0.7}
-                className="flex-1 h-16 bg-white border border-gray-200 rounded-2xl justify-center items-center"
-              >
-                <Text className="text-2xl font-semibold text-black">0</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleBackspace}
-                activeOpacity={0.7}
-                className="flex-1 h-16 bg-white border border-gray-200 rounded-2xl justify-center items-center"
-              >
-                <Text className="text-2xl font-semibold text-black">⌫</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </View>
+      </Pressable>
 
       {/* Success Popup */}
       <SuccessPopup visible={showSuccess} onNext={handleSuccessNext} />

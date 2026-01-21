@@ -4,9 +4,11 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import CustomTextInput from '@/components/CustomTextInput';
+import PrimaryButton from '@/components/PrimaryButton';
 import { Colors } from '@/constants/theme';
 
 export default function LoginScreen() {
@@ -47,33 +49,21 @@ export default function LoginScreen() {
 
         {/* Form Section */}
         <View className="mt-10">
-          <TextInput
+          <CustomTextInput
             placeholder="Phone number"
             value={phoneNumber}
             onChangeText={setPhoneNumber}
             keyboardType="phone-pad"
-            className="bg-white px-4 py-4 text-base text-black"
-            style={{
-              borderWidth: 1,
-              borderColor: '#E5E5E5',
-              borderRadius: 12,
-              fontSize: 16,
-              color: '#000',
-            }}
-            placeholderTextColor="#9CA3AF"
+            style={{ marginBottom: 0 }} // Override default margin if needed or keep it
           />
         </View>
 
         {/* Action Button Section */}
         <View className="mt-6">
-          <TouchableOpacity
-            onPress={handleLogin}
-            activeOpacity={0.8}
-            className="h-14 rounded-full justify-center items-center shadow-lg"
-            style={{ backgroundColor: Colors.primary }}
-          >
-            <Text className="text-white text-lg font-bold">Login</Text>
-          </TouchableOpacity>
+          <PrimaryButton 
+            title="Login" 
+            onPress={handleLogin} 
+          />
 
           {/* Footer Text */}
           <View className="flex-row justify-center mt-6">

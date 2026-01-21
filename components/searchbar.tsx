@@ -1,3 +1,5 @@
+//components/searchbar.tsx
+
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
