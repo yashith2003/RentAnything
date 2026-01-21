@@ -1,22 +1,12 @@
-//app/(tabs)/search.tsx
-
+import PopularCategories from '@/components/popularCategories';
 import SearchBar from '@/components/searchbar';
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SearchList from '../search/searchList';
 import SearchMap from '../search/searchMap';
-
-const categories = [
-  { name: 'Electronic', icon: require('@/assets/images/Electronics.png') },
-  { name: 'Vehicle', icon: require('@/assets/images/Vehicle.png') },
-  { name: 'Home', icon: require('@/assets/images/home.png') },
-  { name: 'Fashion', icon: require('@/assets/images/fashion.png') },
-  { name: 'Sports', icon: require('@/assets/images/sports.png') },
-];
 
 const filters = [
   { id: 1, label: '10 km' },
@@ -53,34 +43,12 @@ export default function SearchScreen() {
         {/* Top Part (Sticky in this layout conceptually) */}
         <View>
           {/* Category Chips */}
-          <View className="px-6 mb-4">
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-6 px-6">
-              {categories.map((cat, index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => setSelectedCategory(cat.name)}
-                  className="items-center mr-6"
-                >
-                  <View
-                    className={`w-16 h-16 rounded-full items-center justify-center mb-2 ${
-                      selectedCategory === cat.name
-                        ? 'bg-white border-2 border-[#2FA2B9]'
-                        : 'bg-white border border-gray-100'
-                    }`}
-                    style={{ elevation: 2 }}
-                  >
-                    <Image source={cat.icon} style={{ width: 32, height: 32 }} contentFit="contain" />
-                  </View>
-                  <Text
-                    className={`text-xs font-bold ${
-                      selectedCategory === cat.name ? 'text-[#2FA2B9]' : 'text-gray-400'
-                    }`}
-                  >
-                    {cat.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+          <View className="px-6">
+            <PopularCategories 
+              showTitle={false} 
+              selectedCategory={selectedCategory} 
+              onSelectCategory={setSelectedCategory} 
+            />
           </View>
 
           {/* Search Bar */}
