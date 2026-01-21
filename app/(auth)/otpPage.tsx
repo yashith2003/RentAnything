@@ -1,3 +1,5 @@
+//app/(auth)/otpPage.tsx
+
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
