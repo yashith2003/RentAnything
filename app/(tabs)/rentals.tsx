@@ -35,7 +35,7 @@ export default function RentalsScreen() {
       </View>
 
       {/* Tab Buttons */}
-      <View className="flex-row items-center px-6 mb-6 gap-x-4">
+      <View className="flex-row items-center px-4 mb-6 gap-x-4">
         <TouchableOpacity
           onPress={() => setActiveTab('rentals')}
           className={`flex-1 py-3.5 rounded-full items-center border ${

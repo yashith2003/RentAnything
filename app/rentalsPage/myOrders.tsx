@@ -1,6 +1,7 @@
 //app/rentalsPage/myOrders.tsx
 
 import SearchBar from '@/components/searchbar';
+import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import React, { useState } from 'react';
@@ -92,7 +93,7 @@ export default function MyOrders() {
     <View className="flex-1 bg-white">
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Order Requests Card */}
-        <TouchableOpacity className="mx-6 mb-4 bg-white border border-gray-200 rounded-2xl p-4 flex-row items-center justify-between">
+        <TouchableOpacity className={`mx-${getTailwindSpacing(Spacing.pageHorizontal)} mb-4 bg-white border border-gray-200 rounded-2xl p-4 flex-row items-center justify-between`}>
           <View>
             <Text className="text-base font-bold text-black mb-1">Order Requests</Text>
             <Text className="text-sm text-gray-400">You have 03 order requests available.</Text>
@@ -104,12 +105,12 @@ export default function MyOrders() {
         <SearchBar
           value={searchQuery}
           onChangeText={setSearchQuery}
-          containerStyle={{ paddingHorizontal: 24, marginBottom: 16 }}
+          containerStyle={{ paddingHorizontal: Spacing.pageHorizontal, marginBottom: Spacing.lg }}
         />
 
         {/* Status Tabs */}
-        <View className="px-6 mb-4">
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-6 px-6">
+        <View className={`px-${getTailwindSpacing(Spacing.pageHorizontal)} mb-4`}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className={`-mx-${getTailwindSpacing(Spacing.pageHorizontal)} px-${getTailwindSpacing(Spacing.pageHorizontal)}`}>
             {statusTabs.map((tab) => (
               <TouchableOpacity
                 key={tab.key}
@@ -129,12 +130,12 @@ export default function MyOrders() {
         </View>
 
         {/* Results Count */}
-        <View className="px-6 mb-2">
+        <View className={`px-${getTailwindSpacing(Spacing.pageHorizontal)} mb-2`}>
           <Text className="text-sm font-bold text-black">3 upcoming orders available</Text>
         </View>
 
         {/* Orders List */}
-        <View className="px-6 pb-10">
+        <View className={`px-${getTailwindSpacing(Spacing.pageHorizontal)} pb-10`}>
           {ordersData.map((order) => (
             <OrderCard key={order.id} order={order} />
           ))}

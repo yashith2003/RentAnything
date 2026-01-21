@@ -1,6 +1,7 @@
 // app/profile/reviewsPage.tsx
 
 import SearchBar from '@/components/searchbar';
+import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -84,7 +85,7 @@ export default function ReviewsPage() {
       <StatusBar style="dark" />
 
       {/* Header */}
-      <View className="flex-row items-center justify-between px-6 py-4">
+      <View className={`flex-row items-center justify-between px-${getTailwindSpacing(Spacing.pageHorizontal)} py-${getTailwindSpacing(Spacing.lg)}`}>
         <TouchableOpacity 
           onPress={() => router.back()}
           className="w-10 h-10 items-center justify-center rounded-full bg-white border border-gray-100 shadow-sm"
@@ -100,7 +101,7 @@ export default function ReviewsPage() {
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="px-6 pb-6 pt-2">
+        <View className={`px-${getTailwindSpacing(Spacing.pageHorizontal)} pb-6 pt-2`}>
           
           {/* Summary */}
           <View className="flex-row items-center mb-6">

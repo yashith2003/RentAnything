@@ -1,6 +1,7 @@
 //app/profile/languageChange.tsx
 
 
+import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -30,7 +31,7 @@ export default function LanguageChangeScreen() {
       <StatusBar style="dark" />
       
       {/* Header */}
-      <View className="flex-row items-center justify-between px-6 py-4">
+      <View className={`flex-row items-center justify-between px-${getTailwindSpacing(Spacing.pageHorizontal)} py-${getTailwindSpacing(Spacing.lg)}`}>
         <TouchableOpacity 
           onPress={() => router.back()}
           className="w-10 h-10 rounded-full border border-gray-200 items-center justify-center"
@@ -47,7 +48,7 @@ export default function LanguageChangeScreen() {
         </TouchableOpacity>
       </View>
 
-      <View className="flex-1 px-6 pt-4 pb-10">
+      <View className={`flex-1 px-${getTailwindSpacing(Spacing.pageHorizontal)} pt-4 pb-10`}>
         {/* Title Section */}
         <View className="mb-8">
             <Text className="text-xl font-bold text-black mb-2">

@@ -72,10 +72,6 @@ export default function Map({ markers, onMarkerPress, style }: MapProps) {
         </View>
       ))}
 
-      {/* Mapbox Branding / Attribution Placeholder */}
-      <View className="absolute bottom-2 right-2">
-        <Text className="text-[8px] text-gray-400 font-medium">© Mapbox</Text>
-      </View>
     </View>
   );
 }

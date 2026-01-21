@@ -5,18 +5,19 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import {
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import CustomTextInput from '@/components/CustomTextInput';
 import PrimaryButton from '@/components/PrimaryButton';
+import { Spacing } from '@/constants/spacing';
 
 
 export default function PhoneNumberPage() {
@@ -41,7 +42,7 @@ export default function PhoneNumberPage() {
       >
         <ScrollView 
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingHorizontal: 25, paddingTop: 20, paddingBottom: 40, flexGrow: 1 }}
+          contentContainerStyle={{ paddingHorizontal: Spacing.pageHorizontal, paddingTop: Spacing.xl, paddingBottom: 40, flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
         >
           {/* Logo Section */}
@@ -54,7 +55,7 @@ export default function PhoneNumberPage() {
           </View>
 
           {/* Header Section */}
-          <View style={{ marginTop: 40, alignItems: 'center', paddingHorizontal: 15 }}>
+          <View style={{ marginTop: 40, alignItems: 'center', paddingHorizontal: Spacing.lg }}>
             <Text style={{ fontSize: 32, fontWeight: '700', color: '#000', marginBottom: 15 }}>
               Phone Number
             </Text>

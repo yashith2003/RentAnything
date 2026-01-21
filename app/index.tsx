@@ -7,6 +7,7 @@ import React, { useRef, useState } from 'react';
 import { Dimensions, FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
 
 const { width, height } = Dimensions.get('screen');
@@ -77,7 +78,7 @@ export default function OnboardingScreen() {
             <View className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-black/60 to-transparent" />
             <View className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent" />
             
-            <SafeAreaView className="flex-1 px-8 justify-start pt-16">
+            <SafeAreaView className={`flex-1 px-${getTailwindSpacing(Spacing.pageHorizontal)} justify-start pt-16`}>
               <Text className="text-white text-[32px] font-bold leading-tight mt-10">
                 {item.title}
               </Text>
@@ -90,7 +91,7 @@ export default function OnboardingScreen() {
       />
 
       {/* Pagination & Button Footer */}
-      <View className="absolute left-0 right-0 items-center px-8" style={{ bottom: 91 }}>
+      <View className={`absolute left-0 right-0 items-center px-${getTailwindSpacing(Spacing.pageHorizontal)}`} style={{ bottom: 91 }}>
         {/* Dots */}
         <View className="flex-row gap-x-5 mb-8">
           {onboardingData.map((_, index) => (

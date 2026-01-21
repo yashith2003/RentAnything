@@ -1,5 +1,6 @@
 //app/profile/faq.tsx
 
+import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -77,7 +78,7 @@ export default function FAQPage() {
       <StatusBar style="dark" />
 
       {/* Header */}
-      <View className="flex-row items-center justify-between px-6 py-4">
+      <View className={`flex-row items-center justify-between px-${getTailwindSpacing(Spacing.pageHorizontal)} py-${getTailwindSpacing(Spacing.lg)}`}>
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} color="#000" />
         </TouchableOpacity>
@@ -87,7 +88,7 @@ export default function FAQPage() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
+      <ScrollView className={`flex-1 px-${getTailwindSpacing(Spacing.pageHorizontal)}`} showsVerticalScrollIndicator={false}>
         {FAQ_DATA.map((section, sectionIndex) => (
           <View key={sectionIndex} className="mb-6">
             <Text className="text-xl font-bold text-black mb-4">{section.title}</Text>

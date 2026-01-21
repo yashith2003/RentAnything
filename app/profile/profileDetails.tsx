@@ -1,5 +1,6 @@
 // app/(tabs)/profileDetails.tsx
 
+import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -37,7 +38,7 @@ export default function ProfileDetailsScreen() {
       <StatusBar style="dark" />
 
       {/* Header */}
-      <View className="flex-row items-center justify-between px-6 py-4">
+      <View className={`flex-row items-center justify-between px-${getTailwindSpacing(Spacing.pageHorizontal)} py-${getTailwindSpacing(Spacing.lg)}`}>
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} color="#000" />
         </TouchableOpacity>
@@ -47,7 +48,7 @@ export default function ProfileDetailsScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
+      <ScrollView className={`flex-1 px-${getTailwindSpacing(Spacing.pageHorizontal)}`} showsVerticalScrollIndicator={false}>
         {/* Profile Section */}
         <View className="items-center py-6">
           {/* Profile Image */}
@@ -82,7 +83,7 @@ export default function ProfileDetailsScreen() {
               value={userData.name}
               onChangeText={(text) => setUserData({ ...userData, name: text })}
               editable={isEditing}
-              className="bg-white px-4 py-4 text-base text-black border border-gray-200 rounded-2xl"
+              className={`bg-white px-${getTailwindSpacing(Spacing.lg)} py-${getTailwindSpacing(Spacing.lg)} text-base text-black border border-gray-200 rounded-2xl`}
               style={{
                 color: isEditing ? '#000' : '#666',
               }}
@@ -98,7 +99,7 @@ export default function ProfileDetailsScreen() {
               onChangeText={(text) => setUserData({ ...userData, email: text })}
               editable={isEditing}
               keyboardType="email-address"
-              className="bg-white px-4 py-4 text-base text-black border border-gray-200 rounded-2xl"
+              className={`bg-white px-${getTailwindSpacing(Spacing.lg)} py-${getTailwindSpacing(Spacing.lg)} text-base text-black border border-gray-200 rounded-2xl`}
               style={{
                 color: isEditing ? '#000' : '#666',
               }}
@@ -113,7 +114,7 @@ export default function ProfileDetailsScreen() {
               value={userData.address}
               onChangeText={(text) => setUserData({ ...userData, address: text })}
               editable={isEditing}
-              className="bg-white px-4 py-4 text-base text-black border border-gray-200 rounded-2xl"
+              className={`bg-white px-${getTailwindSpacing(Spacing.lg)} py-${getTailwindSpacing(Spacing.lg)} text-base text-black border border-gray-200 rounded-2xl`}
               style={{
                 color: isEditing ? '#000' : '#666',
               }}
@@ -131,7 +132,7 @@ export default function ProfileDetailsScreen() {
               onChangeText={(text) => setUserData({ ...userData, phone: text })}
               editable={isEditing}
               keyboardType="phone-pad"
-              className="bg-white px-4 py-4 text-base text-black border border-gray-200 rounded-2xl"
+              className={`bg-white px-${getTailwindSpacing(Spacing.lg)} py-${getTailwindSpacing(Spacing.lg)} text-base text-black border border-gray-200 rounded-2xl`}
               style={{
                 color: isEditing ? '#000' : '#666',
               }}
@@ -153,7 +154,7 @@ export default function ProfileDetailsScreen() {
               multiline
               numberOfLines={4}
               textAlignVertical="top"
-              className="bg-white px-4 py-4 text-base text-black border border-gray-200 rounded-2xl"
+              className={`bg-white px-${getTailwindSpacing(Spacing.lg)} py-${getTailwindSpacing(Spacing.lg)} text-base text-black border border-gray-200 rounded-2xl`}
               style={{
                 minHeight: 100,
                 color: isEditing ? '#000' : '#666',
@@ -167,7 +168,7 @@ export default function ProfileDetailsScreen() {
             <Text className="text-base font-semibold text-black mb-2">
               Location
             </Text>
-            <View className="flex-row items-center bg-white px-4 py-4 border border-gray-200 rounded-2xl">
+            <View className={`flex-row items-center bg-white px-${getTailwindSpacing(Spacing.lg)} py-${getTailwindSpacing(Spacing.lg)} border border-gray-200 rounded-2xl`}>
               <Ionicons name="location-outline" size={20} color="#666" />
               <TextInput
                 value={userData.location}

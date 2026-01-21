@@ -1,6 +1,7 @@
 //app/rentalPage/myRentals.tsx
 
 import SearchBar from '@/components/searchbar';
+import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import React, { useState } from 'react';
@@ -55,7 +56,10 @@ export default function MyRentals() {
   return (
     <View className="flex-1 bg-white">
       {/* My Rental Requests Card */}
-      <TouchableOpacity className="mx-6 mb-4 bg-white border border-gray-100 rounded-2xl p-4 flex-row items-center justify-between shadow-sm shadow-black/5" style={{ elevation: 2 }}>
+      <TouchableOpacity 
+        className={`mx-${getTailwindSpacing(Spacing.pageHorizontal)} mb-4 bg-white border border-gray-100 rounded-2xl p-4 flex-row items-center justify-between shadow-sm shadow-black/5`} 
+        style={{ elevation: 2 }}
+      >
         <View>
           <Text className="text-base font-bold text-black mb-1">My Rental Requests</Text>
           <Text className="text-sm text-gray-400">You have 03 rental requests available.</Text>
@@ -67,12 +71,12 @@ export default function MyRentals() {
       <SearchBar
         value={searchQuery}
         onChangeText={setSearchQuery}
-        containerStyle={{ paddingHorizontal: 24, marginBottom: 16 }}
+        containerStyle={{ paddingHorizontal: Spacing.pageHorizontal, marginBottom: Spacing.lg }}
       />
 
       {/* Status Tabs */}
-      <View className="px-6 mb-4">
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-6 px-6">
+      <View className={`px-${getTailwindSpacing(Spacing.pageHorizontal)} mb-4`}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} className={`-mx-${getTailwindSpacing(Spacing.pageHorizontal)} px-${getTailwindSpacing(Spacing.pageHorizontal)}`}>
           {statusTabs.map((tab) => (
             <TouchableOpacity
               key={tab.key}
@@ -92,7 +96,7 @@ export default function MyRentals() {
       </View>
 
       {/* Rental Items */}
-      <ScrollView showsVerticalScrollIndicator={false} className="flex-1 px-6 pb-10">
+      <ScrollView showsVerticalScrollIndicator={false} className={`flex-1 px-${getTailwindSpacing(Spacing.pageHorizontal)} pb-10`}>
         {filteredRentals.map((item) => (
           <RentalCard key={item.id} item={item} />
         ))}

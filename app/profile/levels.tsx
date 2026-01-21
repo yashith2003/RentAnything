@@ -1,5 +1,6 @@
 //app/profile/levels.tsx
 
+import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -16,7 +17,7 @@ export default function LevelsPage() {
       <StatusBar style="dark" />
 
       {/* Header */}
-      <View className="flex-row items-center justify-between px-6 py-4">
+      <View className={`flex-row items-center justify-between px-${getTailwindSpacing(Spacing.pageHorizontal)} py-${getTailwindSpacing(Spacing.lg)}`}>
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} color="#000" />
         </TouchableOpacity>
@@ -26,7 +27,7 @@ export default function LevelsPage() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
+      <ScrollView className={`flex-1 px-${getTailwindSpacing(Spacing.pageHorizontal)}`} showsVerticalScrollIndicator={false}>
         {/* Timeline Container */}
         <View className="relative mt-4">
             

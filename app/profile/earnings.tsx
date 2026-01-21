@@ -1,5 +1,6 @@
 //app/profile/earnings.tsx
 
+import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -24,7 +25,7 @@ export default function EarningsPage() {
       <StatusBar style="dark" />
 
       {/* Header */}
-      <View className="flex-row items-center justify-between px-6 py-4">
+      <View className={`flex-row items-center justify-between px-${getTailwindSpacing(Spacing.pageHorizontal)} py-${getTailwindSpacing(Spacing.lg)}`}>
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} color="#000" />
         </TouchableOpacity>
@@ -42,7 +43,7 @@ export default function EarningsPage() {
         </View>
 
         {/* Statistics Header */}
-        <View className="px-6 mb-6">
+        <View className={`px-${getTailwindSpacing(Spacing.pageHorizontal)} mb-6`}>
           <Text className="text-base font-bold text-black mb-4">Statistics</Text>
           
           {/* Time Tabs */}
@@ -51,7 +52,7 @@ export default function EarningsPage() {
               <TouchableOpacity
                 key={tab}
                 onPress={() => setSelectedTab(tab)}
-                className="px-6 py-2 rounded-full"
+                className={`px-${getTailwindSpacing(Spacing.pageHorizontal)} py-2 rounded-full`}
                 style={{
                   backgroundColor: selectedTab === tab ? Colors.primary : 'transparent',
                 }}
@@ -69,7 +70,7 @@ export default function EarningsPage() {
         </View>
 
         {/* Chart Area (Mock Visual) */}
-        <View className="px-6 mb-8 relative h-64 justify-end">
+        <View className={`px-${getTailwindSpacing(Spacing.pageHorizontal)} mb-8 relative h-64 justify-end`}>
              {/* Selected Point Tooltip Mock */}
              <View className="absolute top-10 left-[32%] items-center z-10">
                 <View className="bg-white border px-3 py-2 rounded-xl mb-1 shadow-sm" style={{ borderColor: Colors.primary }}>
@@ -109,7 +110,7 @@ export default function EarningsPage() {
         </View>
 
         {/* Income Report Section */}
-        <View className="px-6 mb-10 flex-row items-center justify-between">
+        <View className={`px-${getTailwindSpacing(Spacing.pageHorizontal)} mb-10 flex-row items-center justify-between`}>
             <Text className="text-base font-bold text-black">July 2025 Income Report</Text>
             
             <TouchableOpacity className="px-6 py-3 rounded-full" style={{ backgroundColor: Colors.primary }}>
