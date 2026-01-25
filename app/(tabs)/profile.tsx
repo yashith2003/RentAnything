@@ -51,19 +51,19 @@ export default function ProfileScreen() {
       icon: 'receipt-outline',
       iconType: 'ionicons',
       label: 'Rentals',
-      onPress: () => console.log('Rentals'),
+      onPress: () => router.push('/profile/rentals' as any),
     },
     {
       icon: 'list-outline',
       iconType: 'ionicons',
       label: 'My Listings',
-      onPress: () => console.log('My Listings'),
+      onPress: () => router.push('/profile/myListings/myListing' as any),
     },
     {
       icon: 'card-outline',
       iconType: 'ionicons',
       label: 'Payments',
-      onPress: () => console.log('Payments'),
+      onPress: () => router.push('/profile/payments' as any),
     },
     {
       icon: 'wallet-outline',
