@@ -80,7 +80,7 @@ export default function SearchScreen() {
           </View>
 
           {/* List/Map Toggle */}
-          <View className="flex-row items-center mb-6 gap-x-4" style={PaddingStyles.page}>
+          <View className="flex-row items-center mb-4 gap-x-4" style={PaddingStyles.page}>
             <TouchableOpacity
                 onPress={() => setViewMode('list')}
                 className={`flex-1 py-3.5 rounded-full items-center border ${
@@ -106,6 +106,13 @@ export default function SearchScreen() {
                 </Text>
             </TouchableOpacity>
           </View>
+
+          {/* Products Count - Only show in map view */}
+          {viewMode === 'map' && (
+            <View style={PaddingStyles.page} className="mb-4">
+              <Text className="text-sm font-bold text-black">32 products found</Text>
+            </View>
+          )}
         </View>
 
         {/* Dynamic Content */}

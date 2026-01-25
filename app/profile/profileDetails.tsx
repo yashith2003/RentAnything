@@ -25,12 +25,24 @@ export default function ProfileDetailsScreen() {
     location: 'Nugegoda, Colombo',
   });
 
+  // Store original data to restore on cancel
+  const [originalData, setOriginalData] = useState(userData);
+
   const handleEdit = () => {
-    if (isEditing) {
-      // Save changes
-      console.log('Saving changes:', userData);
-    }
-    setIsEditing(!isEditing);
+    setOriginalData(userData); // Save current state before editing
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    // Save changes
+    console.log('Saving changes:', userData);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    // Restore original data
+    setUserData(originalData);
+    setIsEditing(false);
   };
 
   return (
@@ -185,17 +197,45 @@ export default function ProfileDetailsScreen() {
             </View>
           </View>
 
-          {/* Edit Button */}
-          <TouchableOpacity
-            onPress={handleEdit}
-            activeOpacity={0.8}
-            className="h-14 rounded-full justify-center items-center mb-6"
-            style={{ backgroundColor: Colors.primary }}
-          >
-            <Text className="text-white text-lg font-bold">
-              {isEditing ? 'Save' : 'Edit'}
-            </Text>
-          </TouchableOpacity>
+          {/* Buttons */}
+          {isEditing ? (
+            // Show Cancel and Save buttons when editing
+            <View className="flex-row gap-x-4">
+              <TouchableOpacity
+                onPress={handleCancel}
+                activeOpacity={0.8}
+                className="flex-1 h-14 rounded-full justify-center items-center border-2 mb-6"
+                style={{ borderColor: Colors.primary }}
+              >
+                <Text className="text-lg font-bold" style={{ color: Colors.primary }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                onPress={handleSave}
+                activeOpacity={0.8}
+                className="flex-1 h-14 rounded-full justify-center items-center mb-6"
+                style={{ backgroundColor: Colors.primary }}
+              >
+                <Text className="text-white text-lg font-bold">
+                  Save
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            // Show Edit button when not editing
+            <TouchableOpacity
+              onPress={handleEdit}
+              activeOpacity={0.8}
+              className="h-14 rounded-full justify-center items-center mb-6"
+              style={{ backgroundColor: Colors.primary }}
+            >
+              <Text className="text-white text-lg font-bold">
+                Edit
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>

@@ -1,5 +1,6 @@
 //app/rentalsPage/myOrders.tsx
 
+import RatingStars from '@/components/ratingStars';
 import SearchBar from '@/components/searchbar';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -175,11 +176,7 @@ function OrderCard({ order }: { order: any }) {
                   <MaterialCommunityIcons name="check-decagram" size={14} color="#2FA2B9" style={{ marginLeft: 4 }} />
                 )}
               </View>
-              <View className="flex-row mt-0.5">
-                {[...Array(5)].map((_, i) => (
-                  <Ionicons key={i} name="star" size={14} color="#F5C451" />
-                ))}
-              </View>
+              <RatingStars rating={order.owner.rating} size={14} activeColor="#F5C451" gap={2} />
             </View>
           </View>
           <View className="mt-2 pl-1">
@@ -222,11 +219,7 @@ function OrderCard({ order }: { order: any }) {
               <MaterialCommunityIcons name="check-decagram" size={14} color="#2FA2B9" style={{ marginLeft: 4 }} />
             )}
           </View>
-          <View className="flex-row mt-0.5">
-            {[...Array(5)].map((_, i) => (
-              <Ionicons key={i} name="star" size={14} color="#F5C451" />
-            ))}
-          </View>
+          <RatingStars rating={order.owner.rating} size={14} activeColor="#F5C451" gap={2} />
         </View>
       </View>
 

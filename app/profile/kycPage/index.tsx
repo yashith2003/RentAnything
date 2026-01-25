@@ -1,94 +1,54 @@
-// app/profile/kycPage.tsx
-
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { SelectionItem } from '@/components/SelectionItem';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { Colors } from '@/constants/theme';
-
-interface DocumentItem {
-  icon: string;
-  label: string;
-  onPress: () => void;
-}
 
 export default function KYCPage() {
   const router = useRouter();
 
-  const step1Items: DocumentItem[] = [
+  const step1Items = [
     {
       icon: 'scan-outline',
       label: 'Face Verification',
-      onPress: () => console.log('Face Verification'),
+      onPress: () => router.push('/profile/kycPage/FaceVerification' as any),
     },
   ];
 
-  const step2Items: DocumentItem[] = [
+  const step2Items = [
     {
       icon: 'card-outline',
       label: 'National identity card',
-      onPress: () => console.log('National identity card'),
+      onPress: () => router.push('/profile/kycPage/NICVerification' as any),
     },
     {
       icon: 'car-outline',
       label: 'Driving license',
-      onPress: () => console.log('Driving license'),
+      onPress: () => router.push('/profile/kycPage/DrivingLicenseVerification' as any),
     },
     {
       icon: 'document-outline',
       label: 'Passport',
-      onPress: () => console.log('Passport'),
+      onPress: () => router.push('/profile/kycPage/passportVerification' as any),
     },
   ];
 
-  const step3Items: DocumentItem[] = [
+  const step3Items = [
     {
       icon: 'location-outline',
       label: 'Proof of address',
-      onPress: () => console.log('Proof of address'),
+      onPress: () => router.push('/profile/kycPage/addressVerification' as any),
     },
   ];
-
-  const renderDocumentItem = (item: DocumentItem) => (
-    <TouchableOpacity
-      key={item.label}
-      onPress={item.onPress}
-      activeOpacity={0.7}
-      className={`flex-row items-center justify-between py-${getTailwindSpacing(Spacing.lg)} px-${getTailwindSpacing(Spacing.lg)} mb-3 bg-white border border-gray-200 rounded-2xl`}
-    >
-      <View className="flex-row items-center gap-3">
-        <View
-          className="w-10 h-10 rounded-xl items-center justify-center"
-          style={{ backgroundColor: '#E6F7F9' }}
-        >
-          <Ionicons name={item.icon as any} size={22} color={Colors.primary} />
-        </View>
-        <Text className="text-base text-black">{item.label}</Text>
-      </View>
-
-      <Text className="text-base font-semibold" style={{ color: Colors.primary }}>
-        Add
-      </Text>
-    </TouchableOpacity>
-  );
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar style="dark" />
 
-      {/* Header */}
-      <View className={`flex-row items-center justify-between px-${getTailwindSpacing(Spacing.pageHorizontal)} py-${getTailwindSpacing(Spacing.lg)}`}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text className="text-lg font-semibold text-black">KYC</Text>
-        <TouchableOpacity>
-          <Ionicons name="ellipsis-horizontal" size={24} color="#000" />
-        </TouchableOpacity>
-      </View>
+      <ScreenHeader title="KYC" />
 
       <ScrollView className={`flex-1 px-${getTailwindSpacing(Spacing.pageHorizontal)}`} showsVerticalScrollIndicator={false}>
         {/* KYC Verification Header */}
@@ -110,7 +70,9 @@ export default function KYCPage() {
             Upload at least one valid document or file as part of the verification
             process.
           </Text>
-          {step1Items.map(renderDocumentItem)}
+          {step1Items.map((item) => (
+            <SelectionItem key={item.label} {...item} />
+          ))}
         </View>
 
         {/* Step 2 */}
@@ -120,7 +82,9 @@ export default function KYCPage() {
             Upload at least one valid document or file as part of the verification
             process.
           </Text>
-          {step2Items.map(renderDocumentItem)}
+          {step2Items.map((item) => (
+            <SelectionItem key={item.label} {...item} />
+          ))}
         </View>
 
         {/* Step 3 */}
@@ -130,7 +94,9 @@ export default function KYCPage() {
             Upload at least one valid document or file as part of the verification
             process.
           </Text>
-          {step3Items.map(renderDocumentItem)}
+          {step3Items.map((item) => (
+            <SelectionItem key={item.label} {...item} />
+          ))}
         </View>
 
         {/* Bottom Spacing */}

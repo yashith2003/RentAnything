@@ -1,5 +1,6 @@
 // app/profile/reviewsPage.tsx
 
+import RatingStars from '@/components/ratingStars';
 import SearchBar from '@/components/searchbar';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
@@ -144,16 +145,7 @@ export default function ReviewsPage() {
               </View>
 
               {/* Stars */}
-              <View className="flex-row gap-1 mb-3">
-                {[...Array(5)].map((_, i) => (
-                  <Ionicons
-                    key={i}
-                    name="star"
-                    size={20}
-                    color={i < review.rating ? '#FF9800' : '#E0E0E0'}
-                  />
-                ))}
-              </View>
+              <RatingStars rating={review.rating} style={{ marginBottom: 12 }} />
 
               {/* Comment */}
               <Text className="text-[14px] text-gray-500 leading-6">

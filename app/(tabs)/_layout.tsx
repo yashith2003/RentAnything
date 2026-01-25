@@ -64,7 +64,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="add-listing"
         options={{
-          href: role === 'company' ? '/add-listing' : null,
+        //  href: role === 'company' ? '/add-listing' : null,
           title: 'Add Listing',
           tabBarIcon: ({ color }) => (
             <Image 
