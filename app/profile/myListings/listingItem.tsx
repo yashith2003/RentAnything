@@ -1,5 +1,5 @@
-import { ScreenHeader } from '@/components/ScreenHeader';
-import RatingStars from '@/components/ratingStars';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import RatingStars from '@/components/ui/ratingStars';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';

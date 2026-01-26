@@ -24,9 +24,9 @@ interface MapProps {
 export default function Map({ markers, onMarkerPress, style }: MapProps) {
   return (
     <View className="flex-1 relative overflow-hidden" style={style}>
-      {/* Placeholder Map Image */}
+      {/* Map Background Image */}
       <Image
-        source={{ uri: 'https://api.mapbox.com/styles/v1/mapbox/light-v10/static/-0.1276,51.5074,12,0/800x800?access_token=pk.eyJ1IjoiY2hhdWNoYSIsImEiOiJjazA1eWozYmwwMG5xM25vYmR4eWw0bXhxIn0.q6Yn0k9_xG9z-uX4hKz4_A' }}
+        source={{ uri: 'https://api.mapbox.com/styles/v1/mapbox/light-v10/static/-0.1276,51.5074,11.5,0/800x1200?access_token=pk.eyJ1IjoiY2hhdWNoYSIsImEiOiJjazA1eWozYmwwMG5xM25vYmR4eWw0bXhxIn0.q6Yn0k9_xG9z-uX4hKz4_A' }}
         style={{ width: '100%', height: '100%' }}
         contentFit="cover"
       />
@@ -45,20 +45,20 @@ export default function Map({ markers, onMarkerPress, style }: MapProps) {
           {marker.type === 'cluster' ? (
             <TouchableOpacity
               onPress={() => onMarkerPress?.(marker)}
-              className={`w-12 h-12 rounded-full items-center justify-center border-2 ${
+              className={`w-12 h-12 rounded-full items-center justify-center border-[3px] ${
                 marker.active ? 'bg-[#2FA2B9] border-white' : 'bg-white border-[#2FA2B9]'
-              } shadow-md`}
-              style={{ elevation: 4 }}
+              } shadow-lg`}
+              style={{ elevation: 6 }}
             >
-              <Text className={`font-bold text-lg ${marker.active ? 'text-white' : 'text-gray-800'}`}>
+              <Text className={`font-bold text-base ${marker.active ? 'text-white' : 'text-gray-800'}`}>
                 {marker.count}
               </Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity 
               onPress={() => onMarkerPress?.(marker)}
-              className="bg-white px-2 py-1 rounded-lg border border-[#2FA2B9] shadow-md"
-              style={{ elevation: 3 }}
+              className="bg-white px-2.5 py-1.5 rounded-lg border-2 border-gray-800 shadow-lg"
+              style={{ elevation: 4 }}
             >
               <Text className="text-gray-800 font-bold text-xs">{marker.value}</Text>
             </TouchableOpacity>
@@ -72,6 +72,10 @@ export default function Map({ markers, onMarkerPress, style }: MapProps) {
         </View>
       ))}
 
+      {/* Mapbox Attribution (required) */}
+      <View className="absolute bottom-1 right-1 bg-white/70 px-1.5 py-0.5 rounded">
+        <Text className="text-[8px] text-gray-600">© Mapbox</Text>
+      </View>
     </View>
   );
 }

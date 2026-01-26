@@ -1,7 +1,7 @@
 //app/(tabs)/search.tsx
 
-import PopularCategories from '@/components/popularCategories';
-import SearchBar from '@/components/searchbar';
+import PopularCategories from '@/components/shared/popularCategories';
+import SearchBar from '@/components/form/searchbar';
 import { PaddingStyles, Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';

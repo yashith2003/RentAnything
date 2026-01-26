@@ -1,5 +1,5 @@
-import { LabelledInput } from '@/components/LabelledInput';
-import { ScreenHeader } from '@/components/ScreenHeader';
+import { LabelledInput } from '@/components/form/LabelledInput';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';

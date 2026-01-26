@@ -1,15 +1,14 @@
-// app/(tabs)/profileDetails.tsx
-
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import PrimaryButton from '@/components/ui/PrimaryButton';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Colors } from '@/constants/theme';
 
 export default function ProfileDetailsScreen() {
   const router = useRouter();
@@ -50,15 +49,7 @@ export default function ProfileDetailsScreen() {
       <StatusBar style="dark" />
 
       {/* Header */}
-      <View className={`flex-row items-center justify-between px-${getTailwindSpacing(Spacing.pageHorizontal)} py-${getTailwindSpacing(Spacing.lg)}`}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text className="text-lg font-semibold text-black">Profile Details</Text>
-        <TouchableOpacity>
-          <Ionicons name="ellipsis-horizontal" size={24} color="#000" />
-        </TouchableOpacity>
-      </View>
+      <ScreenHeader title="Profile Details" rightIcon="ellipsis-horizontal" />
 
       <ScrollView className={`flex-1 px-${getTailwindSpacing(Spacing.pageHorizontal)}`} showsVerticalScrollIndicator={false}>
         {/* Profile Section */}
@@ -199,42 +190,25 @@ export default function ProfileDetailsScreen() {
 
           {/* Buttons */}
           {isEditing ? (
-            // Show Cancel and Save buttons when editing
-            <View className="flex-row gap-x-4">
-              <TouchableOpacity
+            <View className="flex-row gap-x-4 mb-6">
+              <PrimaryButton 
+                title="Cancel" 
+                variant="outlined" 
                 onPress={handleCancel}
-                activeOpacity={0.8}
-                className="flex-1 h-14 rounded-full justify-center items-center border-2 mb-6"
-                style={{ borderColor: Colors.primary }}
-              >
-                <Text className="text-lg font-bold" style={{ color: Colors.primary }}>
-                  Cancel
-                </Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
+                style={{ flex: 1 }}
+              />
+              <PrimaryButton 
+                title="Save" 
                 onPress={handleSave}
-                activeOpacity={0.8}
-                className="flex-1 h-14 rounded-full justify-center items-center mb-6"
-                style={{ backgroundColor: Colors.primary }}
-              >
-                <Text className="text-white text-lg font-bold">
-                  Save
-                </Text>
-              </TouchableOpacity>
+                style={{ flex: 1 }}
+              />
             </View>
           ) : (
-            // Show Edit button when not editing
-            <TouchableOpacity
+            <PrimaryButton 
+              title="Edit" 
               onPress={handleEdit}
-              activeOpacity={0.8}
-              className="h-14 rounded-full justify-center items-center mb-6"
-              style={{ backgroundColor: Colors.primary }}
-            >
-              <Text className="text-white text-lg font-bold">
-                Edit
-              </Text>
-            </TouchableOpacity>
+              className="mb-6"
+            />
           )}
         </View>
       </ScrollView>

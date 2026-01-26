@@ -1,5 +1,5 @@
-import { MyListingCard } from '@/components/MyListingCard';
-import { ScreenHeader } from '@/components/ScreenHeader';
+import { MyListingCard } from '@/components/card/MyListingCard';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { PaddingStyles } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';

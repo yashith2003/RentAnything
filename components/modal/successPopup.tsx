@@ -1,8 +1,8 @@
 // components/successPopup.tsx
 
+import PrimaryButton from '@/components/ui/PrimaryButton';
 import React from 'react';
 import { Modal, Text, View } from 'react-native';
-import PrimaryButton from './PrimaryButton';
 
 interface SuccessPopupProps {
   visible: boolean;

@@ -1,9 +1,9 @@
-//app/rentalsPage/myOrders.tsx
-
-import RatingStars from '@/components/ratingStars';
-import SearchBar from '@/components/searchbar';
+import SearchBar from '@/components/form/searchbar';
+import OwnerRow from '@/components/shared/OwnerRow';
+import StatusTabGroup from '@/components/shared/StatusTabGroup';
+import SummaryBanner from '@/components/shared/SummaryBanner';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import React, { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
@@ -93,14 +93,12 @@ export default function MyOrders() {
   return (
     <View className="flex-1 bg-white">
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Order Requests Card */}
-        <TouchableOpacity className={`mx-${getTailwindSpacing(Spacing.pageHorizontal)} mb-4 bg-white border border-gray-200 rounded-2xl p-4 flex-row items-center justify-between`}>
-          <View>
-            <Text className="text-base font-bold text-black mb-1">Order Requests</Text>
-            <Text className="text-sm text-gray-400">You have 03 order requests available.</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#999" />
-        </TouchableOpacity>
+        {/* Order Requests Banner */}
+        <SummaryBanner 
+          title="Order Requests" 
+          count="03" 
+          onPress={() => console.log('Order Requests')}
+        />
 
         {/* Search Bar */}
         <SearchBar
@@ -110,25 +108,12 @@ export default function MyOrders() {
         />
 
         {/* Status Tabs */}
-        <View className={`px-${getTailwindSpacing(Spacing.pageHorizontal)} mb-4`}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className={`-mx-${getTailwindSpacing(Spacing.pageHorizontal)} px-${getTailwindSpacing(Spacing.pageHorizontal)}`}>
-            {statusTabs.map((tab) => (
-              <TouchableOpacity
-                key={tab.key}
-                onPress={() => setActiveStatus(tab.key)}
-                className="mr-6"
-              >
-                <Text
-                  className={`text-base font-medium pb-2 ${
-                    activeStatus === tab.key ? 'text-[#2FA2B9] border-b-2 border-[#2FA2B9]' : 'text-gray-400'
-                  }`}
-                >
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
+        <StatusTabGroup
+          tabs={statusTabs}
+          activeTab={activeStatus}
+          onTabPress={setActiveStatus}
+          containerStyle={`px-${getTailwindSpacing(Spacing.pageHorizontal)}`}
+        />
 
         {/* Results Count */}
         <View className={`px-${getTailwindSpacing(Spacing.pageHorizontal)} mb-2`}>
@@ -167,18 +152,12 @@ function OrderCard({ order }: { order: any }) {
         </View>
 
         <View className="bg-[#F9FAFB] rounded-2xl p-4 mb-4">
-          <View className="flex-row items-center">
-            <Image source={{ uri: order.owner.avatar }} className="w-10 h-10 rounded-full bg-gray-200" />
-            <View className="ml-3 flex-1">
-              <View className="flex-row items-center">
-                <Text className="text-sm font-bold text-black">{order.owner.name}</Text>
-                {order.owner.isVerified && (
-                  <MaterialCommunityIcons name="check-decagram" size={14} color="#2FA2B9" style={{ marginLeft: 4 }} />
-                )}
-              </View>
-              <RatingStars rating={order.owner.rating} size={14} activeColor="#F5C451" gap={2} />
-            </View>
-          </View>
+          <OwnerRow 
+            name={order.owner.name}
+            avatar={order.owner.avatar}
+            isVerified={order.owner.isVerified}
+            rating={order.owner.rating}
+          />
           <View className="mt-2 pl-1">
             <Text className="text-[11px] text-gray-500"><Text className="font-bold">Booking:</Text> {order.bookingDate}</Text>
             <Text className="text-[11px] text-gray-500 font-bold mt-0.5">{order.durationPrice.split('|')[0]}<Text className="text-[#2FA2B9]">| {order.durationPrice.split('|')[1]}</Text></Text>
@@ -210,18 +189,13 @@ function OrderCard({ order }: { order: any }) {
         <Text className="text-[#F5C451] text-xs font-bold">{order.startDate}</Text>
       </View>
 
-      <View className="flex-row items-center mb-1">
-        <Image source={{ uri: order.owner.avatar }} className="w-10 h-10 rounded-full bg-gray-200" />
-        <View className="ml-3 flex-1">
-          <View className="flex-row items-center">
-            <Text className="text-sm font-bold text-black">{order.owner.name}</Text>
-            {order.owner.isVerified && (
-              <MaterialCommunityIcons name="check-decagram" size={14} color="#2FA2B9" style={{ marginLeft: 4 }} />
-            )}
-          </View>
-          <RatingStars rating={order.owner.rating} size={14} activeColor="#F5C451" gap={2} />
-        </View>
-      </View>
+      <OwnerRow 
+        name={order.owner.name}
+        avatar={order.owner.avatar}
+        isVerified={order.owner.isVerified}
+        rating={order.owner.rating}
+        containerStyle="mb-1"
+      />
 
       <View className="ml-[52px] mb-4">
         <Text className="text-[11px] text-gray-500"><Text className="font-bold">Booking:</Text> {order.bookingDate}</Text>

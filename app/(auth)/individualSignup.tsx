@@ -16,11 +16,11 @@ import {
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import CustomTextInput from '@/components/CustomTextInput';
-import PrimaryButton from '@/components/PrimaryButton';
+import CustomTextInput from '@/components/form/CustomTextInput';
+import PrimaryButton from '@/components/ui/PrimaryButton';
 import { Spacing } from '@/constants/spacing';
 
-import SuccessPopup from '@/components/successPopup';
+import SuccessPopup from '@/components/modal/successPopup';
 
 export default function IndividualSignup() {
   const router = useRouter();

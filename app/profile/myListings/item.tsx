@@ -1,6 +1,6 @@
-import { InfoCard } from '@/components/InfoCard';
-import { InfoRow } from '@/components/InfoRow';
-import { ScreenHeader } from '@/components/ScreenHeader';
+import { InfoCard } from '@/components/card/InfoCard';
+import { InfoRow } from '@/components/shared/InfoRow';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';

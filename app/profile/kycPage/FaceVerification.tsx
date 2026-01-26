@@ -1,6 +1,6 @@
 // app/profile/kycPage/FaceVerification.tsx
 
-import { ScreenHeader } from '@/components/ScreenHeader';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';

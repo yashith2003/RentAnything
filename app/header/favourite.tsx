@@ -1,6 +1,6 @@
 // app/header/favourite.tsx
 
-import SearchBar from '@/components/searchbar';
+import SearchBar from '@/components/form/searchbar';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';

@@ -7,8 +7,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Keyboard, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import PrimaryButton from '@/components/PrimaryButton';
-import SuccessPopup from '@/components/successPopup';
+import PrimaryButton from '@/components/ui/PrimaryButton';
+import SuccessPopup from '@/components/modal/successPopup';
 
 export default function OTPPage() {
   const router = useRouter();

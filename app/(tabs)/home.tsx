@@ -1,9 +1,9 @@
 //app/(tabs)/home.tsx
 
-import ItemCard from '@/components/itemCard';
-import LocationDropdown from '@/components/LocationDropdown';
-import PopularCategories from '@/components/popularCategories';
-import SearchBar from '@/components/searchbar';
+import ItemCard from '@/components/card/itemCard';
+import LocationDropdown from '@/components/form/LocationDropdown';
+import SearchBar from '@/components/form/searchbar';
+import PopularCategories from '@/components/shared/popularCategories';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { useUser } from '@/context/userContext';
 import { Image } from 'expo-image';

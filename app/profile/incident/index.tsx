@@ -1,5 +1,5 @@
-import { ScreenHeader } from '@/components/ScreenHeader';
-import { TabSwitcher } from '@/components/TabSwitcher';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { TabSwitcher } from '@/components/shared/TabSwitcher';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';

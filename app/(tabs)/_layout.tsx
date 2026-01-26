@@ -5,7 +5,7 @@ import { Image } from 'expo-image';
 import { Tabs } from 'expo-router';
 import React from 'react';
 
-import { HapticTab } from '@/components/haptic-tab';
+import { HapticTab } from '@/components/ui/haptic-tab';
 import { Colors } from '@/constants/theme';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

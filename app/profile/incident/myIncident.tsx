@@ -1,6 +1,6 @@
 // app/profile/incident/myIncident.tsx
 
-import IncidentCard from '@/components/incidentCard';
+import IncidentCard from '@/components/card/incidentCard';
 import React from 'react';
 import { ScrollView, Text, View } from 'react-native';
 
