@@ -82,7 +82,11 @@ export default function ListingItemScreen() {
       <ScrollView className={`flex-1 px-${getTailwindSpacing(Spacing.pageHorizontal)}`} showsVerticalScrollIndicator={false}>
         
         {/* Product Card */}
-        <View className="flex-row p-3 bg-gray-50 rounded-[28px] mb-6">
+        <TouchableOpacity 
+          className="flex-row p-3 bg-gray-50 rounded-[28px] mb-6"
+          activeOpacity={0.8}
+          onPress={() => router.push(`/item/1`)} // Using mock ID 1 for now
+        >
           <View className="w-24 h-20 bg-white rounded-xl overflow-hidden mr-3">
             <Image
               source={{ uri: 'https://images.unsplash.com/photo-1617788138017-80ad42243c5d?q=80&w=400&auto=format&fit=crop' }}
@@ -97,7 +101,7 @@ export default function ListingItemScreen() {
             </Text>
             <Text className="text-xs text-gray-400">Used (like new)</Text>
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* Rentals Count Header */}
         <Text className="font-bold text-base text-black mb-4">5 Rentals Available</Text>

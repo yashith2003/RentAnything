@@ -56,7 +56,7 @@ export default function ProfileScreen() {
       icon: 'list-outline',
       iconType: 'ionicons',
       label: 'My Listings',
-      onPress: () => router.push('/profile/myListings/myListing' as any),
+      onPress: () => router.push('/(tabs)/add-listing' as any),
     },
     {
       icon: 'card-outline',

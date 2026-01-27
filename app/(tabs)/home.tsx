@@ -94,14 +94,14 @@ export default function HomeScreen() {
             </View>
           </View>
           <View className="flex-row items-center gap-x-4">
-            <TouchableOpacity onPress={() => router.push('/header/chat/inbox')}>
+            <TouchableOpacity onPress={() => router.push('/header/chat/inbox' as any)}>
               <Image source={require('@/assets/icons/message.svg')} style={{ width: 22, height: 22 }} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/header/notifications')}>
+            <TouchableOpacity onPress={() => router.push('/header/notifications' as any)}>
               <Image source={require('@/assets/icons/notifications.svg')} style={{ width: 21, height: 22 }} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/header/favourite')}>
-              <Image source={require('@/assets/icons/favourite.svg')} style={{ width: 22, height: 22 }} />
+            <TouchableOpacity onPress={() => router.push('/header/saved' as any)}>
+              <Image source={require('@/assets/icons/saved.svg')} style={{ width: 22, height: 22 }} />
             </TouchableOpacity>
             <TouchableOpacity>
               <Image source={require('@/assets/icons/menu.svg')} style={{ width: 22, height: 22 }} />

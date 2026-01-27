@@ -1,9 +1,9 @@
 //app/index.tsx
-
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useRef, useState } from 'react';
+import { useTranslation } from "react-i18next";
 import { Dimensions, FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -38,6 +38,7 @@ export default function OnboardingScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const router = useRouter();
   const flatListRef = useRef<FlatList>(null);
+  const { t } = useTranslation();
 
   const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
     if (viewableItems.length > 0) {
@@ -115,7 +116,7 @@ export default function OnboardingScreen() {
           activeOpacity={0.8}
         >
           <Text className="text-white text-lg font-bold">
-            {currentIndex === onboardingData.length - 1 ? 'Get Started' : 'Next'}
+            {currentIndex === onboardingData.length - 1 ? t('onboarding.getStarted') : t('onboarding.next')}
           </Text>
         </TouchableOpacity>
       </View>

@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
@@ -17,11 +18,24 @@ interface ItemCardProps {
     isSaved?: boolean;
     deliveryAvailable?: boolean;
   };
+  onPress?: () => void;
 }
 
-export default function ItemCard({ item }: ItemCardProps) {
+export default function ItemCard({ item, onPress }: ItemCardProps) {
+  const router = useRouter();
+
+  const handlePress = () => {
+    if (onPress) {
+      onPress();
+    } else {
+      router.push(`/item/${item.id}`);
+    }
+  };
+
   return (
-    <View
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={handlePress}
       className="w-[48%] bg-white rounded-[24px] mb-4 border border-gray-100 overflow-hidden"
       style={{
         shadowColor: '#000',
@@ -81,6 +95,6 @@ export default function ItemCard({ item }: ItemCardProps) {
           </View>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }

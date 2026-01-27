@@ -1,7 +1,7 @@
 //app/(tabs)/search.tsx
 
-import PopularCategories from '@/components/shared/popularCategories';
 import SearchBar from '@/components/form/searchbar';
+import PopularCategories from '@/components/shared/popularCategories';
 import { PaddingStyles, Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -27,7 +27,13 @@ export default function SearchScreen() {
       {/* Header */}
       <View className="flex-row items-center justify-between py-4" style={PaddingStyles.page}>
         <TouchableOpacity 
-          onPress={() => router.back()} 
+          onPress={() => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.push('/(tabs)/home');
+            }
+          }} 
           className="w-10 h-10 items-center justify-center rounded-full bg-gray-50"
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >

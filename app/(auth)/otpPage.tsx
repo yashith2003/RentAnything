@@ -7,14 +7,17 @@ import { useEffect, useRef, useState } from 'react';
 import { Keyboard, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import PrimaryButton from '@/components/ui/PrimaryButton';
 import SuccessPopup from '@/components/modal/successPopup';
+import PrimaryButton from '@/components/ui/PrimaryButton';
+
+import { useTranslation } from 'react-i18next';
 
 export default function OTPPage() {
   const router = useRouter();
   const [otp, setOtp] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const inputRef = useRef<TextInput>(null);
+  const { t } = useTranslation();
 
   // Auto-focus the input when screen mounts
   useEffect(() => {
@@ -81,10 +84,10 @@ export default function OTPPage() {
         {/* Header Section */}
         <View className="mt-16 items-center">
           <Text className="text-[28px] font-bold text-black text-center">
-            Enter verification code
+            {t('otpPage.title')}
           </Text>
           <Text className="text-sm text-gray-500 mt-3 text-center">
-            We have send a code to this 07* **** *07
+            {t('otpPage.subtitle', { phone: '07* **** *07' })}
           </Text>
         </View>
 
@@ -110,21 +113,21 @@ export default function OTPPage() {
         {/* Next Button */}
         <View className="mt-8">
           <PrimaryButton 
-            title="Next" 
+            title={t('otpPage.next')} 
             onPress={handleNext} 
           />
 
           {/* Resend Link */}
           <View className="flex-row justify-center mt-6">
             <Text className="text-sm text-gray-500">
-              Didn't receive the OTP?{' '}
+              {t('otpPage.noOtp')}
             </Text>
             <TouchableOpacity onPress={handleResend}>
               <Text
                 className="text-sm font-bold"
                 style={{ color: '#2FA2B9' }}
               >
-                Resend
+                {t('otpPage.resend')}
               </Text>
             </TouchableOpacity>
           </View>

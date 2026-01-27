@@ -11,9 +11,12 @@ import PrimaryButton from '@/components/ui/PrimaryButton';
 import { PaddingStyles } from '@/constants/spacing';
 import { useUser } from '@/context/userContext';
 
+import { useTranslation } from 'react-i18next';
+
 export default function AccountTypePage() {
   const router = useRouter();
   const { setRole } = useUser();
+  const { t } = useTranslation();
 
   const handleSelectType = (type: 'individual' | 'company') => {
     setRole(type);
@@ -41,10 +44,10 @@ export default function AccountTypePage() {
         {/* Content Section */}
         <View className="mt-16 items-center">
           <Text className="text-[32px] font-bold text-black text-center">
-            Your Account Type
+            {t('accountTypePage.title')}
           </Text>
           <Text className="text-gray-500 text-center text-base mt-3 px-2 leading-6">
-            Please select whether you are signing up as an individual user or as a company to continue with your account creation.
+            {t('accountTypePage.subtitle')}
           </Text>
         </View>
 
@@ -52,7 +55,7 @@ export default function AccountTypePage() {
         <View className="mt-12 gap-y-4">
           {/* Individual User Button */}
           <PrimaryButton
-            title="Individual User"
+            title={t('accountTypePage.individual')}
             onPress={() => handleSelectType('individual')}
             style={{ 
               shadowColor: "#000",
@@ -65,7 +68,7 @@ export default function AccountTypePage() {
 
           {/* Company Button */}
           <PrimaryButton
-            title="Company"
+            title={t('accountTypePage.company')}
             variant="outlined"
             onPress={() => handleSelectType('company')}
           />

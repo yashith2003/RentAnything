@@ -61,7 +61,7 @@ export default function MyListingsScreen() {
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <StatusBar style="dark" />
 
-      <ScreenHeader title="My Listings" />
+      <ScreenHeader title="My Listings" fallbackRoute="/(tabs)/profile" />
 
       <ScrollView showsVerticalScrollIndicator={false} style={PaddingStyles.page}>
         {/* Add New Listing Button */}
