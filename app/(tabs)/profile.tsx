@@ -1,13 +1,12 @@
-// app/(tabs)/profile.tsx
-
-import { Ionicons } from '@expo/vector-icons';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import StatsSection from '@/components/ownerProfile/StatsSection';
+import ActionListItem from '@/components/shared/ActionListItem';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { Colors } from '@/constants/theme';
 
 interface MenuItem {
   icon: string;
@@ -57,7 +56,7 @@ export default function ProfileScreen() {
       icon: 'list-outline',
       iconType: 'ionicons',
       label: 'My Listings',
-      onPress: () => router.push('/profile/myListings/myListing' as any),
+      onPress: () => router.push('/(tabs)/add-listing' as any),
     },
     {
       icon: 'card-outline',
@@ -113,15 +112,7 @@ export default function ProfileScreen() {
       <StatusBar style="dark" />
 
       {/* Header */}
-      <View className="flex-row items-center justify-between px-6 py-4">
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text className="text-lg font-semibold text-black">Profile</Text>
-        <TouchableOpacity>
-          <Ionicons name="ellipsis-horizontal" size={24} color="#000" />
-        </TouchableOpacity>
-      </View>
+      <ScreenHeader title="Profile" rightIcon="ellipsis-horizontal" />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Profile Section */}
@@ -152,57 +143,18 @@ export default function ProfileScreen() {
         </View>
 
         {/* Stats Section */}
-        <View className="flex-row justify-around px-6 py-4 mb-4">
-          {stats.map((stat, index) => (
-            <View key={index} className="items-center flex-1">
-              <Text className="text-2xl font-bold text-black mb-1">
-                {stat.value}
-              </Text>
-              <Text className="text-xs text-gray-500 text-center">
-                {stat.label}
-              </Text>
-            </View>
-          ))}
-        </View>
+        <StatsSection stats={stats} />
 
         {/* Menu Items */}
         <View className="px-6 pb-6">
           {menuItems.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={item.onPress}
-              activeOpacity={0.7}
-              className="flex-row items-center justify-between py-4 px-4 mb-2 bg-white border border-gray-200 rounded-2xl"
-            >
-              <View className="flex-row items-center gap-3">
-                <Ionicons
-                  name={item.icon as any}
-                  size={22}
-                  color={item.color || '#666'}
+            <View key={index} className="mb-2 bg-white border border-gray-100 rounded-[20px] px-2">
+                <ActionListItem 
+                    label={item.label}
+                    icon={item.icon}
+                    onPress={item.onPress}
                 />
-                <Text
-                  className="text-base"
-                  style={{ color: item.color || '#666' }}
-                >
-                  {item.label}
-                </Text>
-              </View>
-
-              <View className="flex-row items-center gap-2">
-                {item.badge && <Text className="text-lg">{item.badge}</Text>}
-                {item.rightText && (
-                  <View className="bg-cyan-50 px-3 py-1 rounded-full">
-                    <Text
-                      className="text-sm font-medium"
-                      style={{ color: Colors.primary }}
-                    >
-                      {item.rightText}
-                    </Text>
-                  </View>
-                )}
-                <Ionicons name="chevron-forward" size={20} color="#999" />
-              </View>
-            </TouchableOpacity>
+            </View>
           ))}
         </View>
       </ScrollView>

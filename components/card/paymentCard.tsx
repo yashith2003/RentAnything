@@ -1,10 +1,10 @@
 // components/paymentCard.tsx
 
+import RatingStars from '@/components/ui/ratingStars';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import React from 'react';
 import { Text, View } from 'react-native';
-import RatingStars from './ratingStars';
 
 interface PaymentCardProps {
   payment: {

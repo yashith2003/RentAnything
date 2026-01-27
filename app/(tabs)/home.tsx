@@ -1,9 +1,9 @@
 //app/(tabs)/home.tsx
 
-import ItemCard from '@/components/itemCard';
-import LocationDropdown from '@/components/LocationDropdown';
-import PopularCategories from '@/components/popularCategories';
-import SearchBar from '@/components/searchbar';
+import ItemCard from '@/components/card/itemCard';
+import LocationDropdown from '@/components/form/LocationDropdown';
+import SearchBar from '@/components/form/searchbar';
+import PopularCategories from '@/components/shared/popularCategories';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { useUser } from '@/context/userContext';
 import { Image } from 'expo-image';
@@ -94,14 +94,14 @@ export default function HomeScreen() {
             </View>
           </View>
           <View className="flex-row items-center gap-x-4">
-            <TouchableOpacity onPress={() => router.push('/header/chat/inbox')}>
+            <TouchableOpacity onPress={() => router.push('/header/chat/inbox' as any)}>
               <Image source={require('@/assets/icons/message.svg')} style={{ width: 22, height: 22 }} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/header/notifications')}>
+            <TouchableOpacity onPress={() => router.push('/header/notifications' as any)}>
               <Image source={require('@/assets/icons/notifications.svg')} style={{ width: 21, height: 22 }} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/header/favourite')}>
-              <Image source={require('@/assets/icons/favourite.svg')} style={{ width: 22, height: 22 }} />
+            <TouchableOpacity onPress={() => router.push('/header/saved' as any)}>
+              <Image source={require('@/assets/icons/saved.svg')} style={{ width: 22, height: 22 }} />
             </TouchableOpacity>
             <TouchableOpacity>
               <Image source={require('@/assets/icons/menu.svg')} style={{ width: 22, height: 22 }} />

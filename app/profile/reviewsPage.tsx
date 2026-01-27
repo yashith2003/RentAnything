@@ -1,13 +1,12 @@
-// app/profile/reviewsPage.tsx
-
-import RatingStars from '@/components/ratingStars';
-import SearchBar from '@/components/searchbar';
+import ReviewCard from '@/components/card/ReviewCard';
+import SearchBar from '@/components/form/searchbar';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
@@ -86,20 +85,7 @@ export default function ReviewsPage() {
       <StatusBar style="dark" />
 
       {/* Header */}
-      <View className={`flex-row items-center justify-between px-${getTailwindSpacing(Spacing.pageHorizontal)} py-${getTailwindSpacing(Spacing.lg)}`}>
-        <TouchableOpacity 
-          onPress={() => router.back()}
-          className="w-10 h-10 items-center justify-center rounded-full bg-white border border-gray-100 shadow-sm"
-        >
-          <Ionicons name="chevron-back" size={20} color="#000" />
-        </TouchableOpacity>
-        <Text className="text-lg font-bold text-black">Reviews for Item</Text>
-        <TouchableOpacity 
-          className="w-10 h-10 items-center justify-center rounded-full bg-white border border-gray-100 shadow-sm"
-        >
-          <Ionicons name="ellipsis-horizontal" size={20} color="#000" />
-        </TouchableOpacity>
-      </View>
+      <ScreenHeader title="Reviews for Item" rightIcon="ellipsis-horizontal" />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className={`px-${getTailwindSpacing(Spacing.pageHorizontal)} pb-6 pt-2`}>
@@ -118,40 +104,15 @@ export default function ReviewsPage() {
 
           {/* List of Reviews */}
           {REVIEWS.map((review) => (
-            <View
+            <ReviewCard 
               key={review.id}
-              className="mb-4 p-5 bg-white border border-gray-100 rounded-[28px] shadow-sm"
-            >
-              {/* Review Header */}
-              <View className="flex-row items-center justify-between mb-4">
-                <View className="flex-row items-center">
-                  <Image
-                    source={{ uri: review.avatar }}
-                    style={{ width: 48, height: 48, borderRadius: 24 }}
-                    contentFit="cover"
-                  />
-                  <View className="ml-3">
-                    <View className="flex-row items-center">
-                      <Text className="text-base font-bold text-black mr-1">
-                        {review.userName}
-                      </Text>
-                      {review.isVerified && (
-                        <Ionicons name="checkmark-circle" size={18} color="#2196F3" />
-                      )}
-                    </View>
-                  </View>
-                </View>
-                <Text className="text-sm text-gray-400">Today</Text>
-              </View>
-
-              {/* Stars */}
-              <RatingStars rating={review.rating} style={{ marginBottom: 12 }} />
-
-              {/* Comment */}
-              <Text className="text-[14px] text-gray-500 leading-6">
-                {review.comment}
-              </Text>
-            </View>
+              name={review.userName}
+              image={review.avatar}
+              rating={review.rating}
+              comment={review.comment}
+              date={review.date}
+              isVerified={review.isVerified}
+            />
           ))}
         </View>
       </ScrollView>

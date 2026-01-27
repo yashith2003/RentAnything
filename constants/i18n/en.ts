@@ -1,0 +1,71 @@
+//constants/i18n/en.ts
+
+export default {
+  onboarding: {
+    next: "Next",
+    getStarted: "Get Started",
+  },
+  languagePage: {
+    welcome: "Welcome !",
+    select_lang: "Select your preferred language you are most comfortable with",
+    next: "Next",
+  },
+  accountTypePage: {
+    title: "Your Account Type",
+    subtitle: "Please select whether you are signing up as an individual user or as a company to continue with your account creation.",
+    individual: "Individual User",
+    company: "Company",
+  },
+  login: {
+    title: "Login",
+    subtitle: "Fill your information below to login.",
+    phonePlaceholder: "Phone number",
+    noAccount: "Didn't have an account? ",
+    signup: "Sign up",
+  },
+  phoneNumberPage: {
+    title: "Phone Number",
+    subtitle: "Provide your phone number for verification, which will also be used as your login credential for future access to the app.",
+    placeholder: "Phone number",
+    verifyBtn: "Verify Phone Number",
+    alreadyAccount: "Already have an account? ",
+    login: "Login.",
+  },
+  otpPage: {
+    title: "Enter verification code",
+    subtitle: "We have send a code to this {{phone}}",
+    next: "Next",
+    noOtp: "Didn't receive the OTP? ",
+    resend: "Resend",
+  },
+  individualSignup: {
+    title: "Sign Up",
+    subtitle: "Fill your information below to Sign Up",
+    fullName: "Full Name",
+    email: "Email Address",
+    address: "Address",
+    verifyBtn: "Verify email",
+    alreadyAccount: "Already have an account? ",
+    login: "Login.",
+    successTitle: "Registration Successful!",
+    successMsg: "Your account information has been saved. Please provide your phone number to continue with verification.",
+  },
+  companySignup: {
+    title: "Sign Up",
+    subtitle: "Fill your information below to Sign Up",
+    companyName: "Company Name",
+    email: "Email Address",
+    address: "Address",
+    regNumber: "Company Registration Number",
+    verifyBtn: "Verify email",
+    alreadyAccount: "Already have an account? ",
+    login: "Login.",
+    successTitle: "Registration Successful!",
+    successMsg: "Your business information has been saved. Please provide a contact phone number to continue with verification.",
+  },
+  successPopup: {
+    title: "Successful!",
+    message: "Phone number verification successful! You are now logged in to your account. Welcome back to Rent Anything!",
+    next: "Next",
+  },
+};

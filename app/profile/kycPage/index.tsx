@@ -1,5 +1,5 @@
-import { ScreenHeader } from '@/components/ScreenHeader';
-import { SelectionItem } from '@/components/SelectionItem';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { SelectionItem } from '@/components/form/SelectionItem';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';

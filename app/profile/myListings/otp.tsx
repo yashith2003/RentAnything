@@ -1,4 +1,4 @@
-import { ScreenHeader } from '@/components/ScreenHeader';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';

@@ -1,6 +1,6 @@
 // app/profile/payments/index.tsx
 
-import SearchBar from '@/components/searchbar';
+import SearchBar from '@/components/form/searchbar';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';

@@ -1,46 +1,109 @@
-//app/(tabs)/add-listing.tsx
+// app/(tabs)/add-listing.tsx
 
+import { MyListingCard } from '@/components/card/MyListingCard';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { PaddingStyles } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import React, { useState } from 'react';
+import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-export default function AddListingScreen() {
+interface Listing {
+  id: string;
+  title: string;
+  description: string;
+  condition: string;
+  image: string;
+  rentals: number;
+  isActive: boolean;
+}
+
+const mockListings: Listing[] = [
+  {
+    id: '1',
+    title: 'Tesla Model S',
+    description: 'A car with high specs that are rented. A car with high specs that are rented at an affordable price.',
+    condition: 'Used (like new)',
+    image: 'https://images.unsplash.com/photo-1617788138017-80ad42243c5d?q=80&w=400&auto=format&fit=crop',
+    rentals: 5,
+    isActive: true,
+  },
+  {
+    id: '2',
+    title: 'Tesla Model S',
+    description: 'A car with high specs that are rented. A car with high specs that are rented at an affordable price.',
+    condition: 'Used (like new)',
+    image: 'https://images.unsplash.com/photo-1617788138017-80ad42243c5d?q=80&w=400&auto=format&fit=crop',
+    rentals: 0,
+    isActive: true,
+  },
+  {
+    id: '3',
+    title: 'Tesla Model S',
+    description: 'A car with high specs that are rented. A car with high specs that are rented at an affordable price.',
+    condition: 'Used (like new)',
+    image: 'https://images.unsplash.com/photo-1617788138017-80ad42243c5d?q=80&w=400&auto=format&fit=crop',
+    rentals: 5,
+    isActive: true,
+  },
+];
+
+export default function MyListingsScreen() {
   const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredListings = mockListings.filter(listing =>
+    listing.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-      {/* Header */}
-      <View className="flex-row items-center justify-between px-6 py-4">
-        {/* Invisible back button for spacing balance - using opacity-0 */}
-        <View className="w-6 h-6" />
-        
-        <Text className="text-lg font-semibold text-black">New Listing</Text>
-        
-        <TouchableOpacity>
-             <Ionicons name="ellipsis-horizontal" size={24} color="#000" />
+      <StatusBar style="dark" />
+
+      <ScreenHeader title="My Listings" showBack={false} />
+
+      <ScrollView showsVerticalScrollIndicator={false} style={PaddingStyles.page}>
+        {/* Add New Listing Button */}
+        <TouchableOpacity
+          className="h-14 rounded-full items-center justify-center mb-4"
+          style={{ backgroundColor: Colors.primary }}
+          activeOpacity={0.8}
+          onPress={() => router.push('/profile/myListings/category' as any)}
+        >
+          <Text className="text-white text-base font-bold">Add New Listing</Text>
         </TouchableOpacity>
-      </View>
 
-      <ScrollView className="flex-1 px-6" contentContainerStyle={{flexGrow: 1, justifyContent: 'center', alignItems: 'center'}}>
-          <View className="w-24 h-24 bg-[#2FA2B9]/10 rounded-full items-center justify-center mb-6">
-               <Ionicons name="add-circle" size={48} color={Colors.primary} />
-          </View>
-          
-          <Text className="text-2xl font-bold text-center text-black mb-3">List item for Rent</Text>
-          <Text className="text-gray-500 text-center mb-8 px-4 leading-6">
-            Earn money by renting out your unused items to people nearby. It's safe, simple, and secure.
-          </Text>
-          
-          <TouchableOpacity className="w-full bg-[#2FA2B9] py-4 rounded-2xl items-center shadow-lg shadow-blue-200" activeOpacity={0.8}>
-               <Text className="text-white font-bold text-lg">Create a Listing</Text>
-          </TouchableOpacity>
+        {/* Search Bar */}
+        <View className="flex-row items-center bg-gray-50 rounded-2xl h-12 px-4 mb-4 border border-gray-100">
+          <Ionicons name="search-outline" size={20} color="#999" />
+          <TextInput
+            className="flex-1 ml-3 text-base text-black"
+            placeholder="Search"
+            placeholderTextColor="#999"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
 
-          <TouchableOpacity className="mt-6">
-              <Text className="text-[#2FA2B9] font-medium">How it works?</Text>
-          </TouchableOpacity>
+        {/* Items Count */}
+        <Text className="text-sm font-bold text-black mb-4">
+          {filteredListings.length} Items listed
+        </Text>
+
+        {/* Listings */}
+        <View className="pb-24">
+           {filteredListings.map((listing) => (
+            <MyListingCard 
+                key={listing.id}
+                listing={listing}
+                onRentalsPress={() => router.push('/profile/myListings/listingItem' as any)}
+                onViewPress={() => router.push('/profile/myListings/item' as any)}
+            />
+            ))}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

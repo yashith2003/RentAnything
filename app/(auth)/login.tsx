@@ -7,14 +7,17 @@ import { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import CustomTextInput from '@/components/CustomTextInput';
-import PrimaryButton from '@/components/PrimaryButton';
+import CustomTextInput from '@/components/form/CustomTextInput';
+import PrimaryButton from '@/components/ui/PrimaryButton';
 import { PaddingStyles } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
+
+import { useTranslation } from 'react-i18next';
 
 export default function LoginScreen() {
   const router = useRouter();
   const [phoneNumber, setPhoneNumber] = useState('');
+  const { t } = useTranslation();
 
   const handleLogin = () => {
     console.log('Logging in with:', phoneNumber);
@@ -42,16 +45,16 @@ export default function LoginScreen() {
 
         {/* Header Section */}
         <View className="mt-16 items-center">
-          <Text className="text-[32px] font-bold text-black text-center">Login</Text>
+          <Text className="text-[32px] font-bold text-black text-center">{t('login.title')}</Text>
           <Text className="text-base text-gray-500 mt-3 px-4 leading-6 text-center">
-            Fill your information below to login.
+            {t('login.subtitle')}
           </Text>
         </View>
 
         {/* Form Section */}
         <View className="mt-10">
           <CustomTextInput
-            placeholder="Phone number"
+            placeholder={t('login.phonePlaceholder')}
             value={phoneNumber}
             onChangeText={setPhoneNumber}
             keyboardType="phone-pad"
@@ -62,19 +65,19 @@ export default function LoginScreen() {
         {/* Action Button Section */}
         <View className="mt-6">
           <PrimaryButton 
-            title="Login" 
+            title={t('login.title')} 
             onPress={handleLogin} 
           />
 
           {/* Footer Text */}
           <View className="flex-row justify-center mt-6">
-            <Text className="text-sm text-gray-500">Didn't have an account? </Text>
+            <Text className="text-sm text-gray-500">{t('login.noAccount')}</Text>
             <TouchableOpacity onPress={handleSignUpPress}>
               <Text 
                 className="text-sm font-bold"
                 style={{ color: Colors.primary }}
               >
-                Sign up
+                {t('login.signup')}
               </Text>
             </TouchableOpacity>
           </View>

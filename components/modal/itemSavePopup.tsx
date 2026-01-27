@@ -1,22 +1,22 @@
-//components/RemoveFavoriteModal.tsx
+//components/shared/itemSavePopup.tsx
 
 import { Colors } from '@/constants/theme';
 import React from 'react';
 import { Modal, Text, TouchableOpacity, View } from 'react-native';
 
-interface RemoveFavoriteModalProps {
+interface RemoveSavedModalProps {
   visible: boolean;
   onRemove: () => void;
   onKeep: () => void;
   itemName?: string;
 }
 
-export default function RemoveFavoriteModal({ 
+export default function RemoveSavedModal({ 
   visible, 
   onRemove, 
   onKeep,
   itemName = 'this'
-}: RemoveFavoriteModalProps) {
+}: RemoveSavedModalProps) {
   return (
     <Modal
       visible={visible}
@@ -31,7 +31,7 @@ export default function RemoveFavoriteModal({
           
           {/* Title */}
           <Text className="text-xl font-bold text-black text-center mb-4">
-            Remove from Favorites
+            Remove from Saved
           </Text>
           
           {/* Description */}
@@ -39,7 +39,7 @@ export default function RemoveFavoriteModal({
             Are you sure you want to remove this?
           </Text>
           <Text className="text-sm text-gray-500 text-center mb-6">
-            Removing this salon will delete it from your saved favourites list.
+            Removing this will delete it from your saved list.
           </Text>
           
           {/* Buttons */}
@@ -56,7 +56,7 @@ export default function RemoveFavoriteModal({
               </Text>
             </TouchableOpacity>
             
-            {/* Keep in Favorites Button */}
+            {/* Keep in Saved Button */}
             <TouchableOpacity
               onPress={onKeep}
               className="h-14 rounded-full items-center justify-center"
@@ -64,7 +64,7 @@ export default function RemoveFavoriteModal({
               activeOpacity={0.8}
             >
               <Text className="text-white font-bold text-base">
-                Keep in Favorites
+                Keep in Saved
               </Text>
             </TouchableOpacity>
           </View>

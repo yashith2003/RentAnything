@@ -19,7 +19,13 @@ export default function RentalsScreen() {
       {/* Header */}
       <View className="flex-row items-center justify-between px-6 py-4">
         <TouchableOpacity 
-          onPress={() => router.back()} 
+          onPress={() => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.push('/(tabs)/profile');
+            }
+          }} 
           className="w-10 h-10 items-center justify-center rounded-full bg-gray-50"
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >

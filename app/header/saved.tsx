@@ -1,6 +1,6 @@
-// app/header/favourite.tsx
+// app/header/saved.tsx
 
-import SearchBar from '@/components/searchbar';
+import SearchBar from '@/components/form/searchbar';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -9,7 +9,7 @@ import React from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const favouriteItems = [
+const savedItems = [
   {
     id: 1,
     image: 'https://images.unsplash.com/photo-1524338198850-8a2ff63aaceb?q=80&w=400&auto=format&fit=crop', // Security Camera
@@ -60,7 +60,7 @@ const favouriteItems = [
   },
 ];
 
-export default function FavouriteScreen() {
+export default function SavedScreen() {
   const router = useRouter();
 
   return (
@@ -95,7 +95,7 @@ export default function FavouriteScreen() {
 
         {/* Grid of Saved Items */}
         <View className="flex-row flex-wrap justify-between px-6 pb-10">
-          {favouriteItems.map((item) => (
+          {savedItems.map((item) => (
             <SavedItemCard key={item.id} item={item} />
           ))}
         </View>
@@ -105,8 +105,11 @@ export default function FavouriteScreen() {
 }
 
 function SavedItemCard({ item }: { item: any }) {
+  const router = useRouter();
   return (
-    <View
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={() => router.push(`/item/${item.id}`)}
       className="w-[48%] bg-white rounded-[24px] mb-4 border border-gray-100 overflow-hidden"
       style={{
         shadowColor: '#000',
@@ -182,6 +185,6 @@ function SavedItemCard({ item }: { item: any }) {
         </View>
       </View>
 
-    </View>
+    </TouchableOpacity>
   );
 }

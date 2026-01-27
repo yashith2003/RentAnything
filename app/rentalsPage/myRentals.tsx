@@ -1,6 +1,6 @@
-//app/rentalPage/myRentals.tsx
-
-import SearchBar from '@/components/searchbar';
+import SearchBar from '@/components/form/searchbar';
+import StatusTabGroup from '@/components/shared/StatusTabGroup';
+import SummaryBanner from '@/components/shared/SummaryBanner';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -55,17 +55,12 @@ export default function MyRentals() {
 
   return (
     <View className="flex-1 bg-white">
-      {/* My Rental Requests Card */}
-      <TouchableOpacity 
-        className={`mx-${getTailwindSpacing(Spacing.pageHorizontal)} mb-4 bg-white border border-gray-100 rounded-2xl p-4 flex-row items-center justify-between shadow-sm shadow-black/5`} 
-        style={{ elevation: 2 }}
-      >
-        <View>
-          <Text className="text-base font-bold text-black mb-1">My Rental Requests</Text>
-          <Text className="text-sm text-gray-400">You have 03 rental requests available.</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={20} color="#999" />
-      </TouchableOpacity>
+      {/* My Rental Requests Banner */}
+      <SummaryBanner 
+        title="My Rental Requests" 
+        count="03" 
+        onPress={() => console.log('My Rental Requests')}
+      />
 
       {/* Search Bar */}
       <SearchBar
@@ -75,25 +70,12 @@ export default function MyRentals() {
       />
 
       {/* Status Tabs */}
-      <View className={`px-${getTailwindSpacing(Spacing.pageHorizontal)} mb-4`}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className={`-mx-${getTailwindSpacing(Spacing.pageHorizontal)} px-${getTailwindSpacing(Spacing.pageHorizontal)}`}>
-          {statusTabs.map((tab) => (
-            <TouchableOpacity
-              key={tab.key}
-              onPress={() => setActiveStatus(tab.key)}
-              className="mr-6"
-            >
-              <Text
-                className={`text-base font-medium pb-2 ${
-                  activeStatus === tab.key ? 'text-[#2FA2B9] border-b-2 border-[#2FA2B9]' : 'text-gray-400'
-                }`}
-              >
-                {tab.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
+      <StatusTabGroup
+        tabs={statusTabs}
+        activeTab={activeStatus}
+        onTabPress={setActiveStatus}
+        containerStyle={`px-${getTailwindSpacing(Spacing.pageHorizontal)}`}
+      />
 
       {/* Rental Items */}
       <ScrollView showsVerticalScrollIndicator={false} className={`flex-1 px-${getTailwindSpacing(Spacing.pageHorizontal)} pb-10`}>

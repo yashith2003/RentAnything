@@ -5,24 +5,27 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import CustomTextInput from '@/components/CustomTextInput';
-import PrimaryButton from '@/components/PrimaryButton';
+import CustomTextInput from '@/components/form/CustomTextInput';
+import PrimaryButton from '@/components/ui/PrimaryButton';
 import { Spacing } from '@/constants/spacing';
 
+
+import { useTranslation } from 'react-i18next';
 
 export default function PhoneNumberPage() {
   const router = useRouter();
   const [phoneNumber, setPhoneNumber] = useState('');
+  const { t } = useTranslation();
 
   const handleVerifyPhone = () => {
     console.log('Verifying phone number:', phoneNumber);
@@ -57,17 +60,17 @@ export default function PhoneNumberPage() {
           {/* Header Section */}
           <View style={{ marginTop: 40, alignItems: 'center', paddingHorizontal: Spacing.lg }}>
             <Text style={{ fontSize: 32, fontWeight: '700', color: '#000', marginBottom: 15 }}>
-              Phone Number
+              {t('phoneNumberPage.title')}
             </Text>
             <Text style={{ fontSize: 16, color: '#8E8E93', textAlign: 'center', lineHeight: 22, fontWeight: '500' }}>
-              Provide your phone number for verification, which will also be used as your login credential for future access to the app.
+              {t('phoneNumberPage.subtitle')}
             </Text>
           </View>
 
           {/* Form Section */}
           <View style={{ marginTop: 45 }}>
             <CustomTextInput
-              placeholder="Phone Number"
+              placeholder={t('phoneNumberPage.placeholder')}
               value={phoneNumber}
               onChangeText={setPhoneNumber}
               keyboardType="phone-pad"
@@ -77,15 +80,15 @@ export default function PhoneNumberPage() {
           {/* Action Button Section */}
           <View style={{ marginTop: 40 }}>
             <PrimaryButton 
-              title="Verify Phone Number" 
+              title={t('phoneNumberPage.verifyBtn')} 
               onPress={handleVerifyPhone} 
             />
 
             {/* Footer Text */}
             <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 30 }}>
-              <Text style={{ fontSize: 14, color: '#6B7280' }}>Already have an account? </Text>
+              <Text style={{ fontSize: 14, color: '#6B7280' }}>{t('phoneNumberPage.alreadyAccount')}</Text>
               <TouchableOpacity onPress={handleLoginPress}>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: '#2FA2B9' }}>Login.</Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#2FA2B9' }}>{t('phoneNumberPage.login')}</Text>
               </TouchableOpacity>
             </View>
           </View>

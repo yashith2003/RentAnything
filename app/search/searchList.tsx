@@ -1,6 +1,6 @@
 //app/search/searchList.tsx
 
-import ItemCard from '@/components/itemCard';
+import ItemCard from '@/components/card/itemCard';
 import { PaddingStyles } from '@/constants/spacing';
 import React from 'react';
 import { ScrollView, Text, View } from 'react-native';

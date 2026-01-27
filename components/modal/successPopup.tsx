@@ -1,8 +1,10 @@
 // components/successPopup.tsx
 
+import PrimaryButton from '@/components/ui/PrimaryButton';
 import React from 'react';
 import { Modal, Text, View } from 'react-native';
-import PrimaryButton from './PrimaryButton';
+
+import { useTranslation } from 'react-i18next';
 
 interface SuccessPopupProps {
   visible: boolean;
@@ -13,10 +15,15 @@ interface SuccessPopupProps {
 
 export default function SuccessPopup({
   visible,
-  title = 'Successful!',
-  message = 'Phone number verification successful! You are now logged in to your account. Welcome back to Rent Anything!',
+  title,
+  message,
   onNext,
 }: SuccessPopupProps) {
+  const { t } = useTranslation();
+  
+  const displayTitle = title || t('successPopup.title');
+  const displayMessage = message || t('successPopup.message');
+
   return (
     <Modal
       visible={visible}
@@ -31,17 +38,17 @@ export default function SuccessPopup({
 
           {/* Title */}
           <Text className="text-2xl font-bold text-black mb-3">
-            {title}
+            {displayTitle}
           </Text>
 
           {/* Message */}
           <Text className="text-sm text-gray-500 text-center leading-6 mb-6">
-            {message}
+            {displayMessage}
           </Text>
 
           {/* Next Button */}
           <PrimaryButton 
-            title="Next" 
+            title={t('successPopup.next')} 
             onPress={onNext} 
           />
         </View>

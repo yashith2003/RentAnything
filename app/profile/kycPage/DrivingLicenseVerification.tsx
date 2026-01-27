@@ -1,5 +1,5 @@
-import { ScreenHeader } from '@/components/ScreenHeader';
-import { UploadBox } from '@/components/UploadBox';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { UploadBox } from '@/components/form/UploadBox';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';

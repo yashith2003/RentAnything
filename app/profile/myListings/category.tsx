@@ -1,4 +1,4 @@
-import { ScreenHeader } from '@/components/ScreenHeader';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
 import { Image } from 'expo-image';

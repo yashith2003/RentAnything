@@ -1,7 +1,7 @@
-import { ChipGroup } from '@/components/ChipGroup';
-import { LabelledInput } from '@/components/LabelledInput';
-import { ScreenHeader } from '@/components/ScreenHeader';
-import { UploadBox } from '@/components/UploadBox';
+import { ChipGroup } from '@/components/form/ChipGroup';
+import { LabelledInput } from '@/components/form/LabelledInput';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { UploadBox } from '@/components/form/UploadBox';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';

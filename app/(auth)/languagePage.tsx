@@ -7,9 +7,11 @@ import React, { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import PrimaryButton from '@/components/PrimaryButton';
+import PrimaryButton from '@/components/ui/PrimaryButton';
 import { PaddingStyles } from '@/constants/spacing';
 
+
+import { useTranslation } from 'react-i18next';
 
 const languages = [
   { id: 'en', label: 'English' },
@@ -18,10 +20,12 @@ const languages = [
 ];
 
 export default function LanguagePage() {
-  const [selectedLanguage, setSelectedLanguage] = useState('en');
+  const { t, i18n } = useTranslation();
+  const [selectedLanguage, setSelectedLanguage] = useState(i18n.language || 'en');
   const router = useRouter();
 
   const handleNext = () => {
+    i18n.changeLanguage(selectedLanguage);
     router.push('/(auth)/accountTypePage');
   };
 
@@ -41,9 +45,9 @@ export default function LanguagePage() {
 
         {/* Welcome Section */}
         <View className="mt-16 items-center">
-            <Text className="text-[32px] font-bold text-black text-center">Welcome !</Text>
+            <Text className="text-[32px] font-bold text-black text-center">{t('languagePage.welcome')}</Text>
             <Text className="text-base text-gray-500 text-center mt-3 px-2 leading-6">
-                Select your preferred language you are most comfortable with
+                {t('languagePage.select_lang')}
             </Text>
         </View>
 
@@ -82,7 +86,7 @@ export default function LanguagePage() {
         {/* Next Button Section - Pushed to the bottom */}
         <View className="mt-auto">
             <PrimaryButton 
-              title="Next" 
+              title={t('languagePage.next')} 
               onPress={handleNext} 
             />
         </View>

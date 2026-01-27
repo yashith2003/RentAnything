@@ -16,11 +16,13 @@ import {
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import CustomTextInput from '@/components/CustomTextInput';
-import PrimaryButton from '@/components/PrimaryButton';
+import CustomTextInput from '@/components/form/CustomTextInput';
+import PrimaryButton from '@/components/ui/PrimaryButton';
 import { Spacing } from '@/constants/spacing';
 
-import SuccessPopup from '@/components/successPopup';
+import SuccessPopup from '@/components/modal/successPopup';
+
+import { useTranslation } from 'react-i18next';
 
 export default function CompanySignup() {
   const router = useRouter();
@@ -32,6 +34,7 @@ export default function CompanySignup() {
   });
 
   const [showSuccess, setShowSuccess] = useState(false);
+  const { t } = useTranslation();
 
   const handleVerifyEmail = () => {
     console.log('Verifying email for:', formData);
@@ -70,35 +73,35 @@ export default function CompanySignup() {
 
           {/* Header Section */}
           <View style={{ marginTop: 48, alignItems: 'center' }}>
-            <Text style={{ fontSize: 32, fontWeight: '700', color: '#000' }}>Sign Up</Text>
+            <Text style={{ fontSize: 32, fontWeight: '700', color: '#000' }}>{t('companySignup.title')}</Text>
             <Text style={{ fontSize: 16, color: '#6B7280', marginTop: 8, textAlign: 'center', paddingHorizontal: Spacing.lg }}>
-              Fill your information below to Sign Up
+              {t('companySignup.subtitle')}
             </Text>
           </View>
 
           {/* Form Section */}
           <View style={{ marginTop: 40 }}>
             <CustomTextInput
-              placeholder="Company Name"
+              placeholder={t('companySignup.companyName')}
               value={formData.companyName}
               onChangeText={(text) => setFormData({ ...formData, companyName: text })}
             />
 
             <CustomTextInput
-              placeholder="Email Address"
+              placeholder={t('companySignup.email')}
               value={formData.email}
               onChangeText={(text) => setFormData({ ...formData, email: text })}
               keyboardType="email-address"
             />
 
             <CustomTextInput
-              placeholder="Address"
+              placeholder={t('companySignup.address')}
               value={formData.address}
               onChangeText={(text) => setFormData({ ...formData, address: text })}
             />
 
             <CustomTextInput
-              placeholder="Company Registration Number"
+              placeholder={t('companySignup.regNumber')}
               value={formData.registrationNumber}
               onChangeText={(text) => setFormData({ ...formData, registrationNumber: text })}
             />
@@ -108,16 +111,16 @@ export default function CompanySignup() {
           {/* Action Button Section */}
           <View style={{ marginTop: 40 }}>
             <PrimaryButton 
-              title="Verify email" 
+              title={t('companySignup.verifyBtn')} 
               onPress={handleVerifyEmail} 
             />
 
 
             {/* Footer Text */}
             <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 24 }}>
-              <Text style={{ fontSize: 14, color: '#6B7280' }}>Already have an account? </Text>
+              <Text style={{ fontSize: 14, color: '#6B7280' }}>{t('companySignup.alreadyAccount')}</Text>
               <TouchableOpacity onPress={handleLoginPress}>
-                <Text style={{ fontSize: 14, fontWeight: '700', color: '#2FA2B9' }}>Login.</Text>
+                <Text style={{ fontSize: 14, fontWeight: '700', color: '#2FA2B9' }}>{t('companySignup.login')}</Text>
               </TouchableOpacity>
 
             </View>
@@ -127,8 +130,8 @@ export default function CompanySignup() {
       <SuccessPopup 
         visible={showSuccess} 
         onNext={handleSuccessNext}
-        title="Registration Successful!"
-        message="Your business information has been saved. Please provide a contact phone number to continue with verification."
+        title={t('companySignup.successTitle')}
+        message={t('companySignup.successMsg')}
       />
     </SafeAreaView>
   );

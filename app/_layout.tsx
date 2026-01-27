@@ -1,5 +1,5 @@
 //app/_layout.tsx
-
+import "@/constants/i18n";
 import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';

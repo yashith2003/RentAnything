@@ -5,22 +5,24 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text, // Add Text back
-  TouchableOpacity,
-  View
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text, // Add Text back
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import CustomTextInput from '@/components/CustomTextInput';
-import PrimaryButton from '@/components/PrimaryButton';
+import CustomTextInput from '@/components/form/CustomTextInput';
+import PrimaryButton from '@/components/ui/PrimaryButton';
 import { Spacing } from '@/constants/spacing';
 
-import SuccessPopup from '@/components/successPopup';
+import SuccessPopup from '@/components/modal/successPopup';
+
+import { useTranslation } from 'react-i18next';
 
 export default function IndividualSignup() {
   const router = useRouter();
@@ -31,6 +33,7 @@ export default function IndividualSignup() {
   });
 
   const [showSuccess, setShowSuccess] = useState(false);
+  const { t } = useTranslation();
 
   const handleVerifyEmail = () => {
     console.log('Verifying email for:', formData);
@@ -69,29 +72,29 @@ export default function IndividualSignup() {
 
           {/* Header Section */}
           <View style={{ marginTop: 48, alignItems: 'center' }}>
-            <Text style={{ fontSize: 32, fontWeight: '700', color: '#000' }}>Sign Up</Text>
+            <Text style={{ fontSize: 32, fontWeight: '700', color: '#000' }}>{t('individualSignup.title')}</Text>
             <Text style={{ fontSize: 16, color: '#6B7280', marginTop: 8, textAlign: 'center', paddingHorizontal: Spacing.lg }}>
-              Fill your information below to Sign Up
+              {t('individualSignup.subtitle')}
             </Text>
           </View>
 
           {/* Form Section */}
           <View style={{ marginTop: 40 }}>
             <CustomTextInput
-              placeholder="Full Name"
+              placeholder={t('individualSignup.fullName')}
               value={formData.fullName}
               onChangeText={(text) => setFormData({ ...formData, fullName: text })}
             />
 
             <CustomTextInput
-              placeholder="Email Address"
+              placeholder={t('individualSignup.email')}
               value={formData.email}
               onChangeText={(text) => setFormData({ ...formData, email: text })}
               keyboardType="email-address"
             />
 
             <CustomTextInput
-              placeholder="Address"
+              placeholder={t('individualSignup.address')}
               value={formData.address}
               onChangeText={(text) => setFormData({ ...formData, address: text })}
             />
@@ -101,16 +104,16 @@ export default function IndividualSignup() {
           {/* Action Button Section */}
           <View style={{ marginTop: 40 }}>
             <PrimaryButton 
-              title="Verify email" 
+              title={t('individualSignup.verifyBtn')} 
               onPress={handleVerifyEmail} 
             />
 
 
             {/* Footer Text */}
             <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 24 }}>
-              <Text style={{ fontSize: 14, color: '#6B7280' }}>Already have an account? </Text>
+              <Text style={{ fontSize: 14, color: '#6B7280' }}>{t('individualSignup.alreadyAccount')}</Text>
               <TouchableOpacity onPress={handleLoginPress}>
-                <Text style={{ fontSize: 14, fontWeight: '700', color: '#2FA2B9' }}>Login.</Text>
+                <Text style={{ fontSize: 14, fontWeight: '700', color: '#2FA2B9' }}>{t('individualSignup.login')}</Text>
               </TouchableOpacity>
 
             </View>
@@ -120,8 +123,8 @@ export default function IndividualSignup() {
       <SuccessPopup 
         visible={showSuccess} 
         onNext={handleSuccessNext}
-        title="Registration Successful!"
-        message="Your account information has been saved. Please provide your phone number to continue with verification."
+        title={t('individualSignup.successTitle')}
+        message={t('individualSignup.successMsg')}
       />
     </SafeAreaView>
   );
