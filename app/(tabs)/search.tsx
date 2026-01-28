@@ -6,6 +6,7 @@ import { PaddingStyles, Spacing, getTailwindSpacing } from '@/constants/spacing'
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SearchList from '../search/searchList';
@@ -17,6 +18,7 @@ const filters = [
 ];
 
 export default function SearchScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState('Electronic');
   const [viewMode, setViewMode] = useState<'list' | 'map'>('map');
@@ -39,7 +41,7 @@ export default function SearchScreen() {
         >
           <Ionicons name="chevron-back" size={24} color="#000" />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-black">Search</Text>
+        <Text className="text-xl font-bold text-black">{t('search.title')}</Text>
         <TouchableOpacity 
           className="w-10 h-10 items-center justify-center rounded-full bg-gray-50"
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -64,6 +66,7 @@ export default function SearchScreen() {
           <SearchBar
             value={searchQuery}
             onChangeText={setSearchQuery}
+            placeholder={t('common.search')}
             showFilter={true}
             containerStyle={{ paddingHorizontal: Spacing.pageHorizontal, marginBottom: Spacing.lg }}
           />
@@ -81,7 +84,7 @@ export default function SearchScreen() {
                 ))}
              </View>
              <TouchableOpacity>
-                <Text className="text-[#2FA2B9] text-sm font-medium">Clear filters</Text>
+                <Text className="text-[#2FA2B9] text-sm font-medium">{t('search.clearFilters')}</Text>
              </TouchableOpacity>
           </View>
 
@@ -96,7 +99,7 @@ export default function SearchScreen() {
                 <Text
                 className={`font-bold text-lg ${viewMode === 'list' ? 'text-[#2FA2B9]' : 'text-gray-400'}`}
                 >
-                List
+                {t('search.list')}
                 </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -108,7 +111,7 @@ export default function SearchScreen() {
                 <Text
                 className={`font-bold text-lg ${viewMode === 'map' ? 'text-white' : 'text-[#2FA2B9]'}`}
                 >
-                Map
+                {t('search.map')}
                 </Text>
             </TouchableOpacity>
           </View>
@@ -116,7 +119,7 @@ export default function SearchScreen() {
           {/* Products Count - Only show in map view */}
           {viewMode === 'map' && (
             <View style={PaddingStyles.page} className="mb-4">
-              <Text className="text-sm font-bold text-black">32 products found</Text>
+              <Text className="text-sm font-bold text-black">32 {t('search.productsFound')}</Text>
             </View>
           )}
         </View>

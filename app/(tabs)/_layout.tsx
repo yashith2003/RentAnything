@@ -4,6 +4,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Image } from 'expo-image';
 import { Tabs } from 'expo-router';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { HapticTab } from '@/components/ui/haptic-tab';
 import { Colors } from '@/constants/theme';
@@ -16,6 +17,7 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const { role } = useUser();
+  const { t } = useTranslation();
 
   return (
     <Tabs
@@ -37,7 +39,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="home"
         options={{
-          title: 'Home',
+          title: t('tabs.home'),
           tabBarIcon: ({ color }) => (
             <Image 
               source={require('@/assets/icons/homeIcon.svg')} 
@@ -50,7 +52,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="search"
         options={{
-          title: 'Search',
+          title: t('tabs.search'),
           tabBarIcon: ({ color }) => (
             <Image 
               source={require('@/assets/icons/searchIcon.svg')} 
@@ -65,7 +67,7 @@ export default function TabLayout() {
         name="add-listing"
         options={{
         //  href: role === 'company' ? '/add-listing' : null,
-          title: 'Add Listing',
+          title: t('tabs.addListing'),
           tabBarIcon: ({ color }) => (
             <Image 
               source={require('@/assets/icons/addListing.svg')} 
@@ -78,7 +80,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="rentals"
         options={{
-          title: 'Rentals',
+          title: t('tabs.rentals'),
           tabBarIcon: ({ color }) => (
             <Image 
               source={require('@/assets/icons/rentals.svg')} 
@@ -91,7 +93,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: t('tabs.profile'),
           tabBarIcon: ({ color }) => (
             <Image 
               source={require('@/assets/icons/profile.svg')} 

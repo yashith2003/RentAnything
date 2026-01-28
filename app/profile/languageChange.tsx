@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -18,11 +19,12 @@ const languages = [
 ];
 
 export default function LanguageChangeScreen() {
-  const [selectedLanguage, setSelectedLanguage] = useState('en');
+  const { t, i18n } = useTranslation();
+  const [selectedLanguage, setSelectedLanguage] = useState(i18n.language || 'en');
   const router = useRouter();
-
+ 
   const handleSave = () => {
-    // TODO: Implement save logic here
+    i18n.changeLanguage(selectedLanguage);
     router.back();
   };
 
@@ -39,7 +41,7 @@ export default function LanguageChangeScreen() {
           <Ionicons name="chevron-back" size={24} color="#000" />
         </TouchableOpacity>
         
-        <Text className="text-lg font-semibold text-black">Language Change</Text>
+        <Text className="text-lg font-semibold text-black">{t('languagePage.title')}</Text>
         
         <TouchableOpacity 
           className="w-10 h-10 rounded-full border border-gray-200 items-center justify-center"
@@ -52,10 +54,10 @@ export default function LanguageChangeScreen() {
         {/* Title Section */}
         <View className="mb-8">
             <Text className="text-xl font-bold text-black mb-2">
-              Choose your preferred language
+              {t('languagePage.welcome')}
             </Text>
             <Text className="text-sm text-gray-500 leading-5">
-              Select your preferred language you are most comfortable with.
+              {t('languagePage.select_lang')}
             </Text>
         </View>
 
@@ -96,7 +98,7 @@ export default function LanguageChangeScreen() {
                 className="h-14 rounded-full justify-center items-center shadow-lg"
                 style={{ backgroundColor: Colors.primary }}
             >
-                <Text className="text-white text-lg font-bold">Save</Text>
+                <Text className="text-white text-lg font-bold">{t('common.save')}</Text>
             </TouchableOpacity>
         </View>
       </View>

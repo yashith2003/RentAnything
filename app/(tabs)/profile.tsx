@@ -5,6 +5,7 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -19,87 +20,94 @@ interface MenuItem {
 }
 
 export default function ProfileScreen() {
+  const { t, i18n } = useTranslation();
   const router = useRouter();
 
+  const currentLanguageLabel = {
+    en: 'English',
+    si: 'සිංහල',
+    ta: 'தமிழ்'
+  }[i18n.language as 'en' | 'si' | 'ta'] || 'English';
+
   const stats = [
-    { label: 'My Bookings', value: '12' },
-    { label: 'My Orders', value: '15' },
-    { label: 'Listing Items', value: '25' },
+    { label: t('profile.myBookings'), value: '12' },
+    { label: t('profile.myOrders'), value: '15' },
+    { label: t('profile.listingItems'), value: '25' },
   ];
 
   const menuItems: MenuItem[] = [
     {
       icon: 'person-outline',
       iconType: 'ionicons',
-      label: 'Profile Details',
+      label: t('profile.profileDetails'),
       onPress: () => router.push('/profile/profileDetails'),
     },
     {
       icon: 'shield-checkmark-outline',
       iconType: 'ionicons',
-      label: 'KYC',
+      label: t('profile.kyc'),
       onPress: () => router.push('/profile/kycPage'),
     },
     {
       icon: 'star-outline',
       iconType: 'ionicons',
-      label: 'Reviews',
+      label: t('profile.reviews'),
       onPress: () => router.push('/profile/reviewsPage'),
     },
     {
       icon: 'receipt-outline',
       iconType: 'ionicons',
-      label: 'Rentals',
+      label: t('profile.rentals'),
       onPress: () => router.push('/profile/rentals' as any),
     },
     {
       icon: 'list-outline',
       iconType: 'ionicons',
-      label: 'My Listings',
+      label: t('listing.myListings'),
       onPress: () => router.push('/(tabs)/add-listing' as any),
     },
     {
       icon: 'card-outline',
       iconType: 'ionicons',
-      label: 'Payments',
+      label: t('profile.payments'),
       onPress: () => router.push('/profile/payments' as any),
     },
     {
       icon: 'wallet-outline',
       iconType: 'ionicons',
-      label: 'Earnings',
+      label: t('profile.earnings'),
       onPress: () => router.push('/profile/earnings' as any),
     },
     {
       icon: 'trophy',
       iconType: 'ionicons',
-      label: 'Levels',
+      label: t('profile.levels'),
       badge: '🏆',
       onPress: () => router.push('/profile/levels' as any),
     },
     {
       icon: 'help-circle-outline',
       iconType: 'ionicons',
-      label: 'FAQs',
+      label: t('profile.faqs'),
       onPress: () => router.push('/profile/faq' as any),
     },
     {
       icon: 'alert-circle-outline',
       iconType: 'ionicons',
-      label: 'Incident Report',
+      label: t('profile.incident'),
       onPress: () => router.push('/profile/incident' as any),
     },
     {
       icon: 'language-outline',
       iconType: 'ionicons',
-      label: 'Language',
-      rightText: 'English',
+      label: t('profile.language'),
+      rightText: currentLanguageLabel,
       onPress: () => router.push('/profile/languageChange' as any),
     },
     {
       icon: 'log-out-outline',
       iconType: 'ionicons',
-      label: 'Logout',
+      label: t('profile.logout'),
       onPress: () => {
         // Navigate back to login
         router.replace('/(auth)/login' as any);
@@ -112,7 +120,7 @@ export default function ProfileScreen() {
       <StatusBar style="dark" />
 
       {/* Header */}
-      <ScreenHeader title="Profile" rightIcon="ellipsis-horizontal" />
+      <ScreenHeader title={t('profile.title')} rightIcon="ellipsis-horizontal" />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Profile Section */}
@@ -139,7 +147,7 @@ export default function ProfileScreen() {
           </Text>
 
           {/* Joined Date */}
-          <Text className="text-xs text-gray-400">Joined 2021</Text>
+          <Text className="text-xs text-gray-400">{t('profile.joined')} 2021</Text>
         </View>
 
         {/* Stats Section */}
@@ -153,6 +161,7 @@ export default function ProfileScreen() {
                     label={item.label}
                     icon={item.icon}
                     onPress={item.onPress}
+                    rightText={item.rightText}
                 />
             </View>
           ))}

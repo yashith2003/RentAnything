@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -52,6 +53,7 @@ const mockListings: Listing[] = [
 ];
 
 export default function MyListingsScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -63,7 +65,7 @@ export default function MyListingsScreen() {
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <StatusBar style="dark" />
 
-      <ScreenHeader title="My Listings" showBack={false} />
+      <ScreenHeader title={t('listing.myListings')} showBack={false} />
 
       <ScrollView showsVerticalScrollIndicator={false} style={PaddingStyles.page}>
         {/* Add New Listing Button */}
@@ -73,7 +75,7 @@ export default function MyListingsScreen() {
           activeOpacity={0.8}
           onPress={() => router.push('/profile/myListings/category' as any)}
         >
-          <Text className="text-white text-base font-bold">Add New Listing</Text>
+          <Text className="text-white text-base font-bold">{t('listing.addNew')}</Text>
         </TouchableOpacity>
 
         {/* Search Bar */}
@@ -81,7 +83,7 @@ export default function MyListingsScreen() {
           <Ionicons name="search-outline" size={20} color="#999" />
           <TextInput
             className="flex-1 ml-3 text-base text-black"
-            placeholder="Search"
+            placeholder={t('common.search')}
             placeholderTextColor="#999"
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -90,7 +92,7 @@ export default function MyListingsScreen() {
 
         {/* Items Count */}
         <Text className="text-sm font-bold text-black mb-4">
-          {filteredListings.length} Items listed
+          {filteredListings.length} {t('listing.itemsListed')}
         </Text>
 
         {/* Listings */}

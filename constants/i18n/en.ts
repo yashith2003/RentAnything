@@ -9,6 +9,7 @@ export default {
     welcome: "Welcome !",
     select_lang: "Select your preferred language you are most comfortable with",
     next: "Next",
+    title: "Language Change",
   },
   accountTypePage: {
     title: "Your Account Type",
@@ -67,5 +68,66 @@ export default {
     title: "Successful!",
     message: "Phone number verification successful! You are now logged in to your account. Welcome back to Rent Anything!",
     next: "Next",
+  },
+   tabs: {
+    home: "Home",
+    search: "Search",
+    addListing: "Add Listing",
+    rentals: "Rentals",
+    profile: "Profile",
+  },
+
+  home: {
+    companyAccount: "Company Account",
+    individualAccount: "Individual Account",
+    welcomeBack: "Welcome Back!",
+    trending: "Trending Items",
+    viewAll: "View All",
+    enterLocation: "Enter your location",
+  },
+
+  listing: {
+    myListings: "My Listings",
+    addNew: "Add New Listing",
+    itemsListed: "Items listed",
+  },
+
+  profile: {
+    title: "Profile",
+    myBookings: "My Bookings",
+    myOrders: "My Orders",
+    listingItems: "Listing Items",
+    profileDetails: "Profile Details",
+    kyc: "KYC",
+    reviews: "Reviews",
+    rentals: "Rentals",
+    payments: "Payments",
+    earnings: "Earnings",
+    levels: "Levels",
+    faqs: "FAQs",
+    incident: "Incident Report",
+    language: "Language",
+    logout: "Logout",
+    joined: "Joined",
+  },
+
+  rentals: {
+    title: "Rentals",
+    myRentals: "My Rentals",
+    myOrders: "My Orders",
+  },
+
+  search: {
+    title: "Search",
+    clearFilters: "Clear filters",
+    list: "List",
+    map: "Map",
+    productsFound: "products found",
+  },
+
+  common: {
+    search: "Search",
+    next: "Next",
+    save: "Save",
   },
 };
