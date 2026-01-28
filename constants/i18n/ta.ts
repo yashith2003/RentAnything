@@ -9,6 +9,7 @@ export default {
     welcome: "வரவேற்பு!",
     select_lang: "உங்களுக்கு மிகவும் வசதியான மொழியைத் தேர்ந்தெடுக்கவும்",
     next: "அடுத்தது",
+    title: "மொழியை மாற்றவும்",
   },
   accountTypePage: {
     title: "உங்கள் கணக்கு வகை",
@@ -67,5 +68,66 @@ export default {
     title: "வெற்றி!",
     message: "தொலைபேசி எண் சரிபார்ப்பு வெற்றிகரமாக முடிந்தது! நீங்கள் இப்போது உள்நுழைந்துள்ளீர்கள். மீண்டும் வருக!",
     next: "அடுத்தது",
+  },
+   tabs: {
+    home: "முகப்பு",
+    search: "தேடல்",
+    addListing: "பட்டியல் சேர்க்க",
+    rentals: "வாடகை",
+    profile: "சுயவிவரம்",
+  },
+
+  home: {
+    companyAccount: "நிறுவன கணக்கு",
+    individualAccount: "தனிநபர் கணக்கு",
+    welcomeBack: "மீண்டும் வரவேற்கிறோம்!",
+    trending: "பிரபலமான பொருட்கள்",
+    viewAll: "அனைத்தையும் பார்க்க",
+    enterLocation: "இடத்தை உள்ளிடவும்",
+  },
+
+  listing: {
+    myListings: "என் பட்டியல்கள்",
+    addNew: "புதிய பட்டியல்",
+    itemsListed: "பட்டியலிடப்பட்டவை",
+  },
+
+  profile: {
+    title: "சுயவிவரம்",
+    myBookings: "என் முன்பதிவுகள்",
+    myOrders: "என் ஆர்டர்கள்",
+    listingItems: "பட்டியல்கள்",
+    profileDetails: "சுயவிவர விவரங்கள்",
+    kyc: "KYC",
+    reviews: "மதிப்பீடுகள்",
+    rentals: "வாடகை",
+    payments: "கட்டணங்கள்",
+    earnings: "வருமானம்",
+    levels: "நிலைகள்",
+    faqs: "FAQ",
+    incident: "சம்பவ அறிக்கை",
+    language: "மொழி",
+    logout: "வெளியேறு",
+    joined: "சேர்ந்த தேதி",
+  },
+
+  rentals: {
+    title: "வாடகை",
+    myRentals: "என் வாடகைகள்",
+    myOrders: "என் ஆர்டர்கள்",
+  },
+
+  search: {
+    title: "தேடல்",
+    clearFilters: "வடிகட்டிகளை நீக்கு",
+    list: "பட்டியல்",
+    map: "வரைபடம்",
+    productsFound: "பொருட்கள் கிடைத்தன",
+  },
+
+  common: {
+    search: "தேடல்",
+    next: "அடுத்தது",
+    save: "சேமி",
   },
 };

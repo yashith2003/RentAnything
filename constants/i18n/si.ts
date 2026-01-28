@@ -9,6 +9,7 @@ export default {
     welcome: "සාදරයෙන් පිළිගනිමු!",
     select_lang: "ඔබට පහසුම භාෂාව තෝරාගන්න",
     next: "ඊළඟට",
+    title: "භාෂාව වෙනස් කිරීම",
   },
   accountTypePage: {
     title: "ඔබේ ගිණුම් වර්ගය",
@@ -67,5 +68,66 @@ export default {
     title: "සාර්ථකයි!",
     message: "දුරකථන අංක සත්‍යාපනය සාර්ථකයි! ඔබ දැන් ඔබේ ගිණුමට ඇතුළු වී ඇත. නැවතත් සාදරයෙන් පිළිගනිමු!",
     next: "ඊළඟට",
+  },
+  tabs: {
+    home: "මුල් පිටුව",
+    search: "සොයන්න",
+    addListing: "දැන්වීම එක් කරන්න",
+    rentals: "කුලී",
+    profile: "පැතිකඩ",
+  },
+
+  home: {
+    companyAccount: "සමාගම් ගිණුම",
+    individualAccount: "පුද්ගලික ගිණුම",
+    welcomeBack: "නැවත සාදරයෙන් පිළිගනිමු!",
+    trending: "ප්‍රචලිත භාණ්ඩ",
+    viewAll: "සියල්ල බලන්න",
+    enterLocation: "ස්ථානය ඇතුළත් කරන්න",
+  },
+
+  listing: {
+    myListings: "මගේ දැන්වීම්",
+    addNew: "නව දැන්වීමක් එක් කරන්න",
+    itemsListed: "දැන්වූ අයිතම",
+  },
+
+  profile: {
+    title: "පැතිකඩ",
+    myBookings: "මගේ වෙන්කිරීම්",
+    myOrders: "මගේ ඇණවුම්",
+    listingItems: "දැන්වීම්",
+    profileDetails: "පැතිකඩ විස්තර",
+    kyc: "KYC",
+    reviews: "සමාලෝචන",
+    rentals: "කුලී",
+    payments: "ගෙවීම්",
+    earnings: "ආදායම්",
+    levels: "මට්ටම්",
+    faqs: "FAQ",
+    incident: "සිද්ධි වාර්තා",
+    language: "භාෂාව",
+    logout: "පිටවන්න",
+    joined: "එකතු වූ දිනය",
+  },
+
+  rentals: {
+    title: "කුලී",
+    myRentals: "මගේ කුලී",
+    myOrders: "මගේ ඇණවුම්",
+  },
+
+  search: {
+    title: "සොයන්න",
+    clearFilters: "පෙරහන් ඉවත් කරන්න",
+    list: "ලැයිස්තුව",
+    map: "සිතියම",
+    productsFound: "භාණ්ඩ හමුවී ඇත",
+  },
+
+  common: {
+    search: "සොයන්න",
+    next: "ඊළඟට",
+    save: "සුරකින්න",
   },
 };

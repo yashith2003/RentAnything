@@ -10,6 +10,7 @@ interface ActionListItemProps {
   onPress: () => void;
   showChevron?: boolean;
   destructive?: boolean;
+  rightText?: string;
 }
 
 export default function ActionListItem({
@@ -19,6 +20,7 @@ export default function ActionListItem({
   onPress,
   showChevron = true,
   destructive = false,
+  rightText,
 }: ActionListItemProps) {
   return (
     <TouchableOpacity
@@ -36,9 +38,14 @@ export default function ActionListItem({
           {label}
         </Text>
       </View>
-      {showChevron && (
-        <Ionicons name="chevron-forward" size={18} color="#D1D5DB" />
-      )}
+      <View className="flex-row items-center gap-x-2">
+        {rightText && (
+          <Text className="text-sm text-gray-400 font-medium">{rightText}</Text>
+        )}
+        {showChevron && (
+          <Ionicons name="chevron-forward" size={18} color="#D1D5DB" />
+        )}
+      </View>
     </TouchableOpacity>
   );
 }

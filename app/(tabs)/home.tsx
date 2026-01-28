@@ -9,6 +9,7 @@ import { useUser } from '@/context/userContext';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
  
@@ -67,9 +68,12 @@ const trendingItems = [
 export default function HomeScreen() {
   const router = useRouter();
   const { role } = useUser();
+  const { t } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState('Electronic');
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState('Enter your location');
+  const [selectedLocation, setSelectedLocation] = useState('DEFAULT');
+
+  const displayLocation = selectedLocation === 'DEFAULT' ? t('home.enterLocation') : selectedLocation;
 
   const handleLocationSelect = (location: string) => {
     setSelectedLocation(location);
@@ -88,9 +92,9 @@ export default function HomeScreen() {
             />
             <View>
               <Text className="text-xs text-gray-400 font-medium">
-                {role === 'company' ? 'Company Account' : 'Individual Account'}
+                {role === 'company' ? t('home.companyAccount') : t('home.individualAccount')}
               </Text>
-              <Text className="text-sm font-bold text-black">Welcome Back!</Text>
+              <Text className="text-sm font-bold text-black">{t('home.welcomeBack')}</Text>
             </View>
           </View>
           <View className="flex-row items-center gap-x-4">
@@ -115,7 +119,7 @@ export default function HomeScreen() {
           onPress={() => setShowLocationDropdown(true)}
         >
           <Image source={require('@/assets/icons/location.svg')} style={{ width: 20, height: 20 }} />
-          <Text className="flex-1 ml-3 text-gray-500 font-medium">{selectedLocation}</Text>
+          <Text className="flex-1 ml-3 text-gray-500 font-medium">{displayLocation}</Text>
           <Text className="text-gray-400 text-xs">▼</Text>
         </TouchableOpacity>
 
@@ -128,16 +132,16 @@ export default function HomeScreen() {
 
         {/* Search Bar */}
         <SearchBar 
-          placeholder="Search" 
+          placeholder={t('common.search')} 
           showFilter={true} 
           containerStyle={{ marginBottom: 24 }}
         />
 
         {/* Trending Items Header */}
         <View className="flex-row items-center justify-between mb-4">
-          <Text className="text-xl font-bold">Trending Items</Text>
+          <Text className="text-xl font-bold">{t('home.trending')}</Text>
           <TouchableOpacity>
-            <Text className="text-gray-400 font-medium">View All</Text>
+            <Text className="text-gray-400 font-medium">{t('home.viewAll')}</Text>
           </TouchableOpacity>
         </View>
 
