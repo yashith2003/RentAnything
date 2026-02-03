@@ -1,5 +1,6 @@
 //app/search/filter.tsx
 
+import CalendarPickerPopup from '@/components/modal/CalendarPickerPopup';
 import { PaddingStyles, Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -18,6 +19,19 @@ export default function FilterScreen() {
   const [selectedColor, setSelectedColor] = useState('Blue');
   const [fuelType, setFuelType] = useState('Electric');
   const [verification, setVerification] = useState('Driving License');
+
+  const [isCalendarVisible, setIsCalendarVisible] = useState(false);
+  const [dateRange, setDateRange] = useState({
+    startDate: '2025-07-31',
+    endDate: '2025-08-31',
+    startTime: '10:30 am',
+    endTime: '05:30 pm'
+  });
+
+  const handleCalendarDone = (data: { startDate: string; endDate: string; startTime: string; endTime: string }) => {
+    setDateRange(data);
+    setIsCalendarVisible(false);
+  };
 
   const Chip = ({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) => (
     <TouchableOpacity
@@ -177,17 +191,23 @@ export default function FilterScreen() {
           <View className="flex-row justify-between">
             <View className="flex-1 mr-4">
               <Text className="text-xs text-gray-500 font-bold mb-2">Pick-up Date</Text>
-              <View className={`flex-row items-center justify-between bg-white border border-gray-100 rounded-xl px-${getTailwindSpacing(Spacing.lg)} py-2`}>
-                <Text className="text-sm text-gray-400">2025-07-31</Text>
+              <TouchableOpacity
+                onPress={() => setIsCalendarVisible(true)}
+                className={`flex-row items-center justify-between bg-white border border-gray-100 rounded-xl px-${getTailwindSpacing(Spacing.lg)} py-2`}
+              >
+                <Text className="text-sm text-gray-400">{dateRange.startDate}</Text>
                 <Ionicons name="calendar-outline" size={18} color="#666" />
-              </View>
+              </TouchableOpacity>
             </View>
             <View className="flex-1">
               <Text className="text-xs text-gray-500 font-bold mb-2">Return Date</Text>
-              <View className={`flex-row items-center justify-between bg-white border border-gray-100 rounded-xl px-${getTailwindSpacing(Spacing.lg)} py-2`}>
-                <Text className="text-sm text-gray-400">2025-08-31</Text>
+              <TouchableOpacity
+                onPress={() => setIsCalendarVisible(true)}
+                className={`flex-row items-center justify-between bg-white border border-gray-100 rounded-xl px-${getTailwindSpacing(Spacing.lg)} py-2`}
+              >
+                <Text className="text-sm text-gray-400">{dateRange.endDate}</Text>
                 <Ionicons name="calendar-outline" size={18} color="#666" />
-              </View>
+              </TouchableOpacity>
             </View>
           </View>
         </Section>
@@ -288,6 +308,12 @@ export default function FilterScreen() {
           <Text className="text-white font-bold">Show Results</Text>
         </TouchableOpacity>
       </View>
+
+      <CalendarPickerPopup 
+        isVisible={isCalendarVisible}
+        onClose={() => setIsCalendarVisible(false)}
+        onDone={handleCalendarDone}
+      />
     </SafeAreaView>
   );
 }
