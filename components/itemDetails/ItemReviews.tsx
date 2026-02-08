@@ -13,14 +13,15 @@ interface Review {
 interface ItemReviewsProps {
   reviews: Review[];
   totalReviews: number;
+  onViewAll?: () => void;
 }
 
-export default function ItemReviews({ reviews, totalReviews }: ItemReviewsProps) {
+export default function ItemReviews({ reviews, totalReviews, onViewAll }: ItemReviewsProps) {
   return (
     <View className="mt-8">
       <View className="flex-row justify-between items-center mb-4">
         <Text className="text-base font-bold">Reviews For Item ({totalReviews})</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={onViewAll}>
           <Text className="text-gray-400 text-xs font-medium">View All</Text>
         </TouchableOpacity>
       </View>

@@ -1,3 +1,4 @@
+import { SavedItem, useSavedItems } from '@/context/SavedItemsContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -17,18 +18,35 @@ interface ItemCardProps {
     location: string;
     isSaved?: boolean;
     deliveryAvailable?: boolean;
+    delivery?: boolean;
   };
   onPress?: () => void;
 }
 
 export default function ItemCard({ item, onPress }: ItemCardProps) {
   const router = useRouter();
+  const { isSaved, addItem, removeItem } = useSavedItems();
+  const saved = isSaved(item.id);
 
   const handlePress = () => {
     if (onPress) {
       onPress();
     } else {
       router.push(`/item/${item.id}`);
+    }
+  };
+
+  const toggleSave = () => {
+    if (saved) {
+      removeItem(item.id);
+    } else {
+      // Ensure compatibility with SavedItem type
+      const itemToSave: SavedItem = {
+          ...item,
+          extraPrice: item.extraPrice || '', // Provide default if undefined
+          delivery: item.delivery ?? item.deliveryAvailable ?? false // Handle mapping
+      };
+      addItem(itemToSave);
     }
   };
 
@@ -47,8 +65,11 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
     >
       <View className="relative">
         <Image source={{ uri: item.image }} style={{ width: '100%', height: 160 }} contentFit="cover" />
-        <TouchableOpacity className="absolute top-3 right-3">
-          <Ionicons name={item.isSaved ? "heart" : "heart-outline"} size={20} color={item.isSaved ? "#FF4D4D" : "#000"} />
+        <TouchableOpacity 
+            className="absolute top-3 right-3"
+            onPress={toggleSave}
+        >
+          <Ionicons name={saved ? "heart" : "heart-outline"} size={20} color={saved ? "#FF4D4D" : "#000"} />
         </TouchableOpacity>
       </View>
 

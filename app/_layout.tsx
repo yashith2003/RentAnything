@@ -13,13 +13,15 @@ export const unstable_settings = {
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { SavedItemsProvider } from '@/context/SavedItemsContext';
 import { UserProvider } from '@/context/userContext';
 
 export default function RootLayout() {
 
   return (
-    <UserProvider>
-      <SafeAreaProvider>
+    <SavedItemsProvider>
+      <UserProvider>
+        <SafeAreaProvider>
         <PaperProvider>
           <ThemeProvider value={DefaultTheme}>
             <Stack screenOptions={{ headerShown: false }}>
@@ -32,5 +34,6 @@ export default function RootLayout() {
         </PaperProvider>
       </SafeAreaProvider>
     </UserProvider>
+    </SavedItemsProvider>
   );
 }

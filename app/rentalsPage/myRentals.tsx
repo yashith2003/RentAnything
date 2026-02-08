@@ -1,9 +1,14 @@
 import SearchBar from '@/components/form/searchbar';
+import CancelRentalPopup from '@/components/modal/CancelRentalPopup';
+import ConditionConfirmationPopup from '@/components/modal/ConditionConfirmationPopup';
+import RentalCancelledPopup from '@/components/modal/RentalCancelledPopup';
+import SuccessPopup from '@/components/modal/successPopup';
 import StatusTabGroup from '@/components/shared/StatusTabGroup';
 import SummaryBanner from '@/components/shared/SummaryBanner';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
@@ -41,6 +46,7 @@ const rentalItems = [
 ];
 
 export default function MyRentals() {
+  const router = useRouter();
   const [activeStatus, setActiveStatus] = useState<StatusType>('upcoming');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -51,7 +57,51 @@ export default function MyRentals() {
     { key: 'cancelled' as StatusType, label: 'Cancelled' },
   ];
 
+  const [isCancelModalVisible, setCancelModalVisible] = useState(false);
+  const [isConditionModalVisible, setConditionModalVisible] = useState(false);
+  const [isSuccessModalVisible, setSuccessModalVisible] = useState(false);
+  const [isRentalCancelledModalVisible, setRentalCancelledModalVisible] = useState(false);
+  const [selectedRentalId, setSelectedRentalId] = useState<number | null>(null);
+
   const filteredRentals = rentalItems.filter((item) => item.status === activeStatus);
+
+  const handleCancelPress = (id: number) => {
+    setSelectedRentalId(id);
+    setCancelModalVisible(true);
+  };
+
+  const handleCollectPress = (id: number, status: StatusType) => {
+    setSelectedRentalId(id);
+    if (status === 'inprogress') {
+      router.push('/rentalsPage/extendRental');
+    } else {
+      setConditionModalVisible(true);
+    }
+  };
+
+  const handleConfirmCancel = () => {
+    // Logic to cancel rental would go here
+    console.log(`Cancelling rental ${selectedRentalId}`);
+    setCancelModalVisible(false);
+    setRentalCancelledModalVisible(true);
+  };
+
+  const handleRentalCancelledNext = () => {
+    setRentalCancelledModalVisible(false);
+    setSelectedRentalId(null);
+  };
+
+  const handleConditionSubmit = (data: any) => {
+      console.log('Condition Submitted:', data);
+      setConditionModalVisible(false);
+      setSuccessModalVisible(true);
+      // Update item status logic would go here
+  };
+
+  const handleSuccessNext = () => {
+    setSuccessModalVisible(false);
+    setSelectedRentalId(null);
+  };
 
   return (
     <View className="flex-1 bg-white">
@@ -80,15 +130,44 @@ export default function MyRentals() {
       {/* Rental Items */}
       <ScrollView showsVerticalScrollIndicator={false} className={`flex-1 px-${getTailwindSpacing(Spacing.pageHorizontal)} pb-10`}>
         {filteredRentals.map((item) => (
-          <RentalCard key={item.id} item={item} />
+          <RentalCard 
+            key={item.id} 
+            item={item} 
+            onCancelRental={() => handleCancelPress(item.id)}
+            onCollect={() => handleCollectPress(item.id, item.status)}
+          />
         ))}
         <View className="h-10" />
       </ScrollView>
+
+      <CancelRentalPopup
+        visible={isCancelModalVisible}
+        onConfirm={handleConfirmCancel}
+        onCancel={() => setCancelModalVisible(false)}
+      />
+
+      <ConditionConfirmationPopup
+        visible={isConditionModalVisible}
+        onClose={() => setConditionModalVisible(false)}
+        onSubmit={handleConditionSubmit}
+      />
+
+      <SuccessPopup
+        visible={isSuccessModalVisible}
+        onNext={handleSuccessNext}
+        title="Success!"
+        message="Your item condition has been successfully recorded."
+      />
+
+      <RentalCancelledPopup
+        visible={isRentalCancelledModalVisible}
+        onNext={handleRentalCancelledNext}
+      />
     </View>
   );
 }
 
-function RentalCard({ item }: { item: any }) {
+function RentalCard({ item, onCancelRental, onCollect }: { item: any, onCancelRental: () => void, onCollect: () => void }) {
   return (
     <View className="bg-white border border-gray-100 rounded-[32px] p-5 mb-5 shadow-sm shadow-black/5" style={{ elevation: 2 }}>
       {/* Header with badges */}
@@ -124,16 +203,22 @@ function RentalCard({ item }: { item: any }) {
 
       {/* Action Buttons */}
       <View className="flex-row items-center mt-6 gap-x-3">
-        <TouchableOpacity className="flex-1 border-2 border-[#2FA2B9] rounded-full h-12 items-center justify-center">
+        <TouchableOpacity 
+            className="flex-1 border-2 border-[#2FA2B9] rounded-full h-12 items-center justify-center"
+            onPress={onCancelRental}
+        >
           <Text className="text-[#2FA2B9] text-sm font-bold">Cancel Rental</Text>
         </TouchableOpacity>
         <TouchableOpacity
           className={`flex-1 rounded-full h-12 items-center justify-center ${
-            item.collected ? 'bg-[#A8A8A8]' : 'bg-[#2FA2B9]'
+            item.status === 'inprogress' ? 'bg-[#2FA2B9]' : item.collected ? 'bg-[#A8A8A8]' : 'bg-[#2FA2B9]'
           }`}
-          disabled={item.collected}
+          disabled={item.status !== 'inprogress' && item.collected}
+          onPress={onCollect}
         >
-          <Text className="text-white text-sm font-bold">{item.collected ? 'Collected' : 'Collect'}</Text>
+          <Text className="text-white text-sm font-bold">
+            {item.status === 'inprogress' ? 'Extend Rental' : item.collected ? 'Collected' : 'Collect'}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

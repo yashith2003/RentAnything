@@ -211,7 +211,11 @@ export default function ItemDetailsScreen() {
             <OwnerAbout owner={ownerData} />
 
             {/* Reviews Section Component */}
-            <ItemReviews reviews={reviews} totalReviews={11} />
+            <ItemReviews 
+                reviews={reviews} 
+                totalReviews={11} 
+                onViewAll={() => router.push('/item/reviews')}
+            />
 
             {/* Trust Banners Component */}
             <TrustBanners />

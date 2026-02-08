@@ -1,9 +1,9 @@
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { TabSwitcher } from '@/components/shared/TabSwitcher';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import IncidentRequestContent from './incidentRequest';
@@ -11,7 +11,14 @@ import MyIncidentContent from './myIncident';
 
 export default function IncidentMainScreen() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('Incident Requests');
+  const params = useLocalSearchParams();
+  const [activeTab, setActiveTab] = useState((params.activeTab as string) || 'Incident Requests');
+
+  useEffect(() => {
+    if (params.activeTab) {
+      setActiveTab(params.activeTab as string);
+    }
+  }, [params.activeTab]);
 
   return (
     <SafeAreaView className="flex-1 bg-[#F9F9F9]">
