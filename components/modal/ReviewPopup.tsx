@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
@@ -53,23 +54,13 @@ export default function ReviewPopup({
             onPress={(e) => e.stopPropagation()}
           >
             {/* Gauge and Stars Illustration Placeholder */}
+            {/* Rating Meter Image */}
             <View className="items-center mb-6">
-                <View className="flex-row gap-x-1 mb-2">
-                    <Ionicons name="star" size={24} color="#FFD700" style={{ transform: [{ translateY: 10 }] }} />
-                    <Ionicons name="star" size={32} color="#FFD700" />
-                    <Ionicons name="star" size={24} color="#FFD700" style={{ transform: [{ translateY: 10 }] }} />
-                </View>
-                <View className="relative h-16 w-32 items-center justify-end overflow-hidden">
-                    {/* Simplified gauge using icons or shapes */}
-                    <View className="absolute inset-0 border-[12px] border-b-0 border-gray-100 rounded-t-full" />
-                    <View className="absolute inset-0 flex-row">
-                        <View className="flex-1 border-[12px] border-b-0 border-red-400 rounded-tl-full" />
-                        <View className="flex-1 border-[12px] border-b-0 border-orange-400" />
-                        <View className="flex-1 border-[12px] border-b-0 border-green-400 rounded-tr-full" />
-                    </View>
-                    <View className="w-1.5 h-10 bg-gray-700 rounded-full" style={{ transform: [{ rotate: '45deg' }, { translateY: -15 }] }} />
-                    <View className="w-4 h-4 bg-gray-700 rounded-full mb-[-8px]" />
-                </View>
+                 <Image 
+                    source={require('@/assets/images/ratingMeter.png')} 
+                    style={{ width: 120, height: 80 }} 
+                    contentFit="contain" 
+                 />
             </View>
 
             <Text className="text-xl font-bold text-center text-gray-900 mb-2">{title}</Text>

@@ -1,28 +1,24 @@
-//components/shared/itemSavePopup.tsx
-
 import { Colors } from '@/constants/theme';
 import React from 'react';
 import { Modal, Text, TouchableOpacity, View } from 'react-native';
 
-interface RemoveSavedModalProps {
+interface CancelRentalPopupProps {
   visible: boolean;
-  onRemove: () => void;
-  onKeep: () => void;
-  itemName?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
 }
 
-export default function RemoveSavedModal({ 
+export default function CancelRentalPopup({ 
   visible, 
-  onRemove, 
-  onKeep,
-  itemName = 'this'
-}: RemoveSavedModalProps) {
+  onConfirm, 
+  onCancel,
+}: CancelRentalPopupProps) {
   return (
     <Modal
       visible={visible}
       transparent
       animationType="fade"
-      onRequestClose={onKeep}
+      onRequestClose={onCancel}
     >
       <View className="flex-1 bg-black/80 justify-center items-center px-6">
         <View className="bg-white rounded-3xl p-6 w-full max-w-sm">
@@ -30,41 +26,41 @@ export default function RemoveSavedModal({
           <View className="w-12 h-1 bg-gray-300 rounded-full self-center mb-6" />
           
           {/* Title */}
-          <Text className="text-xl font-bold text-header text-center mb-4">
-            Remove from Favorites
+          <Text className="text-xl font-bold text-black text-center mb-4">
+            Cancel Rental
           </Text>
           
           {/* Description */}
-          <Text className="text-sm font-bold text-header text-center mb-2">
-            Are you sure you want to remove this?
+          <Text className="text-sm font-bold text-black text-center mb-2">
+            Are you sure you want to cancel?
           </Text>
-          <Text className="text-sm text-gray-500 text-center mb-6">
-            Removing this salon will delete it from your saved favourites list.
+          <Text className="text-sm text-gray-500 text-center mb-6 leading-5">
+            Canceling your appointment will remove it from your upcoming rentals. Full refund if canceled 24 hours before rental start. No refund if canceled after 24 hours.
           </Text>
           
           {/* Buttons */}
           <View className="gap-y-3">
-            {/* Yes, Remove Button */}
+            {/* Yes, Cancel Rental Button */}
             <TouchableOpacity
-              onPress={onRemove}
+              onPress={onConfirm}
               className="h-14 rounded-full border items-center justify-center"
               style={{ borderColor: Colors.primary }}
               activeOpacity={0.8}
             >
               <Text className="font-bold text-base" style={{ color: Colors.primary }}>
-                Yes, Remove
+                Yes, Cancel Rental
               </Text>
             </TouchableOpacity>
             
-            {/* Keep in Favorites Button */}
+            {/* Keep Rental Button */}
             <TouchableOpacity
-              onPress={onKeep}
+              onPress={onCancel}
               className="h-14 rounded-full items-center justify-center"
               style={{ backgroundColor: Colors.primary }}
               activeOpacity={0.8}
             >
               <Text className="text-white font-bold text-base">
-                Keep in Favorites
+                Keep Rental
               </Text>
             </TouchableOpacity>
           </View>

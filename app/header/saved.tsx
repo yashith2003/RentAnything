@@ -1,67 +1,32 @@
-// app/header/saved.tsx
-
 import SearchBar from '@/components/form/searchbar';
+import RemoveSavedModal from '@/components/modal/itemSavePopup';
+import { useSavedItems } from '@/context/SavedItemsContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const savedItems = [
-  {
-    id: 1,
-    image: 'https://images.unsplash.com/photo-1524338198850-8a2ff63aaceb?q=80&w=400&auto=format&fit=crop', // Security Camera
-    title: 'Tesla Model S',
-    price: 'Rs:1000',
-    extraPrice: '- Per day',
-    owner: 'Malith Perera',
-    rating: '5.0',
-    distance: '5.6 km',
-    location: 'Nugegoda',
-    delivery: true,
-  },
-  {
-    id: 2,
-    image: 'https://images.unsplash.com/photo-1599727402636-1e96a40a233b?q=80&w=400&auto=format&fit=crop', // Plastic Barrels
-    title: 'Tesla Model S',
-    price: 'Rs:1000',
-    extraPrice: '- Per day | Rs: 1500 - 2 days',
-    owner: 'Malith Perera',
-    rating: '5.0',
-    distance: '5.6 km',
-    location: 'Nugegoda',
-    delivery: true,
-  },
-  {
-    id: 3,
-    image: 'https://images.unsplash.com/photo-1519326844852-704caea5679e?q=80&w=400&auto=format&fit=crop', // Heater (Assuming heater)
-    title: 'Tesla Model S',
-    price: 'Rs:1000',
-    extraPrice: '- 1 day',
-    owner: 'Malith Perera',
-    rating: '5.0',
-    distance: '5.6 km',
-    location: 'Nugegoda',
-    delivery: true,
-  },
-  {
-    id: 4,
-    image: 'https://images.unsplash.com/photo-1581147036324-c17ac41dfa6c?q=80&w=400&auto=format&fit=crop', // Sledgehammer
-    title: 'Tesla Model S',
-    price: 'Rs:1000',
-    extraPrice: '- 1 day | Rs: 1500 - 2 days',
-    owner: 'Malith Perera',
-    rating: '5.0',
-    distance: '5.6 km',
-    location: 'Nugegoda',
-    delivery: true,
-  },
-];
-
 export default function SavedScreen() {
   const router = useRouter();
+  const { savedItems, removeItem } = useSavedItems();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<number | string | null>(null);
+
+  const handleRemovePress = (id: number | string) => {
+    setSelectedItem(id);
+    setModalVisible(true);
+  };
+
+  const handleConfirmRemove = () => {
+    if (selectedItem !== null) {
+      removeItem(selectedItem);
+      setModalVisible(false);
+      setSelectedItem(null);
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
@@ -96,15 +61,25 @@ export default function SavedScreen() {
         {/* Grid of Saved Items */}
         <View className="flex-row flex-wrap justify-between px-6 pb-10">
           {savedItems.map((item) => (
-            <SavedItemCard key={item.id} item={item} />
+            <SavedItemCard 
+                key={item.id} 
+                item={item} 
+                onRemove={() => handleRemovePress(item.id)}
+            />
           ))}
         </View>
       </ScrollView>
+
+      <RemoveSavedModal
+        visible={modalVisible}
+        onRemove={handleConfirmRemove}
+        onKeep={() => setModalVisible(false)}
+      />
     </SafeAreaView>
   );
 }
 
-function SavedItemCard({ item }: { item: any }) {
+function SavedItemCard({ item, onRemove }: { item: any, onRemove: () => void }) {
   const router = useRouter();
   return (
     <TouchableOpacity
@@ -122,7 +97,10 @@ function SavedItemCard({ item }: { item: any }) {
       {/* Product Image */}
       <View className="relative">
         <Image source={{ uri: item.image }} style={{ width: '100%', height: 160 }} contentFit="cover" />
-        <TouchableOpacity className="absolute top-3 right-3 ">
+        <TouchableOpacity 
+            className="absolute top-3 right-3 "
+            onPress={onRemove}
+        >
           <Ionicons name="heart" size={20} color="#FF4D4D" />
         </TouchableOpacity>
       </View>
