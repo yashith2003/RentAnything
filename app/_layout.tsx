@@ -14,26 +14,37 @@ import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { SavedItemsProvider } from '@/context/SavedItemsContext';
-import { UserProvider } from '@/context/userContext';
+import { UserProvider, useUser } from '@/context/userContext';
 
 export default function RootLayout() {
-
   return (
     <SavedItemsProvider>
       <UserProvider>
-        <SafeAreaProvider>
-        <PaperProvider>
-          <ThemeProvider value={DefaultTheme}>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="index" options={{ title: 'Home' }} />
-              <Stack.Screen name="(tabs)" options={{ title: 'Tabs' }} />
-              <Stack.Screen name="(auth)" options={{ title: 'Authentication' }} />
-            </Stack>
-            <StatusBar style="auto" />
-          </ThemeProvider>
-        </PaperProvider>
-      </SafeAreaProvider>
-    </UserProvider>
+        <RootLayoutContent />
+      </UserProvider>
     </SavedItemsProvider>
+  );
+}
+
+function RootLayoutContent() {
+  const { isLoading } = useUser();
+
+  if (isLoading) {
+    return null; // Or a splash screen
+  }
+
+  return (
+    <SafeAreaProvider>
+      <PaperProvider>
+        <ThemeProvider value={DefaultTheme}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" options={{ title: 'Home' }} />
+            <Stack.Screen name="(tabs)" options={{ title: 'Tabs' }} />
+            <Stack.Screen name="(auth)" options={{ title: 'Authentication' }} />
+          </Stack>
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </PaperProvider>
+    </SafeAreaProvider>
   );
 }

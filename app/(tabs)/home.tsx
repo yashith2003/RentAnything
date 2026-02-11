@@ -12,58 +12,10 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import itemService, { Item } from '@/api/item.service';
+import { useEffect } from 'react';
  
 
-const trendingItems = [
-  {
-    id: 1,
-    image: 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?q=80&w=400&auto=format&fit=crop', // Tennis Racquet
-    title: 'Tennis Racquet',
-    price: 'Rs:1000',
-    extraPrice: '',
-    owner: 'Malith Perera',
-    rating: '5.0',
-    distance: '5.6 km',
-    location: 'Nugegoda',
-    delivery: true,
-  },
-  {
-    id: 2,
-    image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=400&auto=format&fit=crop', // DSLR
-    title: 'Nikon D90 DSLR Camera',
-    price: 'Rs:1000',
-    extraPrice: '| Rs: 1500 - 2 days',
-    owner: 'Malith Perera',
-    rating: '5.0',
-    distance: '5.6 km',
-    location: 'Nugegoda',
-    delivery: true,
-  },
-  {
-    id: 3,
-    image: 'https://images.unsplash.com/photo-1581147036324-c17ac41dfa6c?q=80&w=400&auto=format&fit=crop', // Sledgehammer
-    title: '12lb Sledgehammer',
-    price: 'Rs:1000',
-    extraPrice: '',
-    owner: 'Malith Perera',
-    rating: '5.0',
-    distance: '5.6 km',
-    location: 'Nugegoda',
-    delivery: true,
-  },
-  {
-    id: 4,
-    image: 'https://images.unsplash.com/photo-1599727402636-1e96a40a233b?q=80&w=400&auto=format&fit=crop', // Plastic Barrels
-    title: '55 Gal Plastic Barrels',
-    price: 'Rs:1000',
-    extraPrice: '',
-    owner: 'Malith Perera',
-    rating: '5.0',
-    distance: '5.6 km',
-    location: 'Nugegoda',
-    delivery: true,
-  },
-];
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -72,6 +24,24 @@ export default function HomeScreen() {
   const [selectedCategory, setSelectedCategory] = useState('Electronic');
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState('DEFAULT');
+  const [trendingItems, setTrendingItems] = useState<Item[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchItems();
+  }, [selectedCategory]);
+
+  const fetchItems = async () => {
+    setIsLoading(true);
+    try {
+      const items = await itemService.getItems();
+      setTrendingItems(items);
+    } catch (error) {
+      console.error('Failed to fetch items:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const displayLocation = selectedLocation === 'DEFAULT' ? t('home.enterLocation') : selectedLocation;
 
@@ -92,7 +62,7 @@ export default function HomeScreen() {
             />
             <View>
               <Text className="text-xs text-gray-400 font-medium">
-                {role === 'company' ? t('home.companyAccount') : t('home.individualAccount')}
+                {role?.toLowerCase() === 'company' ? t('home.companyAccount') : t('home.individualAccount')}
               </Text>
               <Text className="text-sm font-bold text-black">{t('home.welcomeBack')}</Text>
             </View>
@@ -147,9 +117,27 @@ export default function HomeScreen() {
 
         {/* Trending Items Grid */}
         <View className="flex-row flex-wrap justify-between pb-10">
-          {trendingItems.map((item) => (
-            <ItemCard key={item.id} item={item} />
-          ))}
+          {isLoading ? (
+            <Text className="text-gray-400 text-center w-full py-10">Loading items...</Text>
+          ) : trendingItems && trendingItems.length > 0 ? (
+            trendingItems.map((item) => (
+              <ItemCard 
+                key={item.id} 
+                item={{
+                  id: item.id,
+                  title: item.title,
+                  image: item.image || 'https://via.placeholder.com/400',
+                  price: typeof item.price === 'number' ? `Rs:${item.price}` : (item.price || 'N/A'),
+                  owner: item.owner?.fullName || 'Anonymous',
+                  rating: item.rating || 'N/A',
+                  distance: item.distance || 'Unknown',
+                  location: item.address?.address || 'N/A',
+                }} 
+              />
+            ))
+          ) : (
+            <Text className="text-gray-400 text-center w-full py-10">No items found</Text>
+          )}
         </View>
       </ScrollView>
 

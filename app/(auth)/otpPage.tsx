@@ -7,17 +7,28 @@ import { useEffect, useRef, useState } from 'react';
 import { Keyboard, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import SuccessPopup from '@/components/modal/successPopup';
+import SuccessPopup from '@/components/AlertPopup/successPopup';
+import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
 import PrimaryButton from '@/components/ui/PrimaryButton';
 
 import { useTranslation } from 'react-i18next';
+import authService from '@/api/auth.service';
+import { useUser } from '@/context/userContext';
+import { useLocalSearchParams } from 'expo-router';
+
+import { mapAuthError } from '@/utils/errorMapper';
 
 export default function OTPPage() {
   const router = useRouter();
+  const { phone } = useLocalSearchParams<{ phone: string }>();
   const [otp, setOtp] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
   const inputRef = useRef<TextInput>(null);
   const { t } = useTranslation();
+  const { login } = useUser();
 
   // Auto-focus the input when screen mounts
   useEffect(() => {
@@ -27,12 +38,27 @@ export default function OTPPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleNext = () => {
-    if (otp === '1111') {
+  const handleNext = async () => {
+    if (otp.length !== 4) {
+      setErrorMessage(t('otpPage.enterFourDigit', 'Please enter a 4-digit OTP'));
+      setShowError(true);
+      return;
+    }
+
+    setIsVerifying(true);
+    try {
+      const response = await authService.verifyOtp(phone, otp);
+      await login(response.access_token, response.refresh_token, response.user.role);
       Keyboard.dismiss();
       setShowSuccess(true);
-    } else {
-      alert('Invalid OTP. Please enter the valid OTP');
+    } catch (error: any) {
+      console.error('OTP Verification failed:', error);
+      const backendMsg = error.response?.data?.message || error.message || 'Something went wrong';
+      const mappedMsg = mapAuthError(backendMsg, t);
+      setErrorMessage(mappedMsg);
+      setShowError(true);
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -87,7 +113,7 @@ export default function OTPPage() {
             {t('otpPage.title')}
           </Text>
           <Text className="text-sm text-gray-500 mt-3 text-center">
-            {t('otpPage.subtitle', { phone: '07* **** *07' })}
+            {t('otpPage.subtitle', { phone: phone || 'your phone' })}
           </Text>
         </View>
 
@@ -136,6 +162,11 @@ export default function OTPPage() {
 
       {/* Success Popup */}
       <SuccessPopup visible={showSuccess} onNext={handleSuccessNext} />
+      <ErrorPopup
+        visible={showError}
+        message={errorMessage}
+        onClose={() => setShowError(false)}
+      />
     </SafeAreaView>
   );
 }

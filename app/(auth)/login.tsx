@@ -9,20 +9,43 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import CustomTextInput from '@/components/form/CustomTextInput';
 import PrimaryButton from '@/components/ui/PrimaryButton';
+import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
 import { PaddingStyles } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
 
 import { useTranslation } from 'react-i18next';
+import authService from '@/api/auth.service';
+import { mapAuthError } from '@/utils/errorMapper';
 
 export default function LoginScreen() {
   const router = useRouter();
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const { t } = useTranslation();
 
-  const handleLogin = () => {
-    console.log('Logging in with:', phoneNumber);
-    // Navigate to OTP verification page
-    router.push('/(auth)/otpPage');
+  const handleLogin = async () => {
+    if (!phoneNumber) {
+      setErrorMessage(t('login.enterPhoneNumber', 'Please enter a phone number'));
+      setShowError(true);
+      return;
+    }
+    
+    try {
+      console.log('Logging in with:', phoneNumber);
+      await authService.login(phoneNumber);
+      // Navigate to OTP verification page
+      router.push({
+        pathname: '/(auth)/otpPage',
+        params: { phone: phoneNumber }
+      });
+    } catch (error: any) {
+      console.error('Login failed:', error);
+      const backendMsg = error.response?.data?.message || error.message || 'Something went wrong';
+      const mappedMsg = mapAuthError(backendMsg, t);
+      setErrorMessage(mappedMsg);
+      setShowError(true);
+    }
   };
 
   const handleSignUpPress = () => {
@@ -83,6 +106,11 @@ export default function LoginScreen() {
           </View>
         </View>
       </View>
+      <ErrorPopup
+        visible={showError}
+        message={errorMessage}
+        onClose={() => setShowError(false)}
+      />
     </SafeAreaView>
   );
 }
