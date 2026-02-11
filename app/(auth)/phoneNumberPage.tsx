@@ -17,19 +17,70 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import CustomTextInput from '@/components/form/CustomTextInput';
 import PrimaryButton from '@/components/ui/PrimaryButton';
+import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
 import { Spacing } from '@/constants/spacing';
 
 
 import { useTranslation } from 'react-i18next';
+import authService, { RegisterIndividualDto, RegisterCompanyDto } from '@/api/auth.service';
+import { useLocalSearchParams } from 'expo-router';
+import { mapAuthError } from '@/utils/errorMapper';
 
 export default function PhoneNumberPage() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { t } = useTranslation();
 
-  const handleVerifyPhone = () => {
-    console.log('Verifying phone number:', phoneNumber);
-    router.push('/(auth)/otpPage');
+  const handleVerifyPhone = async () => {
+    if (!phoneNumber) {
+      setErrorMessage(t('common.enterPhoneNumber', 'Please enter a phone number'));
+      setShowError(true);
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      console.log('Submitting registration with phone:', phoneNumber, 'Params:', params);
+      
+      if (params.type === 'INDIVIDUAL') {
+        const dto: RegisterIndividualDto = {
+          fullName: params.fullName as string,
+          email: params.email as string,
+          phone: phoneNumber,
+          address: params.address as string,
+        };
+        await authService.registerIndividual(dto);
+      } else if (params.type === 'COMPANY') {
+        const dto: RegisterCompanyDto = {
+          companyName: params.companyName as string,
+          registrationNumber: params.registrationNumber as string,
+          email: params.email as string,
+          phone: phoneNumber,
+          officeAddress: params.address as string,
+        };
+        await authService.registerCompany(dto);
+      } else {
+        // If no type, assume simple login/verify for existing user
+        await authService.login(phoneNumber);
+      }
+
+      router.push({
+        pathname: '/(auth)/otpPage',
+        params: { phone: phoneNumber }
+      });
+    } catch (error: any) {
+      console.error('Registration/Login failed:', error);
+      const backendMsg = error.response?.data?.message || error.message || 'Something went wrong';
+      const mappedMsg = mapAuthError(backendMsg, t);
+      setErrorMessage(mappedMsg);
+      setShowError(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleLoginPress = () => {
@@ -94,6 +145,11 @@ export default function PhoneNumberPage() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      <ErrorPopup
+        visible={showError}
+        message={errorMessage}
+        onClose={() => setShowError(false)}
+      />
     </SafeAreaView>
   );
 }

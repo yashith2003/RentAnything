@@ -20,9 +20,12 @@ import CustomTextInput from '@/components/form/CustomTextInput';
 import PrimaryButton from '@/components/ui/PrimaryButton';
 import { Spacing } from '@/constants/spacing';
 
-import SuccessPopup from '@/components/modal/successPopup';
+import SuccessPopup from '@/components/AlertPopup/successPopup';
+import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
 
 import { useTranslation } from 'react-i18next';
+import authService from '@/api/auth.service';
+import { mapAuthError } from '@/utils/errorMapper';
 
 export default function IndividualSignup() {
   const router = useRouter();
@@ -33,11 +36,36 @@ export default function IndividualSignup() {
   });
 
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { t } = useTranslation();
 
-  const handleVerifyEmail = () => {
-    console.log('Verifying email for:', formData);
-    setShowSuccess(true);
+  const handleVerifyEmail = async () => {
+    if (!formData.fullName || !formData.email || !formData.address) {
+      setErrorMessage(t('common.fillAllFields', 'Please fill in all fields'));
+      setShowError(true);
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      console.log('Checking email availability:', formData.email);
+      await authService.checkEmail(formData.email);
+      
+      router.push({
+        pathname: '/(auth)/phoneNumberPage',
+        params: { ...formData, type: 'INDIVIDUAL' }
+      });
+    } catch (error: any) {
+      console.error('Registration step failed:', error);
+      const backendMsg = error.response?.data?.message || error.message || 'Something went wrong';
+      const mappedMsg = mapAuthError(backendMsg, t);
+      setErrorMessage(mappedMsg);
+      setShowError(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSuccessNext = () => {
@@ -125,6 +153,11 @@ export default function IndividualSignup() {
         onNext={handleSuccessNext}
         title={t('individualSignup.successTitle')}
         message={t('individualSignup.successMsg')}
+      />
+      <ErrorPopup
+        visible={showError}
+        message={errorMessage}
+        onClose={() => setShowError(false)}
       />
     </SafeAreaView>
   );

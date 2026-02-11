@@ -1,3 +1,4 @@
+
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import StatsSection from '@/components/ownerProfile/StatsSection';
 import ActionListItem from '@/components/shared/ActionListItem';
@@ -19,9 +20,27 @@ interface MenuItem {
   rightText?: string;
 }
 
+import { Colors } from '@/constants/theme';
+import { useUser } from '@/context/userContext';
+import { useState } from 'react';
+import { TouchableOpacity } from 'react-native';
+import ConfirmationPopup from '@/components/AlertPopup/ConfirmationPopup';
+
 export default function ProfileScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
+  const { logout, role } = useUser();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const handleLogout = async () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = async () => {
+    await logout();
+    setShowLogoutConfirm(false);
+    router.replace('/(auth)/login');
+  };
 
   const currentLanguageLabel = {
     en: 'English',
@@ -167,6 +186,14 @@ export default function ProfileScreen() {
           ))}
         </View>
       </ScrollView>
+
+      <ConfirmationPopup
+        visible={showLogoutConfirm}
+        title={t('profile.logoutTitle', 'Logout Account')}
+        message={t('profile.logoutConfirm', 'Are you sure you want to logout? You will need to login again to access your account.')}
+        onConfirm={confirmLogout}
+        onCancel={() => setShowLogoutConfirm(false)}
+      />
     </SafeAreaView>
   );
 }
