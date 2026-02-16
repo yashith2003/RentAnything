@@ -61,7 +61,7 @@ export const MyListingCard: React.FC<MyListingCardProps> = ({
 
       {/* Action Buttons Row */}
       <View className="flex-row items-center mt-4 gap-x-3">
-        <TouchableOpacity
+   {/*     <TouchableOpacity
           className="flex-1 h-12 rounded-full border-2 items-center justify-center"
           style={{ borderColor: Colors.primary }}
           activeOpacity={0.8}
@@ -70,7 +70,7 @@ export const MyListingCard: React.FC<MyListingCardProps> = ({
           <Text className="font-bold text-sm" style={{ color: Colors.primary }}>
             {listing.rentals > 0 ? `${listing.rentals} Rentals` : 'No Rentals'}
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity>*/}
 
         <TouchableOpacity
           className="flex-1 h-12 rounded-full items-center justify-center"

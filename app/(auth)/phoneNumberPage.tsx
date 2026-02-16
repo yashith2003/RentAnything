@@ -25,6 +25,7 @@ import { useTranslation } from 'react-i18next';
 import authService, { RegisterIndividualDto, RegisterCompanyDto } from '@/api/auth.service';
 import { useLocalSearchParams } from 'expo-router';
 import { mapAuthError } from '@/utils/errorMapper';
+import { sanitizePhoneNumber, filterPhoneInput } from '@/utils/phoneUtils';
 
 export default function PhoneNumberPage() {
   const router = useRouter();
@@ -44,13 +45,14 @@ export default function PhoneNumberPage() {
 
     setIsSubmitting(true);
     try {
-      console.log('Submitting registration with phone:', phoneNumber, 'Params:', params);
+      const sanitizedPhone = sanitizePhoneNumber(phoneNumber);
+      console.log('Submitting registration with phone:', sanitizedPhone, 'Params:', params);
       
       if (params.type === 'INDIVIDUAL') {
         const dto: RegisterIndividualDto = {
           fullName: params.fullName as string,
           email: params.email as string,
-          phone: phoneNumber,
+          phone: sanitizedPhone,
           address: params.address as string,
         };
         await authService.registerIndividual(dto);
@@ -59,21 +61,21 @@ export default function PhoneNumberPage() {
           companyName: params.companyName as string,
           registrationNumber: params.registrationNumber as string,
           email: params.email as string,
-          phone: phoneNumber,
+          phone: sanitizedPhone,
           officeAddress: params.address as string,
         };
         await authService.registerCompany(dto);
       } else {
         // If no type, assume simple login/verify for existing user
-        await authService.login(phoneNumber);
+        await authService.login(sanitizedPhone);
       }
 
       router.push({
         pathname: '/(auth)/otpPage',
-        params: { phone: phoneNumber }
+        params: { phone: sanitizedPhone }
       });
     } catch (error: any) {
-      console.error('Registration/Login failed:', error);
+      console.warn('Registration/Login failed:', error);
       const backendMsg = error.response?.data?.message || error.message || 'Something went wrong';
       const mappedMsg = mapAuthError(backendMsg, t);
       setErrorMessage(mappedMsg);
@@ -123,7 +125,7 @@ export default function PhoneNumberPage() {
             <CustomTextInput
               placeholder={t('phoneNumberPage.placeholder')}
               value={phoneNumber}
-              onChangeText={setPhoneNumber}
+              onChangeText={(text) => setPhoneNumber(filterPhoneInput(text))}
               keyboardType="phone-pad"
             />
           </View>

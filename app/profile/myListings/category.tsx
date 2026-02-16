@@ -8,67 +8,144 @@ import React, { useState } from 'react';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const CATEGORIES = [
-  { id: '1', label: 'Electronic', image: require('@/assets/images/Electronics.png') },
-  { id: '2', label: 'Computer', image: require('@/assets/images/desktop.png') },
-  { id: '3', label: 'Phone', image: require('@/assets/images/Phone.png') },
-  { id: '4', label: 'Tablet', image: require('@/assets/images/tablet.png') },
-  { id: '5', label: 'Vehicle', image: require('@/assets/images/Vehicle.png') },
-  { id: '6', label: 'Computer', image: require('@/assets/images/desktop.png') },
-  { id: '7', label: 'Phone', image: require('@/assets/images/Phone.png') },
-  { id: '8', label: 'Tablet', image: require('@/assets/images/tablet.png') },
-  { id: '9', label: 'Home', image: require('@/assets/images/home.png') },
-  { id: '10', label: 'Computer', image: require('@/assets/images/desktop.png') },
-  { id: '11', label: 'Phone', image: require('@/assets/images/Phone.png') },
-  { id: '12', label: 'Tablet', image: require('@/assets/images/tablet.png') },
-  { id: '13', label: 'Fashion', image: require('@/assets/images/fashion.png') },
-  { id: '14', label: 'Computer', image: require('@/assets/images/desktop.png') },
-  { id: '15', label: 'Phone', image: require('@/assets/images/Phone.png') },
-  { id: '16', label: 'Tablet', image: require('@/assets/images/tablet.png') },
-  { id: '17', label: 'Sport', image: require('@/assets/images/sports.png') },
-  { id: '18', label: 'Computer', image: require('@/assets/images/desktop.png') },
-  { id: '19', label: 'Phone', image: require('@/assets/images/Phone.png') },
-  { id: '20', label: 'Tablet', image: require('@/assets/images/tablet.png') },
-  { id: '21', label: 'Sport', image: require('@/assets/images/sports.png') },
-  { id: '22', label: 'Computer', image: require('@/assets/images/desktop.png') },
-  { id: '23', label: 'Phone', image: require('@/assets/images/Phone.png') },
-  { id: '24', label: 'Tablet', image: require('@/assets/images/tablet.png') },
-  { id: '25', label: 'Sport', image: require('@/assets/images/sports.png') },
-];
+import categoryService, { Category } from '@/api/category.service';
+import { ActivityIndicator } from 'react-native';
+
+// Map backend category names to local images
+const categoryImages: { [key: string]: any } = {
+  // Main Categories
+  'Electronics': require('@/assets/images/Electronics.png'),
+  'Vehicle': require('@/assets/images/Vehicle.png'),
+  'Home': require('@/assets/images/home.png'),
+  'Fashion': require('@/assets/images/fashion.png'),
+  'Sport': require('@/assets/images/sports.png'),
+  
+  // Subcategories - Electronics
+  'Computer': require('@/assets/images/desktop.png'),
+  'Phone': require('@/assets/images/Phone.png'),
+  'Tablet': require('@/assets/images/tablet.png'),
+  'Camera': require('@/assets/images/Electronics.png'), // Placeholder
+  'Headphones': require('@/assets/images/Electronics.png'), // Placeholder
+
+  // Subcategories - Vehicle
+  'Car': require('@/assets/images/Vehicle.png'), // Placeholder
+  'Bike': require('@/assets/images/Vehicle.png'), // Placeholder
+  'Truck': require('@/assets/images/Vehicle.png'), // Placeholder
+  'Cycle': require('@/assets/images/Vehicle.png'), // Placeholder
+  'Scooter': require('@/assets/images/Vehicle.png'), // Placeholder
+
+  // Subcategories - Home
+  'Furniture': require('@/assets/images/home.png'), // Placeholder
+  'Decoration': require('@/assets/images/home.png'), // Placeholder
+  'Appliances': require('@/assets/images/home.png'), // Placeholder
+  'Kitchen': require('@/assets/images/home.png'), // Placeholder
+  'Bedding': require('@/assets/images/home.png'), // Placeholder
+
+  // Subcategories - Fashion
+  'Men': require('@/assets/images/fashion.png'), // Placeholder
+  'Women': require('@/assets/images/fashion.png'), // Placeholder
+  'Kids': require('@/assets/images/fashion.png'), // Placeholder
+  'Accessories': require('@/assets/images/fashion.png'), // Placeholder
+  'Shoes': require('@/assets/images/fashion.png'), // Placeholder
+
+  // Subcategories - Sport
+  'Gym': require('@/assets/images/sports.png'), // Placeholder
+  'Cricket': require('@/assets/images/sports.png'), // Placeholder
+  'Football': require('@/assets/images/sports.png'), // Placeholder
+  'Tennis': require('@/assets/images/sports.png'), // Placeholder
+  'Badminton': require('@/assets/images/sports.png'), // Placeholder
+
+  // Default fallback
+  'default': require('@/assets/images/Electronics.png'), 
+};
 
 export default function CategoryScreen() {
   const router = useRouter();
-  const [selectedId, setSelectedId] = useState<string | null>('3');
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const renderCategoryItem = ({ item }: { item: typeof CATEGORIES[0] }) => {
-    const isSelected = selectedId === item.id;
+  React.useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    try {
+      setLoading(true);
+      const data = await categoryService.getAll();
+      setCategories(data);
+      // Select first category by default if available
+      if (data.length > 0) {
+        // Find main categories and select the first one
+        const mainCats = data.filter(c => !c.parentCategory);
+        if (mainCats.length > 0) {
+            setSelectedCategory(mainCats[0]);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load categories', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getMainCategories = () => {
+    return categories.filter((c: Category) => !c.parentCategory);
+  };
+
+  const getSubCategories = () => {
+    if (!selectedCategory) return [];
+    return selectedCategory.subCategories || [];
+  };
+
+  const renderSidebarItem = ({ item }: { item: Category }) => {
+    const isSelected = selectedCategory?.id === item.id;
     return (
-      <View className="items-center mb-6 w-1/4">
+      <TouchableOpacity
+        onPress={() => setSelectedCategory(item)}
+        className="py-3 px-2 items-center"
+      >
+        <View 
+          className={`w-14 h-14 rounded-full items-center justify-center border ${
+            isSelected ? 'border-[#2FA2B9] bg-white' : 'border-gray-200 bg-white'
+          }`}
+        >
+             <Image 
+                source={categoryImages[item.name] || categoryImages['default']} 
+                style={{ width: 28, height: 28 }}
+                contentFit="contain"
+            />
+        </View>
+        <Text 
+          className={`text-[10px] text-center mt-2 ${isSelected ? 'font-bold text-[#2FA2B9]' : 'text-gray-500'}`}
+          numberOfLines={1}
+        >
+          {item.name}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderGridItem = ({ item }: { item: Category }) => {
+    return (
+      <View className="items-center mb-6 w-1/3">
         <TouchableOpacity
           onPress={() => {
-            setSelectedId(item.id);
-            if (['Computer', 'Phone', 'Tablet'].includes(item.label)) {
-              router.push('/profile/myListings/listanItem');
-            }
+              router.push({
+                pathname: '/profile/myListings/listanItem',
+                params: { categoryId: item.id, categoryName: item.name }
+              } as any);
           }}
-          className={`w-16 h-16 rounded-full items-center justify-center mb-2 ${
-            isSelected ? 'bg-white border-2' : 'bg-gray-100'
-          }`}
-          style={{
-            borderColor: isSelected ? Colors.primary : 'transparent',
-          }}
+          className="w-16 h-16 rounded-full bg-gray-50 items-center justify-center mb-2 border border-gray-100 shadow-sm"
         >
           <Image 
-            source={item.image} 
-            style={{ width: 40, height: 40 }}
+            source={categoryImages[item.name] || categoryImages['default']} 
+            style={{ width: 32, height: 32 }}
             contentFit="contain"
           />
         </TouchableOpacity>
-        <Text 
-          className={`text-xs text-center ${isSelected ? 'font-bold' : 'text-gray-500'}`}
-          style={{ color: isSelected ? Colors.primary : '#6B7280' }}
-        >
-          {item.label}
+        <Text className="text-xs text-center text-gray-700 font-medium">
+          {item.name}
         </Text>
       </View>
     );
@@ -77,27 +154,60 @@ export default function CategoryScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar style="dark" />
-
       <ScreenHeader title="Category" />
 
-      <View className={`flex-1 px-${getTailwindSpacing(Spacing.pageHorizontal)}`}>
-        <View className="mb-6">
-          <Text className="text-2xl font-bold text-black mb-2">Select Category</Text>
-          <Text className="text-sm text-gray-400">
-            Please select category to list an item.
-          </Text>
-        </View>
-
-        <FlatList
-          data={CATEGORIES}
-          renderItem={renderCategoryItem}
-          keyExtractor={(item) => item.id}
-          numColumns={4}
-          showsVerticalScrollIndicator={false}
-          columnWrapperStyle={{ justifyContent: 'flex-start' }}
-          contentContainerStyle={{ paddingBottom: 20 }}
-        />
+      <View className="px-5 pt-2 pb-4">
+        <Text className="text-xl font-bold text-black">Select Category</Text>
+        <Text className="text-sm text-gray-400 mt-1">Please select category to list an item.</Text>
       </View>
+
+      {loading ? (
+        <View className="flex-1 items-center justify-center">
+            <ActivityIndicator size="large" color={Colors.primary} />
+        </View>
+      ) : (
+        <View className="flex-1 flex-row">
+            {/* Left Sidebar */}
+            <View className="w-[28%] bg-[#F9FAFB] border-r border-gray-100">
+                <FlatList
+                    data={getMainCategories()}
+                    renderItem={renderSidebarItem}
+                    keyExtractor={(item) => item.id.toString()}
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ paddingBottom: 20 }}
+                />
+            </View>
+
+            {/* Right Content */}
+            <View className="flex-1 bg-white p-4">
+                <FlatList
+                    data={getSubCategories()}
+                    renderItem={renderGridItem}
+                    keyExtractor={(item) => item.id.toString()}
+                    numColumns={3}
+                    showsVerticalScrollIndicator={false}
+                    columnWrapperStyle={{ justifyContent: 'flex-start' }}
+                    contentContainerStyle={{ paddingBottom: 20 }}
+                    ListEmptyComponent={
+                        <View className="mt-10 items-center">
+                            <Text className="text-gray-400 text-center">No subcategories found.</Text>
+                            <TouchableOpacity 
+                                onPress={() => {
+                                     router.push({
+                                        pathname: '/profile/myListings/listanItem',
+                                        params: { categoryId: selectedCategory?.id, categoryName: selectedCategory?.name }
+                                      } as any);
+                                }}
+                                className="mt-4 px-4 py-2 bg-primary/10 rounded-full"
+                            >
+                                <Text className="text-primary font-bold text-xs">Select {selectedCategory?.name}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    }
+                />
+            </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 }

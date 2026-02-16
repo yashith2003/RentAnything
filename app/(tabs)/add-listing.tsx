@@ -5,59 +5,46 @@ import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { PaddingStyles } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-interface Listing {
-  id: string;
-  title: string;
-  description: string;
-  condition: string;
-  image: string;
-  rentals: number;
-  isActive: boolean;
-}
-
-const mockListings: Listing[] = [
-  {
-    id: '1',
-    title: 'Tesla Model S',
-    description: 'A car with high specs that are rented. A car with high specs that are rented at an affordable price.',
-    condition: 'Used (like new)',
-    image: 'https://images.unsplash.com/photo-1617788138017-80ad42243c5d?q=80&w=400&auto=format&fit=crop',
-    rentals: 5,
-    isActive: true,
-  },
-  {
-    id: '2',
-    title: 'Tesla Model S',
-    description: 'A car with high specs that are rented. A car with high specs that are rented at an affordable price.',
-    condition: 'Used (like new)',
-    image: 'https://images.unsplash.com/photo-1617788138017-80ad42243c5d?q=80&w=400&auto=format&fit=crop',
-    rentals: 0,
-    isActive: true,
-  },
-  {
-    id: '3',
-    title: 'Tesla Model S',
-    description: 'A car with high specs that are rented. A car with high specs that are rented at an affordable price.',
-    condition: 'Used (like new)',
-    image: 'https://images.unsplash.com/photo-1617788138017-80ad42243c5d?q=80&w=400&auto=format&fit=crop',
-    rentals: 5,
-    isActive: true,
-  },
-];
+import itemService, { Item } from '@/api/item.service';
 
 export default function MyListingsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const [listings, setListings] = useState<Item[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const filteredListings = mockListings.filter(listing =>
+  const fetchListings = async () => {
+    try {
+      const data = await itemService.getMyItems();
+      setListings(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Failed to fetch listings:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchListings();
+    }, [])
+  );
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchListings();
+  }, []);
+
+  const filteredListings = listings.filter(listing =>
     listing.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -67,7 +54,13 @@ export default function MyListingsScreen() {
 
       <ScreenHeader title={t('listing.myListings')} showBack={false} />
 
-      <ScrollView showsVerticalScrollIndicator={false} style={PaddingStyles.page}>
+      <ScrollView 
+        showsVerticalScrollIndicator={false} 
+        style={PaddingStyles.page}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.primary]} />
+        }
+      >
         {/* Add New Listing Button */}
         <TouchableOpacity
           className="h-14 rounded-full items-center justify-center mb-4"
@@ -95,18 +88,40 @@ export default function MyListingsScreen() {
           {filteredListings.length} {t('listing.itemsListed')}
         </Text>
 
-        {/* Listings */}
-        <View className="pb-24">
-           {filteredListings.map((listing) => (
-            <MyListingCard 
-                key={listing.id}
-                listing={listing}
-                onRentalsPress={() => router.push('/profile/myListings/listingItem' as any)}
-                onViewPress={() => router.push('/profile/myListings/item' as any)}
-            />
-            ))}
-        </View>
+        {/* Loading State */}
+        {loading && !refreshing ? (
+          <View className="items-center justify-center py-10">
+            <ActivityIndicator size="large" color={Colors.primary} />
+          </View>
+        ) : (
+          /* Listings */
+          <View className="pb-24">
+            {filteredListings.length > 0 ? (
+              filteredListings.map((listing) => (
+                <MyListingCard 
+                  key={listing.id}
+                  listing={{
+                    id: listing.id.toString(),
+                    title: listing.title,
+                    description: listing.description,
+                    condition: listing.condition || 'Used',
+                    image: listing.imageUrl || 'https://via.placeholder.com/150',
+                    rentals: 0,
+                    isActive: listing.status === 'available',
+                  }}
+                  onRentalsPress={() => router.push({ pathname: '/profile/myListings/listingItem', params: { id: listing.id } } as any)}
+                  onViewPress={() => router.push({ pathname: '/profile/myListings/item', params: { id: listing.id } } as any)}
+                />
+              ))
+            ) : (
+              <View className="items-center justify-center py-10">
+                <Text className="text-gray-400">No items found.</Text>
+              </View>
+            )}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 }
+

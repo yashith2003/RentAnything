@@ -58,7 +58,7 @@ export default function IndividualSignup() {
         params: { ...formData, type: 'INDIVIDUAL' }
       });
     } catch (error: any) {
-      console.error('Registration step failed:', error);
+      console.warn('Registration step failed:', error);
       const backendMsg = error.response?.data?.message || error.message || 'Something went wrong';
       const mappedMsg = mapAuthError(backendMsg, t);
       setErrorMessage(mappedMsg);
