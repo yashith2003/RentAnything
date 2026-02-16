@@ -16,6 +16,7 @@ import { Colors } from '@/constants/theme';
 import { useTranslation } from 'react-i18next';
 import authService from '@/api/auth.service';
 import { mapAuthError } from '@/utils/errorMapper';
+import { sanitizePhoneNumber, filterPhoneInput } from '@/utils/phoneUtils';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -31,16 +32,23 @@ export default function LoginScreen() {
       return;
     }
     
+    if (phoneNumber.includes('@')) {
+      setErrorMessage(t('login.invalidPhoneNumber', 'Please enter a valid phone number, not an email.'));
+      setShowError(true);
+      return;
+    }
+    
     try {
-      console.log('Logging in with:', phoneNumber);
-      await authService.login(phoneNumber);
+      const sanitizedPhone = sanitizePhoneNumber(phoneNumber);
+      console.log('Logging in with:', sanitizedPhone);
+      await authService.login(sanitizedPhone);
       // Navigate to OTP verification page
       router.push({
         pathname: '/(auth)/otpPage',
         params: { phone: phoneNumber }
       });
     } catch (error: any) {
-      console.error('Login failed:', error);
+      console.warn('Login failed:', error);
       const backendMsg = error.response?.data?.message || error.message || 'Something went wrong';
       const mappedMsg = mapAuthError(backendMsg, t);
       setErrorMessage(mappedMsg);
@@ -79,7 +87,7 @@ export default function LoginScreen() {
           <CustomTextInput
             placeholder={t('login.phonePlaceholder')}
             value={phoneNumber}
-            onChangeText={setPhoneNumber}
+            onChangeText={(text) => setPhoneNumber(filterPhoneInput(text))}
             keyboardType="phone-pad"
             style={{ marginBottom: 0 }} // Override default margin if needed or keep it
           />

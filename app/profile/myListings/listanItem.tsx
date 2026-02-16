@@ -1,55 +1,531 @@
+import { filterPhoneInput } from '@/utils/phoneUtils';
+import addressService, { Address } from '@/api/address.service';
+import itemService from '@/api/item.service';
 import { ChipGroup } from '@/components/form/ChipGroup';
 import { LabelledInput } from '@/components/form/LabelledInput';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { UploadBox } from '@/components/form/UploadBox';
+import { AvailabilityCalendar } from '@/components/form/AvailabilityCalendar';
+import { CategoryFieldRenderer } from '@/components/form/CategoryFieldRenderer';
+import SuccessPopup from '@/components/AlertPopup/successPopup';
+import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
-import { ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { ScrollView, Switch, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Location from 'expo-location';
 
 export default function ListAnItemScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const categoryId = params.categoryId ? parseInt(params.categoryId as string) : 1;
+  const categoryName = (params.categoryName as string) || 'Vehicle';
+
+  // Base Form State
+  const [itemName, setItemName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [selectedImage, setSelectedImage] = useState<string | undefined>();
+  const [location, setLocation] = useState('Union St, Chicago 2002 Usa');
+  const [itemDescription, setItemDescription] = useState('');
+  const [rentalTerms, setRentalTerms] = useState('');
+  const [instructions, setInstructions] = useState('');
   const [rentalRate, setRentalRate] = useState('Day');
-  const [sittingCapacity, setSittingCapacity] = useState(4);
-  const [fuelType, setFuelType] = useState('Petrol');
-  const [color, setColor] = useState('Blue');
+  const [rentalFee, setRentalFee] = useState('');
+  const [securityDeposit, setSecurityDeposit] = useState('');
   const [condition, setCondition] = useState('New (like new)');
-  const [access, setAccess] = useState('Delivery available');
-  const [driverGender, setDriverGender] = useState('Male');
-  const [bookWithDriver, setBookWithDriver] = useState(true);
+  const [availability, setAvailability] = useState<{ dates: string[], startTime: string, endTime: string }>({
+    dates: [],
+    startTime: '10:30:00',
+    endTime: '17:30:00'
+  });
+
+  // Category-specific Form State
+  const [categoryFormData, setCategoryFormData] = useState<any>({});
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Real-time suggestions state
+  const [suggestions, setSuggestions] = useState<Address[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState<Partial<Address> | null>(null);
+
+  // UI State
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [newLocationInput, setNewLocationInput] = useState('');
+  const [recentLocations, setRecentLocations] = useState<Address[]>([]);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [bumpEnabled, setBumpEnabled] = useState(true);
   const [bumpPlan, setBumpPlan] = useState('Standard');
+
+  useEffect(() => {
+    loadRecentLocations();
+  }, []);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      if (newLocationInput.length > 2) {
+        setIsSearching(true);
+        try {
+          const results = await addressService.search(newLocationInput);
+          setSuggestions(results);
+        } catch (error) {
+          console.error('Failed to search locations', error);
+        } finally {
+          setIsSearching(false);
+        }
+      } else {
+        setSuggestions([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [newLocationInput]);
+
+  const loadRecentLocations = async () => {
+    try {
+        const data = await addressService.getAll();
+        setRecentLocations(data);
+    } catch (error) {
+        console.error('Failed to load locations', error);
+    }
+  };
+
+  const handleLocationSelect = (loc: Address | string) => {
+      if (typeof loc === 'string') {
+        setLocation(loc);
+        setSelectedAddress({ address: loc });
+      } else {
+        setLocation(loc.address);
+        setSelectedAddress(loc);
+      }
+      setShowLocationPicker(false);
+      setSuggestions([]);
+  };
+
+  const handleAddNewLocation = async () => {
+    if (!newLocationInput.trim()) return;
+    try {
+        const saved = await addressService.create(newLocationInput);
+        setLocation(saved.address);
+        setNewLocationInput('');
+        setShowLocationPicker(false);
+        loadRecentLocations();
+    } catch (error) {
+        // Fallback: Still use the address even if saving to backend fails
+        setLocation(newLocationInput);
+        setNewLocationInput('');
+        setShowLocationPicker(false);
+        console.warn('Failed to save location to backend, using raw input', error);
+    }
+  };
+
+  const handleUseCurrentLocation = async () => {
+    setIsLoadingLocation(true);
+    try {
+      // 1. Request location permissions
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      
+      if (status !== 'granted') {
+        setErrorMessage('Location permission denied. Please enable location access in your device settings.');
+        setShowError(true);
+        setIsLoadingLocation(false);
+        return;
+      }
+
+      // 2. Get current position
+      const position = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+
+      const { latitude, longitude } = position.coords;
+
+      // 3. Reverse geocode to get human-readable address
+      const geocodedAddress = await Location.reverseGeocodeAsync({
+        latitude,
+        longitude,
+      });
+
+      if (geocodedAddress && geocodedAddress.length > 0) {
+        const addr = geocodedAddress[0];
+        
+        // Format address string
+        const addressParts = [
+          addr.name,
+          addr.street,
+          addr.city,
+          addr.region,
+          addr.postalCode,
+          addr.country,
+        ].filter(Boolean);
+        
+        const formattedAddress = addressParts.join(', ');
+
+        // 4. Update state with address and coordinates
+        const locationData: Partial<Address> = {
+          address: formattedAddress,
+          lat: latitude,
+          lng: longitude
+        };
+        setLocation(formattedAddress);
+        setSelectedAddress(locationData);
+        setShowLocationPicker(false);
+        loadRecentLocations();
+      } else {
+        setErrorMessage('Unable to determine address from your location. Please enter manually.');
+        setShowError(true);
+      }
+    } catch (error: any) {
+      console.warn('Location error:', error);
+      
+      const errorMessage = error.message || '';
+      
+      if (error.code === 'E_LOCATION_SERVICES_DISABLED' || errorMessage.includes('location services are enabled')) {
+        setErrorMessage('Location services are disabled. Please enable them in your device settings.');
+      } else if (error.code === 'E_LOCATION_UNAVAILABLE' || errorMessage.includes('Current location is unavailable')) {
+        setErrorMessage('Unable to get your location. If using an emulator, please set a mock location. On a physical device, ensure GPS is enabled and you are not indoors.');
+      } else if (errorMessage.includes('permission')) {
+        setErrorMessage('Location permission denied. Please enable location access in your device settings.');
+      } else {
+        setErrorMessage('Failed to get your location. Please try again or enter your address manually.');
+      }
+      
+      setShowError(true);
+    } finally {
+      setIsLoadingLocation(false);
+    }
+  };
+
+  const handleCategoryFieldChange = (field: string, value: any) => {
+    setCategoryFormData((prev: any) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const buildCategoryDetails = () => {
+    const normalizedCategory = categoryName.toLowerCase();
+    
+    if (normalizedCategory.includes('vehicle') || normalizedCategory.includes('car') || normalizedCategory.includes('bike') || normalizedCategory.includes('scooter') || normalizedCategory.includes('truck') || normalizedCategory.includes('cycle')) {
+      return {
+        vehicleDetails: {
+          vehicleType: categoryFormData.vehicleType || 'Car',
+          vehicleNumber: categoryFormData.vehicleNumber || '',
+          seatingCapacity: categoryFormData.seatingCapacity || 4,
+          fuelType: categoryFormData.fuelType || 'Petrol',
+          color: categoryFormData.color,
+          registrationDocument: categoryFormData.registrationDocument,
+          insuranceDocument: categoryFormData.insuranceDocument,
+          revenueLicense: categoryFormData.revenueLicense,
+          deliveryFee: categoryFormData.deliveryFee ? parseFloat(categoryFormData.deliveryFee) : undefined,
+          driverAvailable: categoryFormData.driverAvailable || false,
+          driverName: categoryFormData.driverName,
+          driverGender: categoryFormData.driverGender,
+          driverLicense: categoryFormData.driverLicense,
+          driverFee: categoryFormData.driverFee ? parseFloat(categoryFormData.driverFee) : undefined,
+        }
+      };
+    } else if (normalizedCategory.includes('electronic') || normalizedCategory.includes('phone') || normalizedCategory.includes('computer') || normalizedCategory.includes('tablet') || normalizedCategory.includes('camera') || normalizedCategory.includes('headphone')) {
+      return {
+        electronicsDetails: {
+          brand: categoryFormData.brand || '',
+          model: categoryFormData.model || '',
+          warranty: categoryFormData.warranty,
+          specifications: categoryFormData.specifications,
+        }
+      };
+    } else if (normalizedCategory.includes('home') || normalizedCategory.includes('furniture') || normalizedCategory.includes('appliance') || normalizedCategory.includes('decoration') || normalizedCategory.includes('kitchen') || normalizedCategory.includes('bedding')) {
+      return {
+        homeDetails: {
+          propertyType: categoryFormData.propertyType || 'Apartment',
+          numberOfRooms: categoryFormData.numberOfRooms || 1,
+          numberOfBathrooms: categoryFormData.numberOfBathrooms || 1,
+          area: categoryFormData.area || '',
+          isFurnished: categoryFormData.isFurnished || false,
+          amenities: categoryFormData.amenities,
+        }
+      };
+    } else if (normalizedCategory.includes('fashion') || normalizedCategory.includes('cloth') || normalizedCategory.includes('shoe') || normalizedCategory.includes('men') || normalizedCategory.includes('women') || normalizedCategory.includes('kid') || normalizedCategory.includes('accessor')) {
+      return {
+        fashionDetails: {
+          size: categoryFormData.size || 'M',
+          gender: categoryFormData.gender || 'Unisex',
+          brand: categoryFormData.brand,
+          material: categoryFormData.material,
+        }
+      };
+    } else if (normalizedCategory.includes('sport') || normalizedCategory.includes('gym') || normalizedCategory.includes('cricket') || normalizedCategory.includes('football') || normalizedCategory.includes('tennis') || normalizedCategory.includes('badminton')) {
+      return {
+        sportsDetails: {
+          sportType: categoryFormData.sportType || 'Cricket',
+          equipmentType: categoryFormData.equipmentType,
+          suitableFor: categoryFormData.suitableFor,
+        }
+      };
+    }
+    
+    return {};
+  };
+
+  const handleAddItem = async () => {
+    const newErrors: Record<string, string> = {};
+    if (!itemName) newErrors.itemName = 'Item Name is required';
+    if (!phoneNumber) newErrors.phoneNumber = 'Phone Number is required';
+    if (!location || location === 'Union St, Chicago 2002 Usa' || location === '') {
+        // If it's the default placeholder or empty, consider it invalid for real listings
+        if (!location || location === '') newErrors.location = 'Location is required';
+    }
+    if (!itemDescription) newErrors.itemDescription = 'Description is required';
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setErrorMessage('Please fill in all required fields');
+      setShowError(true);
+      return;
+    }
+
+    setErrors({});
+    setIsSubmitting(true);
+    try {
+      // 1. Create or Find Address
+      let addressId = 1;
+      try {
+        const addrPayload = selectedAddress || { address: location };
+        const addr = await addressService.create(addrPayload);
+        addressId = addr.id;
+      } catch (e) {
+        console.warn('Using default addressId due to error', e);
+      }
+
+      // 2. Prepare Availabilities
+      const availabilities = availability.dates.map(date => ({
+        availableDate: date,
+        startTime: availability.startTime,
+        endTime: availability.endTime,
+        isAvailable: true
+      }));
+
+      // 3. Build category-specific details
+      const categoryDetails = buildCategoryDetails();
+
+      // 4. Map rental rate to backend enum
+      const rateMapping: Record<string, string> = {
+        'Hour': 'hourly',
+        'Day': 'daily',
+        'Week': 'weekly',
+        'Month': 'monthly'
+      };
+      const mappedRateType = rateMapping[rentalRate] || 'daily';
+
+      // 5. Create Item with category details
+      await itemService.create({
+        title: itemName,
+        description: itemDescription,
+        categoryId: categoryId,
+        addressId: addressId,
+        condition: condition,
+        phone: phoneNumber,
+        rentalTerms: rentalTerms,
+        instructions: instructions,
+        securityDeposit: securityDeposit ? parseFloat(securityDeposit) : 0,
+        imageUrl: selectedImage,
+        rateType: mappedRateType,
+        price: rentalFee ? parseFloat(rentalFee) : 0,
+        availabilities: availabilities,
+        ...categoryDetails,
+      });
+
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+        router.back();
+      }, 2000);
+
+    } catch (error: any) {
+      console.error('Failed to add item', error);
+      setErrorMessage(error.response?.data?.message || 'Failed to save item listing');
+      setShowError(true);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar style="dark" />
 
+      {/* Location Picker Modal */}
+      {showLocationPicker && (
+        <View className="absolute z-50 w-full h-full bg-black/50 justify-center items-center px-4">
+             <TouchableOpacity className="absolute w-full h-full" onPress={() => setShowLocationPicker(false)} />
+             <View className="bg-white w-full rounded-2xl overflow-hidden p-4">
+                <View className="flex-row items-center bg-gray-100 rounded-lg px-3 py-2 mb-4">
+                     <Ionicons name="location-outline" size={20} color="#9CA3AF" />
+                     <TextInput 
+                        className="flex-1 ml-2 text-gray-700 h-10"
+                        placeholder="Enter your location"
+                        placeholderTextColor="#9CA3AF"
+                        value={newLocationInput}
+                        onChangeText={setNewLocationInput}
+                        onSubmitEditing={handleAddNewLocation}
+                        returnKeyType="done"
+                        autoFocus={true}
+                     />
+                     {isSearching ? (
+                        <ActivityIndicator size="small" color="#2FA2B9" className="mr-2" />
+                      ) : (
+                        newLocationInput.length > 0 && (
+                            <TouchableOpacity onPress={handleAddNewLocation}>
+                                <Ionicons name="arrow-forward-circle" size={24} color="#2FA2B9" />
+                            </TouchableOpacity>
+                        )
+                      )}
+                </View>
+
+                {/* Suggestions List */}
+                {suggestions.length > 0 && (
+                  <View className="mb-4">
+                    <Text className="text-[10px] text-gray-400 font-bold mb-2 uppercase">Suggestions</Text>
+                    {suggestions.map((suggestion, index) => (
+                      <TouchableOpacity 
+                        key={`suggestion-${index}`}
+                        className="flex-row items-center py-3 border-b border-gray-50 px-2"
+                        onPress={() => handleLocationSelect(suggestion)}
+                      >
+                        <Text className="text-gray-900 font-bold text-sm" numberOfLines={1}>
+                          {suggestion.mainText || suggestion.address.split(',')[0]}
+                        </Text>
+                        <Text className="text-gray-400 text-[11px]" numberOfLines={1}>
+                          {suggestion.secondaryText || suggestion.address}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+
+                <TouchableOpacity 
+                    className="flex-row items-center py-3 border-b border-gray-100"
+                    onPress={handleUseCurrentLocation}
+                    disabled={isLoadingLocation}
+                >
+                    <View className="mr-3 ml-2">
+                         {isLoadingLocation ? (
+                           <ActivityIndicator size="small" color="#2FA2B9" />
+                         ) : (
+                           <Ionicons name="location" size={18} color="#2FA2B9" />
+                         )}
+                    </View>
+                    <Text className="text-[#2FA2B9] font-medium text-sm">
+                      {isLoadingLocation ? 'Getting location...' : 'Use current location'}
+                    </Text>
+                </TouchableOpacity>
+
+                {recentLocations.length > 0 && (
+                    <Text className="text-[10px] text-gray-400 font-bold mt-4 mb-2 uppercase">Previously Viewed Location</Text>
+                )}
+                
+                {Array.isArray(recentLocations) && recentLocations.slice(0, 2).map((loc) => (
+                    <TouchableOpacity 
+                        key={loc.id} 
+                        className="py-3 border-b border-gray-50 bg-gray-50/50 rounded-xl mb-2 px-3"
+                        onPress={() => handleLocationSelect(loc)}
+                    >
+                        <Text className="text-gray-900 font-bold text-sm" numberOfLines={1}>
+                          {loc.mainText || loc.address.split(',')[0]}
+                        </Text>
+                        <Text className="text-gray-400 text-[11px]" numberOfLines={1}>
+                          {loc.secondaryText || loc.address}
+                        </Text>
+                    </TouchableOpacity>
+                ))}
+             </View>
+        </View>
+      )}
+
       <ScreenHeader title="List an item" />
 
       <ScrollView className="flex-1 px-6 pt-4" showsVerticalScrollIndicator={false}>
-        <LabelledInput label="Item Name" placeholder="Type here..." />
-        <LabelledInput label="Phone Number" placeholder="Type here..." />
+        {/* Base Form Fields */}
+        <LabelledInput 
+          label="Item Name" 
+          placeholder="Type here..." 
+          value={itemName}
+          onChangeText={(text) => {
+            setItemName(text);
+            if (errors.itemName) setErrors(prev => ({ ...prev, itemName: '' }));
+          }}
+          error={errors.itemName}
+        />
+        <LabelledInput 
+          label="Phone Number" 
+          placeholder="Type here..." 
+          value={phoneNumber}
+          onChangeText={(text) => {
+            setPhoneNumber(filterPhoneInput(text));
+            if (errors.phoneNumber) setErrors(prev => ({ ...prev, phoneNumber: '' }));
+          }}
+          keyboardType="phone-pad"
+          error={errors.phoneNumber}
+        />
 
         {/* Image Upload */}
         <View className="mb-6">
           <Text className="text-sm font-bold text-black mb-2">Image</Text>
-          <UploadBox height={160} />
+          <UploadBox 
+            height={160} 
+            imageUri={selectedImage}
+            onImageSelect={setSelectedImage}
+          />
         </View>
 
         {/* Location */}
         <View className="mb-6">
           <Text className="text-sm font-bold text-black mb-2">Location</Text>
-          <View className="w-full h-12 bg-white border border-gray-200 rounded-xl px-4 flex-row items-center">
-            <Ionicons name="navigate-outline" size={20} color="#D1D5DB" />
-            <Text className="flex-1 ml-2 text-gray-400">Union St, Chicago 2002 Usa</Text>
-          </View>
+          <TouchableOpacity 
+            onPress={() => {
+                setShowLocationPicker(true);
+                if (errors.location) setErrors(prev => ({ ...prev, location: '' }));
+            }}
+            className={`w-full h-12 bg-white border ${errors.location ? 'border-red-500' : 'border-gray-200'} rounded-xl px-4 flex-row items-center`}
+          >
+            <Text className={`flex-1 ${location ? 'text-gray-900 font-medium' : 'text-gray-400'}`} numberOfLines={1}>
+                {location || 'Select Location'}
+            </Text>
+            <Ionicons name="chevron-down" size={20} color="#9CA3AF" />
+          </TouchableOpacity>
+          {errors.location && <Text className="text-red-500 text-[10px] mt-1 ml-1 font-medium">{errors.location}</Text>}
         </View>
 
-        <LabelledInput label="Item Description" placeholder="Type here..." multiline />
-        <LabelledInput label="Rental Terms" placeholder="Type here..." multiline />
-        <LabelledInput label="Instructions to use" placeholder="Type here..." multiline />
+        <LabelledInput 
+          label="Item Description" 
+          placeholder="Type here..." 
+          multiline 
+          value={itemDescription}
+          onChangeText={(text) => {
+            setItemDescription(text);
+            if (errors.itemDescription) setErrors(prev => ({ ...prev, itemDescription: '' }));
+          }}
+          error={errors.itemDescription}
+        />
+        <LabelledInput 
+          label="Rental Terms" 
+          placeholder="Type here..." 
+          multiline 
+          value={rentalTerms}
+          onChangeText={setRentalTerms}
+        />
+        <LabelledInput 
+          label="Instructions to use" 
+          placeholder="Type here..." 
+          multiline 
+          value={instructions}
+          onChangeText={setInstructions}
+        />
 
         {/* Rental Rate */}
         <ChipGroup 
@@ -59,68 +535,30 @@ export default function ListAnItemScreen() {
           onSelect={setRentalRate} 
         />
 
-        <LabelledInput label={`Rental fee per ${rentalRate.toLowerCase()}`} placeholder="Type here..." />
+        <LabelledInput 
+          label={`Rental fee per ${rentalRate.toLowerCase()}`} 
+          placeholder="Type here..." 
+          value={rentalFee}
+          onChangeText={setRentalFee}
+          keyboardType="numeric"
+        />
 
-        {/* Availability (Mock) */}
+        {/* Availability */}
         <View className="mb-6">
           <Text className="text-sm font-bold text-black mb-3">Availability</Text>
-          <View className="bg-white rounded-3xl border border-gray-100 p-4 shadow-sm">
-             {/* Time Row */}
-             <View className="flex-row gap-4 mb-4">
-                <View className="flex-1 h-10 bg-[#2FA2B9] rounded-lg items-center justify-center flex-row">
-                   <Ionicons name="time-outline" size={16} color="white" />
-                   <Text className="text-white font-bold ml-2">10 : 30 am</Text>
-                </View>
-                <View className="flex-1 h-10 border border-gray-200 rounded-lg items-center justify-center flex-row">
-                   <Ionicons name="time-outline" size={16} color="#9CA3AF" />
-                   <Text className="text-gray-500 font-bold ml-2">05 : 30 pm</Text>
-                </View>
-             </View>
-             {/* Calendar Mock */}
-             <View className="items-center py-2 border-t border-gray-50">
-                <Text className="font-bold text-gray-800">January 2022</Text>
-                {/* Simplified Grid */}
-                <View className="flex-row justify-between w-full px-2 mt-4">
-                  {[1, 9, 17, 19, 22].map((d) => (
-                    <View key={d} className={`w-8 h-8 rounded-full items-center justify-center ${d === 1 || d === 9 ? '' : 'bg-[#2FA2B9]'}`}>
-                      <Text className={d >= 17 && d <= 22 ? 'text-white font-bold' : 'text-gray-400'}>{d}</Text>
-                    </View>
-                  ))}
-                </View>
-             </View>
-          </View>
+          <AvailabilityCalendar 
+            onAvailabilityChange={(data) => {
+              setAvailability(data);
+            }} 
+          />
         </View>
 
-        <LabelledInput label="Security Deposit" placeholder="Type here..." />
-
-        {/* Vehicle Selection */}
-        <View className="mb-6">
-          <Text className="text-sm font-bold text-black mb-2">Vehicle Type</Text>
-          <TouchableOpacity className="w-full h-12 bg-white border border-gray-200 rounded-xl px-4 flex-row items-center justify-between">
-            <Text className="text-gray-400">Select vehicle type</Text>
-            <Ionicons name="chevron-down" size={20} color="#9CA3AF" />
-          </TouchableOpacity>
-        </View>
-
-        <ChipGroup 
-          label="Sitting Capacity" 
-          options={[2, 4, 6, 8, 10]} 
-          selected={sittingCapacity} 
-          onSelect={setSittingCapacity} 
-        />
-
-        <ChipGroup 
-          label="Fuel Type" 
-          options={['Petrol', 'Diesel', 'Other', 'Hybrid']} 
-          selected={fuelType} 
-          onSelect={setFuelType} 
-        />
-
-        <ChipGroup 
-          label="Colors" 
-          options={['White', 'Gray', 'Blue', 'Black']} 
-          selected={color} 
-          onSelect={setColor} 
+        <LabelledInput 
+          label="Security Deposit" 
+          placeholder="Type here..." 
+          value={securityDeposit}
+          onChangeText={setSecurityDeposit}
+          keyboardType="numeric"
         />
 
         <ChipGroup 
@@ -130,62 +568,14 @@ export default function ListAnItemScreen() {
           onSelect={setCondition} 
         />
 
-        <LabelledInput label="Vehicle Number" placeholder="Type here..." />
-
-        {/* Verification */}
-        <View className="mb-6">
-          <Text className="text-sm font-bold text-black mb-1">Verify Your Vehicle</Text>
-          <Text className="text-xs text-gray-400 mb-4 leading-4">Upload valid documents or files to verify as part of the identification process.</Text>
-          {['Vehicle Registration Documents', 'Proof of Insurance', 'Vehicle revenue license'].map((doc) => (
-             <View key={doc} className="flex-row items-center justify-between py-3 border-b border-gray-50">
-               <View className="flex-row items-center gap-2">
-                  <Ionicons name="document-text-outline" size={20} color="#2FA2B9" />
-                  <Text className="text-gray-700 text-sm">{doc}</Text>
-               </View>
-               <TouchableOpacity><Text className="text-[#2FA2B9] font-bold">Add</Text></TouchableOpacity>
-             </View>
-          ))}
-        </View>
-
-        <ChipGroup 
-          label="Access to Rentals" 
-          options={['Delivery available', 'Pickup at owner\'s location']} 
-          selected={access} 
-          onSelect={setAccess} 
+        {/* Category-Specific Fields */}
+        <CategoryFieldRenderer 
+          categoryName={categoryName}
+          categoryData={categoryFormData}
+          onFieldChange={handleCategoryFieldChange}
         />
 
-        <LabelledInput label="Delivery fee" placeholder="Type here..." />
-
-        {/* Driver Toggle */}
-        <View className="flex-row items-center justify-between mb-2">
-          <Text className="text-sm font-bold text-black">Book with driver</Text>
-          <Switch 
-            value={bookWithDriver} 
-            onValueChange={setBookWithDriver} 
-            trackColor={{ false: '#E5E7EB', true: '#2FA2B9' }}
-          />
-        </View>
-        <Text className="text-xs text-gray-400 mb-6 leading-4">Don't have a driver? You can book with them also.</Text>
-
-        {bookWithDriver && (
-          <View>
-            <LabelledInput label="Driver fee" placeholder="Type here..." />
-            <LabelledInput label="Driver Name" placeholder="Type here..." />
-            <ChipGroup 
-              label="Driver Gender" 
-              options={['Male', 'Female', 'Other']} 
-              selected={driverGender} 
-              onSelect={setDriverGender} 
-            />
-            {/* License Upload */}
-            <View className="mb-6">
-              <Text className="text-sm font-bold text-black mb-2">Driving License</Text>
-              <UploadBox height={120} />
-            </View>
-          </View>
-        )}
-
-        {/* Bump Item */}
+        {/* Bump Item 
         <View className="flex-row items-center justify-between mt-4">
           <Text className="text-sm font-bold text-black">Bump Item</Text>
           <Switch 
@@ -216,16 +606,37 @@ export default function ListAnItemScreen() {
             </TouchableOpacity>
           </View>
         )}
+          */}
 
         <TouchableOpacity
-          onPress={() => router.push('/profile/myListings/payments' as any)}
+          onPress={handleAddItem}
+          disabled={isSubmitting}
           className="w-full h-14 rounded-full items-center justify-center mb-10"
-          style={{ backgroundColor: '#2FA2B9' }}
+          style={{ backgroundColor: isSubmitting ? '#9CA3AF' : '#2FA2B9' }}
         >
-          <Text className="text-white font-bold text-lg">Add</Text>
+          {isSubmitting ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text className="text-white font-bold text-lg">Add</Text>
+          )}
         </TouchableOpacity>
 
       </ScrollView>
+
+      <SuccessPopup 
+        visible={showSuccess}
+        message="Item listing saved successfully!"
+        onNext={() => {
+          setShowSuccess(false);
+          router.back();
+        }}
+      />
+
+      <ErrorPopup 
+        visible={showError}
+        message={errorMessage}
+        onClose={() => setShowError(false)}
+      />
     </SafeAreaView>
   );
 }

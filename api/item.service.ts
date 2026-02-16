@@ -7,19 +7,50 @@ export interface Item {
   description: string;
   condition: string;
   status: string;
+  phone?: string;
+  rentalTerms?: string;
+  instructions?: string;
+  securityDeposit?: number;
+  imageUrl?: string;
   price?: number | string;
-  image?: string;
   owner?: {
     fullName: string;
   };
   address?: {
+    id: number;
     address: string;
   };
-  rating?: string | number;
-  distance?: string;
+}
+
+export interface CreateAvailabilityDto {
+  availableDate: string;
+  startTime?: string;
+  endTime?: string;
+  isAvailable?: boolean;
+}
+
+export interface CreateItemDto {
+  title: string;
+  description: string;
+  categoryId: number;
+  addressId: number;
+  condition?: string;
+  phone?: string;
+  rentalTerms?: string;
+  instructions?: string;
+  securityDeposit?: number;
+  imageUrl?: string;
+  rateType?: string;
+  price?: number;
+  availabilities?: CreateAvailabilityDto[];
 }
 
 const itemService = {
+  create: async (data: CreateItemDto) => {
+    const response = await apiClient.post<{ data: Item }>('/items', data);
+    return response.data.data;
+  },
+
   getItems: async (category?: string) => {
     const url = category ? `/items?cat=${category}` : '/items';
     const response = await apiClient.get<{ data: Item[] }>(url);
@@ -28,6 +59,11 @@ const itemService = {
 
   getItem: async (id: number) => {
     const response = await apiClient.get<{ data: Item }>(`/items/${id}`);
+    return response.data.data;
+  },
+
+  getMyItems: async () => {
+    const response = await apiClient.get<{ data: Item[] }>(`/items/my-items`);
     return response.data.data;
   },
 };
