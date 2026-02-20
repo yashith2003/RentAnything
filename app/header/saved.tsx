@@ -119,7 +119,7 @@ function SavedItemCard({ item, onRemove }: { item: any, onRemove: () => void }) 
 
         {/* Owner */}
         <View className="flex-row items-center mt-1">
-          <Text className="text-gray-400 text-[10px]" numberOfLines={1}>Owner: {item.owner}</Text>
+          <Text className="text-gray-400 text-[10px]" numberOfLines={1}>Owner: {typeof item.owner === 'string' ? item.owner : 'N/A'}</Text>
           <View className="ml-1 w-3 h-3 bg-[#2D8CFF] rounded-full items-center justify-center">
             <Ionicons name="checkmark" size={8} color="white" />
           </View>

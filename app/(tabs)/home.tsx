@@ -7,41 +7,56 @@ import PopularCategories from '@/components/shared/popularCategories';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { useUser } from '@/context/userContext';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import itemService, { Item } from '@/api/item.service';
+import itemService, { useGetItemsQuery } from '@/api/item.service';
 import { useEffect } from 'react';
+import { FilterParamsSchema } from '@/types/schemas';
  
 
 
 export default function HomeScreen() {
   const router = useRouter();
+  const searchParams = useLocalSearchParams();
   const { role } = useUser();
   const { t } = useTranslation();
-  const [selectedCategory, setSelectedCategory] = useState('Electronic');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>();
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState('DEFAULT');
-  const [trendingItems, setTrendingItems] = useState<Item[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+
+  // Memoize filters to avoid unnecessary re-queries
+  const activeFilters = useMemo(() => {
+    const { categoryId: _, returnTo: __, ...rest } = searchParams;
+    // Validate and parse results using Zod
+    try {
+      const parsed = FilterParamsSchema.parse(rest);
+      return parsed;
+    } catch (e) {
+      console.warn('Filter validation failed, using raw params', e);
+      return rest;
+    }
+  }, [searchParams]);
+
+  const { data: trendingItems, isLoading, error } = useGetItemsQuery({
+    category: selectedCategoryId?.toString(),
+    filters: activeFilters,
+  });
+
+  // Automatically sync category from URL if it was set in FilterScreen
+  useEffect(() => {
+    if (searchParams.categoryId) {
+      setSelectedCategoryId(Number(searchParams.categoryId));
+    }
+  }, [searchParams.categoryId]);
 
   useEffect(() => {
-    fetchItems();
-  }, [selectedCategory]);
-
-  const fetchItems = async () => {
-    setIsLoading(true);
-    try {
-      const items = await itemService.getItems();
-      setTrendingItems(items);
-    } catch (error) {
+    if (error) {
       console.error('Failed to fetch items:', error);
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }, [error]);
 
   const displayLocation = selectedLocation === 'DEFAULT' ? t('home.enterLocation') : selectedLocation;
 
@@ -96,14 +111,32 @@ export default function HomeScreen() {
         {/* Popular Categories */}
         <PopularCategories 
           showTitle={false} 
-          selectedCategory={selectedCategory} 
-          onSelectCategory={setSelectedCategory} 
+          selectedCategoryId={selectedCategoryId} 
+          onSelectCategory={(cat) => {
+            if (selectedCategoryId === cat.id) {
+              setSelectedCategoryId(undefined);
+              // Also clear filters if category is deselected? Or keep them?
+              // Usually deselecting category should clear filters.
+              router.setParams({ categoryId: '' }); 
+            } else {
+              setSelectedCategoryId(cat.id);
+            }
+          }} 
         />
 
         {/* Search Bar */}
         <SearchBar 
           placeholder={t('common.search')} 
           showFilter={true} 
+          onFilterPress={() => {
+            router.push({
+              pathname: '/search/filter',
+              params: { 
+                categoryId: selectedCategoryId?.toString() || '',
+                returnTo: '/(tabs)/home'
+              }
+            });
+          }}
           containerStyle={{ marginBottom: 24 }}
         />
 
@@ -126,11 +159,11 @@ export default function HomeScreen() {
                 item={{
                   id: item.id,
                   title: item.title,
-                  image: item.image || 'https://via.placeholder.com/400',
-                  price: typeof item.price === 'number' ? `Rs:${item.price}` : (item.price || 'N/A'),
-                  owner: item.owner?.fullName || 'Anonymous',
-                  rating: item.rating || 'N/A',
-                  distance: item.distance || 'Unknown',
+                  image: item.imageUrl || 'https://via.placeholder.com/400',
+                  price: `Rs: ${(item.price || item.pricings?.[0]?.price || 0).toLocaleString()}`,
+                  owner: item.owner?.individualUser?.fullName || item.owner?.company?.companyName || 'N/A',
+                  rating: '5.0',
+                  distance: '5.6 km',
                   location: item.address?.address || 'N/A',
                 }} 
               />

@@ -2,6 +2,7 @@
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import StatsSection from '@/components/ownerProfile/StatsSection';
 import ActionListItem from '@/components/shared/ActionListItem';
+import { userService } from '@/api/user.service';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -22,15 +23,39 @@ interface MenuItem {
 
 import { Colors } from '@/constants/theme';
 import { useUser } from '@/context/userContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TouchableOpacity } from 'react-native';
 import ConfirmationPopup from '@/components/AlertPopup/ConfirmationPopup';
+import { getImageUrl } from '@/utils/image';
+import { useGetProfileQuery } from '@/api/user.service';
+import { useMemo } from 'react';
 
 export default function ProfileScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { logout, role } = useUser();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const { data: profile, isLoading: isProfileLoading, error: profileError } = useGetProfileQuery();
+
+  const userProfile = useMemo(() => {
+    if (!profile) return null;
+    const isCompany = !!profile.company;
+    const details = isCompany ? profile.company : profile.individualUser;
+    
+    return {
+      name: isCompany ? (details as any)?.companyName || '' : (details as any)?.fullName || '',
+      email: profile.email,
+      joined: new Date().getFullYear().toString(), // Should ideally come from backend
+      image: profile.profileImage
+    };
+  }, [profile]);
+
+  useEffect(() => {
+    if (profileError) {
+      console.error('Failed to load profile:', profileError);
+    }
+  }, [profileError]);
 
   const handleLogout = async () => {
     setShowLogoutConfirm(true);
@@ -85,7 +110,7 @@ export default function ProfileScreen() {
       label: t('listing.myListings'),
       onPress: () => router.push('/(tabs)/add-listing' as any),
     },
-    {
+    /* {
       icon: 'card-outline',
       iconType: 'ionicons',
       label: t('profile.payments'),
@@ -103,19 +128,19 @@ export default function ProfileScreen() {
       label: t('profile.levels'),
       badge: '🏆',
       onPress: () => router.push('/profile/levels' as any),
-    },
+    }, */
     {
       icon: 'help-circle-outline',
       iconType: 'ionicons',
       label: t('profile.faqs'),
       onPress: () => router.push('/profile/faq' as any),
     },
-    {
+    /* {
       icon: 'alert-circle-outline',
       iconType: 'ionicons',
       label: t('profile.incident'),
       onPress: () => router.push('/profile/incident' as any),
-    },
+    }, */
     {
       icon: 'language-outline',
       iconType: 'ionicons',
@@ -135,42 +160,41 @@ export default function ProfileScreen() {
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <StatusBar style="dark" />
 
-      {/* Header */}
-      <ScreenHeader title={t('profile.title')} rightIcon="ellipsis-horizontal" />
-
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Profile Section */}
-        <View className="items-center px-6 py-6">
-          {/* Profile Image */}
-          <View className="w-32 h-32 rounded-full bg-orange-200 overflow-hidden mb-4">
-            <Image
-              source={{ uri: 'https://i.pravatar.cc/300?img=47' }}
-              style={{ width: '100%', height: '100%' }}
-              contentFit="cover"
-            />
+        {/* Header Section */}
+        <View className="items-center pt-8 pb-6 px-4 bg-white">
+          {/* Profile Image with Edit Badge */}
+          <View className="relative mb-4">
+            <View className="w-28 h-28 rounded-full bg-gray-100 overflow-hidden border-4 border-white shadow-sm">
+              <Image
+                source={{ uri: getImageUrl(userProfile?.image) }}
+                style={{ width: '100%', height: '100%' }}
+                contentFit="cover"
+              />
+            </View>
           </View>
 
           {/* Name with Badges */}
           <View className="flex-row items-center gap-1 mb-1">
-            <Text className="text-xl font-bold text-black">Jithmi Shihara</Text>
-            <Text className="text-lg">✅</Text>
-            <Text className="text-lg">🏆</Text>
+            <Text className="text-xl font-bold text-black">{isProfileLoading ? 'Loading...' : userProfile?.name || 'User'}</Text>
+            {/*<Text className="text-lg">✅</Text>
+            <Text className="text-lg">🏆</Text>*/}
           </View>
 
           {/* Email */}
           <Text className="text-sm text-gray-500 mb-1">
-            jithmishihara@gmail.com
+            {userProfile?.email || ''}
           </Text>
 
           {/* Joined Date */}
-          <Text className="text-xs text-gray-400">{t('profile.joined')} 2021</Text>
+          <Text className="text-xs text-gray-400">{t('profile.joined')} {userProfile?.joined || '2021'}</Text>
         </View>
 
         {/* Stats Section */}
-        <StatsSection stats={stats} />
+        {/* <StatsSection stats={stats} /> */}
 
         {/* Menu Items */}
         <View className="px-6 pb-6">

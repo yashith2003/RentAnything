@@ -4,25 +4,68 @@ import SearchBar from '@/components/form/searchbar';
 import PopularCategories from '@/components/shared/popularCategories';
 import { PaddingStyles, Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SearchList from '../search/searchList';
 import SearchMap from '../search/searchMap';
 
-const filters = [
-  { id: 1, label: '10 km' },
-  { id: 2, label: 'Brand New' },
-];
 
 export default function SearchScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const [selectedCategory, setSelectedCategory] = useState('Electronic');
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('map');
-  const [searchQuery, setSearchQuery] = useState('');
+  const params = useLocalSearchParams();
+  const { categoryId: paramCatId, searchQuery: paramQuery, ...filtersAsParams } = params;
+
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>(paramCatId ? Number(paramCatId) : undefined);
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [searchQuery, setSearchQuery] = useState((paramQuery as string) || '');
+
+  // Build active filters array from params
+  const activeFilters: Array<{ key: string; label: string; value: any }> = [];
+  
+  if (filtersAsParams.access) {
+    activeFilters.push({ key: 'access', label: filtersAsParams.access as string, value: filtersAsParams.access });
+  }
+  if (filtersAsParams.condition) {
+    activeFilters.push({ key: 'condition', label: filtersAsParams.condition as string, value: filtersAsParams.condition });
+  }
+  if (filtersAsParams.distance) {
+    activeFilters.push({ key: 'distance', label: filtersAsParams.distance as string, value: filtersAsParams.distance });
+  }
+  
+  // Add dynamic category-specific filters
+  Object.keys(filtersAsParams).forEach(key => {
+    if (!['access', 'condition', 'distance'].includes(key)) {
+      activeFilters.push({ key, label: `${key}: ${filtersAsParams[key]}`, value: filtersAsParams[key] });
+    }
+  });
+
+  const removeFilter = (filterKey: string) => {
+    const newParams: any = { ...params };
+    delete newParams[filterKey];
+    router.push({
+      pathname: '/(tabs)/search',
+      params: newParams
+    });
+  };
+
+  const clearAllFilters = () => {
+    router.push({
+      pathname: '/(tabs)/search',
+      params: { 
+        categoryId: selectedCategoryId || '',
+        searchQuery: searchQuery || ''
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (paramCatId) setSelectedCategoryId(Number(paramCatId));
+    if (paramQuery) setSearchQuery(paramQuery as string);
+  }, [paramCatId, paramQuery]);
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
@@ -51,14 +94,14 @@ export default function SearchScreen() {
       </View>
 
       <View className="flex-1">
-        {/* Top Part (Sticky in this layout conceptually) */}
+        {/* Top Part */}
         <View>
           {/* Category Chips */}
           <View style={PaddingStyles.page}>
             <PopularCategories 
               showTitle={false} 
-              selectedCategory={selectedCategory} 
-              onSelectCategory={setSelectedCategory} 
+              selectedCategoryId={selectedCategoryId} 
+              onSelectCategory={(cat) => setSelectedCategoryId(cat.id)} 
             />
           </View>
 
@@ -68,25 +111,31 @@ export default function SearchScreen() {
             onChangeText={setSearchQuery}
             placeholder={t('common.search')}
             showFilter={true}
+            onFilterPress={() => router.push({
+              pathname: '/search/filter',
+              params: { categoryId: selectedCategoryId || '' }
+            })}
             containerStyle={{ paddingHorizontal: Spacing.pageHorizontal, marginBottom: Spacing.lg }}
           />
 
           {/* Filter Tags */}
-          <View className="flex-row items-center justify-between mb-4" style={PaddingStyles.page}>
-             <View className="flex-row gap-x-3">
-                {filters.map(filter => (
-                    <View key={filter.id} className={`flex-row items-center bg-gray-50 px-${getTailwindSpacing(Spacing.lg)} py-2 rounded-xl border border-gray-100`}>
-                        <Text className="text-gray-600 text-sm mr-2">{filter.label}</Text>
-                        <TouchableOpacity>
-                            <Ionicons name="close" size={14} color="#666" />
-                        </TouchableOpacity>
-                    </View>
+          {activeFilters.length > 0 && (
+            <View className="flex-row items-center justify-between mb-4" style={PaddingStyles.page}>
+              <View className="flex-row gap-x-3 flex-wrap flex-1">
+                {activeFilters.map((filter, index) => (
+                  <View key={`${filter.key}-${index}`} className={`flex-row items-center bg-gray-50 px-${getTailwindSpacing(Spacing.lg)} py-2 rounded-xl border border-gray-100 mb-2`}>
+                    <Text className="text-gray-600 text-sm mr-2">{filter.label}</Text>
+                    <TouchableOpacity onPress={() => removeFilter(filter.key)}>
+                      <Ionicons name="close" size={14} color="#666" />
+                    </TouchableOpacity>
+                  </View>
                 ))}
-             </View>
-             <TouchableOpacity>
+              </View>
+              <TouchableOpacity onPress={clearAllFilters}>
                 <Text className="text-[#2FA2B9] text-sm font-medium">{t('search.clearFilters')}</Text>
-             </TouchableOpacity>
-          </View>
+              </TouchableOpacity>
+            </View>
+          )}
 
           {/* List/Map Toggle */}
           <View className="flex-row items-center mb-4 gap-x-4" style={PaddingStyles.page}>
@@ -115,18 +164,14 @@ export default function SearchScreen() {
                 </Text>
             </TouchableOpacity>
           </View>
-
-          {/* Products Count - Only show in map view */}
-          {viewMode === 'map' && (
-            <View style={PaddingStyles.page} className="mb-4">
-              <Text className="text-sm font-bold text-black">32 {t('search.productsFound')}</Text>
-            </View>
-          )}
         </View>
 
         {/* Dynamic Content */}
         <View className="flex-1">
-          {viewMode === 'list' ? <SearchList /> : <SearchMap />}
+          {viewMode === 'list' ? 
+            <SearchList categoryId={selectedCategoryId} searchQuery={searchQuery} filters={filtersAsParams} /> : 
+            <SearchMap categoryId={selectedCategoryId} filters={filtersAsParams} />
+          }
         </View>
       </View>
     </SafeAreaView>

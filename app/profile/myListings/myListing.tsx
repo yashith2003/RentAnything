@@ -8,7 +8,8 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState, useCallback } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import itemService, { Item } from '@/api/item.service';
+import itemService from '@/api/item.service';
+import { Item } from '@/types/schemas';
 
 export default function MyListingsScreen() {
   const router = useRouter();

@@ -1,74 +1,86 @@
-//app/search/searchList.tsx
+// app/search/searchList.tsx
 
 import ItemCard from '@/components/card/itemCard';
 import { PaddingStyles } from '@/constants/spacing';
-import React from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { ScrollView, Text, View, ActivityIndicator } from 'react-native';
+import itemService from '@/api/item.service';
+import { Colors } from '@/constants/theme';
 
-const searchResults = [
-  {
-    id: 1,
-    image: 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?q=80&w=400&auto=format&fit=crop',
-    title: 'Tennis Racquet',
-    price: 'Rs:1000',
-    extraPrice: '- Per day',
-    owner: 'Malith Perera',
-    rating: '5.0',
-    distance: '5.6 km',
-    location: 'Nugegoda',
-    delivery: true,
-  },
-  {
-    id: 2,
-    image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=400&auto=format&fit=crop',
-    title: 'Nikon D90 DSLR Camera',
-    price: 'Rs:1000',
-    extraPrice: '- Per day | Rs: 1500 - 2 days',
-    owner: 'Malith Perera',
-    rating: '5.0',
-    distance: '5.6 km',
-    location: 'Nugegoda',
-    delivery: true,
-  },
-  {
-    id: 3,
-    image: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=400&auto=format&fit=crop',
-    title: 'Tesla Model S',
-    price: 'Rs:1000',
-    extraPrice: '- Per day | Rs: 1500 - 2 days',
-    owner: 'Malith Perera',
-    rating: '5.0',
-    distance: '5.6 km',
-    location: 'Nugegoda',
-    delivery: true,
-  },
-  {
-    id: 4,
-    image: 'https://images.unsplash.com/photo-1599727402636-1e96a40a233b?q=80&w=400&auto=format&fit=crop',
-    title: '55 Gal Plastic Barrels',
-    price: 'Rs:1000',
-    extraPrice: '- Per day',
-    owner: 'Malith Perera',
-    rating: '5.0',
-    distance: '5.6 km',
-    location: 'Nugegoda',
-    delivery: true,
-  },
-];
+interface SearchListProps {
+  categoryId?: number;
+  searchQuery?: string;
+  filters?: any;
+}
 
-export default function SearchList() {
+export default function SearchList({ categoryId, searchQuery, filters }: SearchListProps) {
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchItems();
+  }, [categoryId, searchQuery, JSON.stringify(filters)]);
+
+  const fetchItems = async () => {
+    setLoading(true);
+    try {
+      const data = await itemService.getItems(categoryId?.toString(), filters);
+      
+      // Simple frontend search filtering for now if searchQuery exists
+      let filtered = data;
+      if (searchQuery) {
+        filtered = data.filter((item: any) => 
+          item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.description.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+      
+      setItems(filtered);
+    } catch (error) {
+      console.error('Failed to fetch items:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    );
+  }
+
   return (
     <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
       {/* Products Count */}
       <View className="mb-4" style={PaddingStyles.page}>
-        <Text className="text-xl font-bold text-black">32 products found</Text>
+        <Text className="text-xl font-bold text-black">{items.length} products found</Text>
       </View>
 
       {/* Products Grid */}
       <View className="flex-row flex-wrap justify-between pb-10" style={PaddingStyles.page}>
-        {searchResults.map((item) => (
-          <ItemCard key={item.id} item={item} />
-        ))}
+        {items.map((item) => {
+          // Map backend Item to ItemCard props
+          const cardItem = {
+            id: item.id,
+            image: item.imageUrl || 'https://via.placeholder.com/400x320',
+            price: `Rs: ${(item.price || item.pricings?.[0]?.price || 0).toLocaleString()}`,
+            extraPrice: '- Per day',
+            title: item.title,
+            owner: item.owner?.individualUser?.fullName || item.owner?.company?.companyName || 'N/A',
+            rating: '5.0', // Mock rating for now
+            distance: '5.6 km', // Mock distance
+            location: item.address?.address || 'N/A',
+            delivery: true
+          };
+          return <ItemCard key={item.id} item={cardItem} />;
+        })}
+        {items.length === 0 && (
+          <View className="w-full items-center py-10">
+            <Text className="text-gray-400">No products found for this category</Text>
+          </View>
+        )}
       </View>
     </ScrollView>
   );

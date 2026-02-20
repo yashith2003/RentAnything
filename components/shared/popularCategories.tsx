@@ -1,39 +1,69 @@
-//components/popularCategories.tsx
+// components/shared/popularCategories.tsx
 
 import { Image } from 'expo-image';
-import React from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import categoryService, { Category } from '@/api/category.service';
+import { Colors } from '@/constants/theme';
 
-const categories = [
-  { name: 'Electronic', icon: require('@/assets/images/Electronics.png') },
-  { name: 'Vehicle', icon: require('@/assets/images/Vehicle.png') },
-  { name: 'Home', icon: require('@/assets/images/home.png') },
-  { name: 'Fashion', icon: require('@/assets/images/fashion.png') },
-  { name: 'Sports', icon: require('@/assets/images/sports.png') },
-];
+const categoryIcons: { [key: string]: any } = {
+  'Electronics': require('@/assets/images/Electronics.png'),
+  'Vehicle': require('@/assets/images/Vehicle.png'),
+  'Home': require('@/assets/images/home.png'),
+  'Fashion': require('@/assets/images/fashion.png'),
+  'Sport': require('@/assets/images/sports.png'),
+};
 
 interface PopularCategoriesProps {
-  selectedCategory?: string;
-  onSelectCategory?: (name: string) => void;
+  selectedCategoryId?: number;
+  onSelectCategory?: (category: Category) => void;
   showTitle?: boolean;
 }
 
 export default function PopularCategories({ 
-  selectedCategory, 
+  selectedCategoryId, 
   onSelectCategory,
   showTitle = true 
 }: PopularCategoriesProps) {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const data = await categoryService.getAll();
+      setCategories(data.filter(c => !c.parentCategory)); // Only top-level
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View className="mb-6 h-24 items-center justify-center">
+        <ActivityIndicator size="small" color={Colors.primary} />
+      </View>
+    );
+  }
+
   return (
     <View className="mb-6">
       {showTitle && <Text className="text-xl font-bold mb-4">Popular Categories</Text>}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-4 px-4">
-        {categories.map((cat, index) => {
-          const isSelected = selectedCategory === cat.name;
+        {categories.map((cat) => {
+          const isSelected = selectedCategoryId === cat.id;
+          const icon = categoryIcons[cat.name] || require('@/assets/images/Electronics.png'); // Fallback
+          
           return (
             <TouchableOpacity 
-              key={index} 
+              key={cat.id} 
               className="items-center mr-6"
-              onPress={() => onSelectCategory?.(cat.name)}
+              onPress={() => onSelectCategory?.(cat)}
             >
               <View 
                 className={`w-16 h-16 rounded-full items-center justify-center mb-2 shadow-sm shadow-black/5 ${
@@ -43,7 +73,7 @@ export default function PopularCategories({
                 }`} 
                 style={{ elevation: 2 }}
               >
-                <Image source={cat.icon} style={{ width: 32, height: 32 }} contentFit="contain" />
+                <Image source={icon} style={{ width: 32, height: 32 }} contentFit="contain" />
               </View>
               <Text 
                 className={`text-xs font-medium ${

@@ -12,33 +12,19 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from 'react';
 import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator, Modal, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import itemService, { Item } from '@/api/item.service';
+import { useGetItemQuery } from '@/api/item.service';
+import { Config } from '@/constants/config';
+import { getImageUrl } from '@/utils/image';
 
 const { width } = Dimensions.get('window');
 
 export default function ItemDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
-  const [item, setItem] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: item, isLoading: loading, error } = useGetItemQuery(Number(id), {
+    skip: !id,
+  });
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (id) {
-      fetchItem();
-    }
-  }, [id]);
-
-  const fetchItem = async () => {
-    try {
-      const data = await itemService.getItem(Number(id));
-      setItem(data);
-    } catch (error) {
-      console.error('Failed to fetch item details:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -48,10 +34,13 @@ export default function ItemDetailScreen() {
     );
   }
 
-  if (!item) {
+  if (error || !item) {
     return (
       <SafeAreaView className="flex-1 bg-white items-center justify-center">
-        <Text className="text-gray-400">Item not found</Text>
+        <Text className="text-gray-400">{(error as any)?.data?.message || 'Item not found'}</Text>
+        <TouchableOpacity onPress={() => router.back()} className="mt-4">
+          <Text style={{ color: Colors.primary }} className="font-bold">Go Back</Text>
+        </TouchableOpacity>
       </SafeAreaView>
     );
   }
@@ -59,7 +48,7 @@ export default function ItemDetailScreen() {
   const ownerName = item.owner?.individualUser?.fullName || item.owner?.company?.companyName || 'N/A';
   const itemAddress = item.address?.address || 'N/A';
 
-  const renderDocumentRow = (label: string, url?: string) => {
+  const renderDocumentRow = (label: string, url?: string | null) => {
     if (!url) return null;
     return (
       <View className="flex-row items-center justify-between py-2 border-b border-gray-50">
@@ -88,7 +77,7 @@ export default function ItemDetailScreen() {
         {/* Item Image */}
         <View className="items-center justify-center py-6 mb-4 relative">
              <Image
-              source={{ uri: item.imageUrl || 'https://via.placeholder.com/600x400' }}
+              source={{ uri: getImageUrl(item.imageUrl) || 'https://via.placeholder.com/600x400' }}
               style={{ width: '100%', aspectRatio: 1.5 }}
               contentFit="contain"
             />

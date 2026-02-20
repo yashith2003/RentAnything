@@ -2,6 +2,7 @@ import { Colors } from '@/constants/theme';
 import { Image } from 'expo-image';
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+import { getImageUrl } from '@/utils/image';
 
 interface MyListingCardProps {
   listing: {
@@ -41,7 +42,7 @@ export const MyListingCard: React.FC<MyListingCardProps> = ({
         {/* Image Container */}
         <View className="w-28 h-28 rounded-2xl overflow-hidden bg-gray-50 mr-4">
           <Image
-            source={{ uri: listing.image }}
+            source={{ uri: getImageUrl(listing.image) }}
             style={{ width: '100%', height: '100%' }}
             contentFit="contain"
           />

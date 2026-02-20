@@ -8,5 +8,6 @@ const BASE_URL = `http://${LOCAL_HOST}:3008/api`;
 
 export const Config = {
   API_URL: BASE_URL,
+  BASE_URL: `http://${LOCAL_HOST}:3008`,
   TIMEOUT: 10000,
 };

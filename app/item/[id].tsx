@@ -3,16 +3,19 @@ import ImageSlider from '@/components/itemDetails/ImageSlider';
 import ItemReviews from '@/components/itemDetails/ItemReviews';
 import OwnerAbout from '@/components/itemDetails/OwnerAbout';
 import TrustBanners from '@/components/itemDetails/TrustBanners';
+import LocationMap from '@/components/itemDetails/LocationMap';
 import { PaddingStyles } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useGetItemQuery } from '@/api/item.service';
+import { getImageUrl } from '@/utils/image';
 
-const itemImages = [
+const itemImagesFallback = [
   'https://images.unsplash.com/photo-1617788138017-80ad42243c5d?q=80&w=800&auto=format&fit=crop',
   'https://images.unsplash.com/photo-1560958089-b8a1929cea89?q=80&w=400&auto=format&fit=crop',
   'https://images.unsplash.com/photo-1541443131876-44b03de101c5?q=80&w=400&auto=format&fit=crop',
@@ -36,18 +39,43 @@ const reviews = [
   },
 ];
 
-const ownerData = {
-    name: 'Malith Perera',
-    image: 'https://i.pravatar.cc/150?u=malith',
-    memberSince: '2018',
-    rating: '5.0 (11 reviews)',
-    listings: '181'
-};
-
 export default function ItemDetailsScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const [activeTab, setActiveTab] = useState('Description');
+  
+  const { data: item, isLoading, error } = useGetItemQuery(Number(id), {
+    skip: !id,
+  });
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white">
+        <ActivityIndicator size="large" color="#2FA2B9" />
+      </View>
+    );
+  }
+
+  if (error || !item) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white">
+        <Text>{(error as any)?.data?.message || 'Item not found'}</Text>
+        <TouchableOpacity onPress={() => router.back()} className="mt-4">
+          <Text className="text-cyan-500 font-bold">Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const ownerData = {
+    name: item.owner?.individualUser?.fullName || item.owner?.company?.companyName || 'Malith Perera',
+    image: 'https://i.pravatar.cc/150?u=malith', // Still hardcoded if not in schema
+    memberSince: '2018',
+    rating: '5.0 (11 reviews)',
+    listings: '181'
+  };
+
+  const itemImages = item.imageUrl ? [getImageUrl(item.imageUrl)!] : itemImagesFallback;
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
@@ -84,17 +112,19 @@ export default function ItemDetailsScreen() {
                 </View>
                 <View className="flex-row items-center">
                     <Ionicons name="location-outline" size={14} color="#2FA2B9" />
-                    <Text className="text-xs text-[#2FA2B9] font-medium ml-1">5.6 km - Nugegoda</Text>
+                    <Text className="text-xs text-[#2FA2B9] font-medium ml-1">
+                        {item.address?.address?.split(',')[0] || 'Nugegoda'}
+                    </Text>
                 </View>
             </View>
 
             <View className="flex-row items-center gap-x-2">
-                <Text className="text-2xl font-bold">Tesla Model 3</Text>
+                <Text className="text-2xl font-bold">{item.title}</Text>
                 <Ionicons name="checkmark-circle" size={20} color="#3B82F6" />
             </View>
 
             <Text className="text-gray-500 text-sm mt-2 leading-5">
-                A car with high space that is rented. A car with high space that is rented all at an affordable price.
+                {item.description}
             </Text>
 
             <View className="mt-4 space-y-2">
@@ -115,7 +145,7 @@ export default function ItemDetailsScreen() {
             {/* Tags */}
             <View className="flex-row flex-wrap gap-2 mt-6">
                 <View className="bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
-                    <Text className="text-gray-400 text-[10px] font-medium">Used like new condition</Text>
+                    <Text className="text-gray-400 text-[10px] font-medium">{item.condition || 'Used like new condition'}</Text>
                 </View>
                 <View className="bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
                     <Text className="text-gray-400 text-[10px] font-medium">Delivery available</Text>
@@ -132,7 +162,7 @@ export default function ItemDetailsScreen() {
             <View className="mt-8">
                 <Text className="text-base font-bold mb-4">Rental Fee</Text>
                 <View className="flex-row items-baseline gap-x-1 mb-4">
-                    <Text className="text-[#2FA2B9] text-sm font-bold">Rs: 1500.00</Text>
+                    <Text className="text-[#2FA2B9] text-sm font-bold">Rs: {item.price || '1500.00'}</Text>
                     <Text className="text-gray-400 text-xs">- Daily Rental</Text>
                 </View>
                 
@@ -239,39 +269,45 @@ export default function ItemDetailsScreen() {
             <View className="mt-4">
                 <Text className="text-xs font-bold mb-2">Overview :</Text>
                 <Text className="text-[10px] text-gray-400 leading-4">
-                    Uncover hidden treasures with our easy to use metal detector available for hire. Perfect for hobbyists and adventure seekers exploring the beautiful landscapes around Ottawa.
+                    {item.description}
                 </Text>
-                <Text className="text-[10px] text-gray-400 mt-2 leading-4">
-                    Whether you're searching for historical artifacts or just having fun, this metal detector is ideal for both beginners and seasoned treasure hunters. Enjoy the thrill of discovery in nearby parks and open spaces!
-                </Text>
+                
+                {activeTab === 'Rental Terms' && (
+                  <Text className="text-[10px] text-gray-400 mt-2 leading-4">
+                    {item.rentalTerms || 'No specific rental terms provided.'}
+                  </Text>
+                )}
 
-                <Text className="text-xs font-bold mt-4 mb-2">What's included:</Text>
-                {['Metal detector with adjustable stem', 'Headphones for clear audio signals', 'Carrying bag for easy transport', 'Instruction manual'].map((item, i) => (
-                    <Text key={i} className="text-[10px] text-gray-400">• {item}</Text>
-                ))}
+                {activeTab === 'Instructions to use' && (
+                  <Text className="text-[10px] text-gray-400 mt-2 leading-4">
+                    {item.instructions || 'No specific instructions provided.'}
+                  </Text>
+                )}
 
                 <TouchableOpacity className="mt-4">
                     <Text className="text-[#2FA2B9] text-xs font-bold underline">Read More</Text>
                 </TouchableOpacity>
             </View>
 
-            {/* Location Map Placeholder */}
-            <View className="mt-8">
+            {/* Location Map Component */}
+            {item.address?.lat && item.address?.lng ? (
+              <LocationMap 
+                latitude={Number(item.address.lat)} 
+                longitude={Number(item.address.lng)} 
+                address={item.address.address || ''}
+              />
+            ) : (
+              <View className="mt-8">
                 <Text className="text-base font-bold mb-2">Location</Text>
                 <Text className="text-[10px] text-gray-400 mb-4">
-                    This item is available for pickup at owner location, delivery available to No:52, Nugegoda Road, Colombo.
+                   {item.address?.address || 'Location information not available'}
                 </Text>
-                <View className="h-48 bg-gray-100 rounded-3xl overflow-hidden mb-4">
-                    <Image 
-                        source={{ uri: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&auto=format&fit=crop' }} 
-                        style={{ width: '100%', height: '100%' }}
-                        contentFit="cover"
-                    />
+                <View className="h-48 bg-gray-100 rounded-3xl items-center justify-center">
+                   <Ionicons name="map-outline" size={48} color="#9CA3AF" />
+                   <Text className="text-gray-400 text-xs mt-2">Map coordinates not available</Text>
                 </View>
-                <TouchableOpacity className="h-12 border border-cyan-500 rounded-full items-center justify-center">
-                    <Text className="text-cyan-500 font-bold">Got Direction</Text>
-                </TouchableOpacity>
-            </View>
+              </View>
+            )}
 
             {/* Similar Items Placeholder */}
             <View className="mt-8">
@@ -285,7 +321,7 @@ export default function ItemDetailsScreen() {
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} className="gap-x-4 pb-4">
                      {/* One simplified card */}
                      <View className="bg-white rounded-3xl border border-gray-100 w-44 overflow-hidden shadow-sm">
-                        <Image source={{ uri: itemImages[0] }} style={{ width: '100%', height: 100 }} contentFit="cover" />
+                        <Image source={{ uri: itemImagesFallback[0] }} style={{ width: '100%', height: 100 }} contentFit="cover" />
                         <View className="p-3">
                             <Text className="text-cyan-600 text-[10px] font-bold">Rs: 1500 - per day</Text>
                             <Text className="font-bold text-xs mt-1" numberOfLines={1}>Tesla Model S</Text>
@@ -293,7 +329,7 @@ export default function ItemDetailsScreen() {
                         </View>
                      </View>
                      <View className="bg-white rounded-3xl border border-gray-100 w-44 overflow-hidden shadow-sm">
-                        <Image source={{ uri: itemImages[0] }} style={{ width: '100%', height: 100 }} contentFit="cover" />
+                        <Image source={{ uri: itemImagesFallback[1] }} style={{ width: '100%', height: 100 }} contentFit="cover" />
                         <View className="p-3">
                             <Text className="text-cyan-600 text-[10px] font-bold">Rs: 1500 - per day</Text>
                             <Text className="font-bold text-xs mt-1" numberOfLines={1}>Tesla Model S</Text>

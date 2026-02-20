@@ -11,38 +11,29 @@ import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import itemService, { Item } from '@/api/item.service';
+import { Item } from '@/types/schemas';
+import { useGetMyItemsQuery } from '@/api/item.service';
+import { getImageUrl } from '@/utils/image';
 
 export default function MyListingsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
-  const [listings, setListings] = useState<Item[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const fetchListings = async () => {
-    try {
-      const data = await itemService.getMyItems();
-      setListings(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('Failed to fetch listings:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+  
+  const { data: listings = [], isLoading, isFetching, refetch } = useGetMyItemsQuery();
 
   useFocusEffect(
     useCallback(() => {
-      fetchListings();
-    }, [])
+      refetch();
+    }, [refetch])
   );
 
   const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    fetchListings();
-  }, []);
+    refetch();
+  }, [refetch]);
+
+  const loading = isLoading;
+  const refreshing = isFetching;
 
   const filteredListings = listings.filter(listing =>
     listing.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -105,7 +96,7 @@ export default function MyListingsScreen() {
                     title: listing.title,
                     description: listing.description,
                     condition: listing.condition || 'Used',
-                    image: listing.imageUrl || 'https://via.placeholder.com/150',
+                    image: getImageUrl(listing.imageUrl) || 'https://via.placeholder.com/150',
                     rentals: 0,
                     isActive: listing.status === 'available',
                   }}

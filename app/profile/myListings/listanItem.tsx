@@ -1,7 +1,9 @@
 import { filterPhoneInput } from '@/utils/phoneUtils';
 import addressService, { Address } from '@/api/address.service';
 import itemService from '@/api/item.service';
+import fileService from '@/api/file.service';
 import { ChipGroup } from '@/components/form/ChipGroup';
+import { CreateItemSchema } from '@/types/schemas';
 import { LabelledInput } from '@/components/form/LabelledInput';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { UploadBox } from '@/components/form/UploadBox';
@@ -13,7 +15,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from 'react';
+import { useCreateItemMutation } from '@/api/item.service';
 import { ScrollView, Switch, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 
@@ -272,27 +276,29 @@ export default function ListAnItemScreen() {
     return {};
   };
 
+  const uploadIfNeeded = async (uri?: string) => {
+    if (!uri) return undefined;
+    // Check if it's a local URI (not starting with http)
+    if (uri.startsWith('file://') || uri.startsWith('content://') || !uri.startsWith('http')) {
+      try {
+        const uploadResult = await fileService.uploadImage(uri);
+        return uploadResult.url;
+      } catch (uploadError) {
+        console.error('Failed to upload image', uri, uploadError);
+        throw new Error('Failed to upload image. Please try again.');
+      }
+    }
+    return uri;
+  };
+
+  const [createItem] = useCreateItemMutation();
+
   const handleAddItem = async () => {
-    const newErrors: Record<string, string> = {};
-    if (!itemName) newErrors.itemName = 'Item Name is required';
-    if (!phoneNumber) newErrors.phoneNumber = 'Phone Number is required';
-    if (!location || location === 'Union St, Chicago 2002 Usa' || location === '') {
-        // If it's the default placeholder or empty, consider it invalid for real listings
-        if (!location || location === '') newErrors.location = 'Location is required';
-    }
-    if (!itemDescription) newErrors.itemDescription = 'Description is required';
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      setErrorMessage('Please fill in all required fields');
-      setShowError(true);
-      return;
-    }
-
     setErrors({});
     setIsSubmitting(true);
+    
     try {
-      // 1. Create or Find Address
+      // 1. Create Address and prepare initial data
       let addressId = 1;
       try {
         const addrPayload = selectedAddress || { address: location };
@@ -302,43 +308,73 @@ export default function ListAnItemScreen() {
         console.warn('Using default addressId due to error', e);
       }
 
-      // 2. Prepare Availabilities
-      const availabilities = availability.dates.map(date => ({
-        availableDate: date,
-        startTime: availability.startTime,
-        endTime: availability.endTime,
-        isAvailable: true
-      }));
-
-      // 3. Build category-specific details
-      const categoryDetails = buildCategoryDetails();
-
-      // 4. Map rental rate to backend enum
-      const rateMapping: Record<string, string> = {
-        'Hour': 'hourly',
-        'Day': 'daily',
-        'Week': 'weekly',
-        'Month': 'monthly'
-      };
-      const mappedRateType = rateMapping[rentalRate] || 'daily';
-
-      // 5. Create Item with category details
-      await itemService.create({
+      // 2. Prepare payload for validation
+      const payload = {
         title: itemName,
         description: itemDescription,
+        phone: phoneNumber,
         categoryId: categoryId,
         addressId: addressId,
+        price: rentalFee ? parseFloat(rentalFee) : 0,
         condition: condition,
-        phone: phoneNumber,
         rentalTerms: rentalTerms,
         instructions: instructions,
         securityDeposit: securityDeposit ? parseFloat(securityDeposit) : 0,
-        imageUrl: selectedImage,
-        rateType: mappedRateType,
-        price: rentalFee ? parseFloat(rentalFee) : 0,
-        availabilities: availabilities,
-        ...categoryDetails,
-      });
+        rateType: rentalRate === 'Hour' ? 'hourly' : rentalRate === 'Day' ? 'daily' : rentalRate === 'Weekly' ? 'weekly' : 'monthly',
+        availabilities: availability.dates.map(date => ({
+          availableDate: date,
+          startTime: availability.startTime,
+          endTime: availability.endTime,
+          isAvailable: true
+        })),
+        ...buildCategoryDetails(),
+      };
+
+      // 3. Validate with Zod
+      const validation = CreateItemSchema.safeParse(payload);
+      
+      if (!validation.success) {
+        const fieldErrors: Record<string, string> = {};
+        validation.error.issues.forEach((issue) => {
+          if (issue.path && issue.path.length > 0) {
+            fieldErrors[issue.path[0].toString()] = issue.message;
+          }
+        });
+        
+        // Map common field names back to form fields if they differ
+        if (fieldErrors.title) fieldErrors.itemName = fieldErrors.title;
+        if (fieldErrors.description) fieldErrors.itemDescription = fieldErrors.description;
+        if (fieldErrors.phone) fieldErrors.phoneNumber = fieldErrors.phone;
+        if (fieldErrors.price) fieldErrors.rentalFee = fieldErrors.price;
+
+        setErrors(fieldErrors);
+        setErrorMessage('Please fix the errors in the form');
+        setShowError(true);
+        setIsSubmitting(false);
+        return;
+      }
+
+      // 4. Upload Documents & Image
+      const uploadedImageUrl = await uploadIfNeeded(selectedImage);
+      
+      // Update category details with uploaded document URLs
+      const finalPayload: any = { ...validation.data, imageUrl: uploadedImageUrl };
+      
+      // Ensure null values are converted to undefined for backend compatibility if needed
+      if (finalPayload.condition === null) finalPayload.condition = undefined;
+
+      if (finalPayload.vehicleDetails) {
+        const vd = finalPayload.vehicleDetails;
+        vd.registrationDocument = await uploadIfNeeded(vd.registrationDocument);
+        vd.insuranceDocument = await uploadIfNeeded(vd.insuranceDocument);
+        vd.revenueLicense = await uploadIfNeeded(vd.revenueLicense);
+        vd.driverLicense = await uploadIfNeeded(vd.driverLicense);
+      }
+
+
+      // 5. Create Item
+      await createItem(finalPayload).unwrap();
+
 
       setShowSuccess(true);
       setTimeout(() => {
@@ -348,12 +384,13 @@ export default function ListAnItemScreen() {
 
     } catch (error: any) {
       console.error('Failed to add item', error);
-      setErrorMessage(error.response?.data?.message || 'Failed to save item listing');
+      setErrorMessage(error.message || error.response?.data?.message || 'Failed to save item listing');
       setShowError(true);
     } finally {
       setIsSubmitting(false);
     }
   };
+
 
   return (
     <SafeAreaView className="flex-1 bg-white">

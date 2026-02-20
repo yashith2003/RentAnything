@@ -1,81 +1,94 @@
-//components/map.tsx
+// components/shared/map.tsx
 
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import React from 'react';
-import { Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { Text, View, ViewStyle, Platform, StyleSheet } from 'react-native';
+import MapView, { Marker, Region, PROVIDER_GOOGLE } from 'react-native-maps';
+import ClusteredMapView from 'react-native-map-clustering';
+import { Colors } from '@/constants/theme';
 
 export interface MapMarker {
-  id: number | string;
-  type: 'cluster' | 'price';
-  value?: string;
+  id: number;
+  latitude: number;
+  longitude: number;
+  title?: string;
+  price?: number | string;
+  isCluster?: boolean;
   count?: number;
-  top: string | number;
-  left: string | number;
-  active?: boolean;
 }
 
 interface MapProps {
   markers: MapMarker[];
   onMarkerPress?: (marker: MapMarker) => void;
+  onRegionChangeComplete?: (region: Region) => void;
+  initialRegion?: Region;
   style?: ViewStyle;
 }
 
-export default function Map({ markers, onMarkerPress, style }: MapProps) {
-  return (
-    <View className="flex-1 relative overflow-hidden" style={style}>
-      {/* Map Background Image */}
-      <Image
-        source={{ uri: 'https://api.mapbox.com/styles/v1/mapbox/light-v10/static/-0.1276,51.5074,11.5,0/800x1200?access_token=pk.eyJ1IjoiY2hhdWNoYSIsImEiOiJjazA1eWozYmwwMG5xM25vYmR4eWw0bXhxIn0.q6Yn0k9_xG9z-uX4hKz4_A' }}
-        style={{ width: '100%', height: '100%' }}
-        contentFit="cover"
-      />
+export default function Map({ 
+  markers, 
+  onMarkerPress, 
+  onRegionChangeComplete, 
+  initialRegion,
+  style 
+}: MapProps) {
+  
+  const defaultRegion: Region = initialRegion || {
+    latitude: 6.9271,
+    longitude: 79.8612,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  };
 
-      {/* Markers Overlay */}
-      {markers.map((marker) => (
-        <View
-          key={marker.id}
-          style={{ 
-            position: 'absolute', 
-            top: marker.top as any, 
-            left: marker.left as any 
-          }}
-          className="items-center justify-center"
-        >
-          {marker.type === 'cluster' ? (
-            <TouchableOpacity
-              onPress={() => onMarkerPress?.(marker)}
-              className={`w-12 h-12 rounded-full items-center justify-center border-[3px] ${
-                marker.active ? 'bg-[#2FA2B9] border-white' : 'bg-white border-[#2FA2B9]'
-              } shadow-lg`}
-              style={{ elevation: 6 }}
-            >
-              <Text className={`font-bold text-base ${marker.active ? 'text-white' : 'text-gray-800'}`}>
-                {marker.count}
-              </Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity 
-              onPress={() => onMarkerPress?.(marker)}
-              className="bg-white px-2.5 py-1.5 rounded-lg border-2 border-gray-800 shadow-lg"
-              style={{ elevation: 4 }}
-            >
-              <Text className="text-gray-800 font-bold text-xs">{marker.value}</Text>
-            </TouchableOpacity>
-          )}
-          
-          {marker.active && (
-            <View className="absolute -bottom-9">
-              <MaterialCommunityIcons name="gesture-tap" size={36} color="#2FA2B9" />
-            </View>
-          )}
+  const renderMarker = (marker: MapMarker) => {
+    return (
+      <Marker
+        key={marker.id}
+        coordinate={{ latitude: marker.latitude, longitude: marker.longitude }}
+        onPress={() => onMarkerPress?.(marker)}
+      >
+        <View style={styles.priceMarker}>
+          <Text style={styles.priceText}>
+            {typeof marker.price === 'number' ? `Rs: ${marker.price.toLocaleString()}` : marker.price}
+          </Text>
         </View>
-      ))}
+      </Marker>
+    );
+  };
 
-      {/* Mapbox Attribution (required) */}
-      <View className="absolute bottom-1 right-1 bg-white/70 px-1.5 py-0.5 rounded">
-        <Text className="text-[8px] text-gray-600">© Mapbox</Text>
-      </View>
+  return (
+    <View className="flex-1" style={style}>
+      <ClusteredMapView
+        style={StyleSheet.absoluteFill}
+        initialRegion={defaultRegion}
+        provider={PROVIDER_GOOGLE}
+        onRegionChangeComplete={onRegionChangeComplete}
+        clusterColor={Colors.primary}
+        clusterTextColor="white"
+        spiralEnabled={false}
+      >
+        {markers.map(renderMarker)}
+      </ClusteredMapView>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  priceMarker: {
+    backgroundColor: 'white',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#2FA2B9',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  priceText: {
+    color: '#333',
+    fontWeight: 'bold',
+    fontSize: 12,
+  }
+});
