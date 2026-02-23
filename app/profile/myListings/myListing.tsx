@@ -8,40 +8,27 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState, useCallback } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import itemService from '@/api/item.service';
+import { useGetMyItemsQuery } from '@/api/item.service';
 import { Item } from '@/types/schemas';
+import { getImageUrl } from '@/utils/image';
 
 export default function MyListingsScreen() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
-  const [listings, setListings] = useState<Item[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
 
-  const fetchListings = async () => {
-    try {
-      const data = await itemService.getMyItems();
-      setListings(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('Failed to fetch listings:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+  const { data: fetchedListings = [], isLoading: loading, isFetching: refreshing, refetch } = useGetMyItemsQuery();
 
   useFocusEffect(
     useCallback(() => {
-      fetchListings();
-    }, [])
+      refetch();
+    }, [refetch])
   );
 
   const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    fetchListings();
-  }, []);
+    refetch();
+  }, [refetch]);
 
-  const filteredListings = listings.filter(listing =>
+  const filteredListings = fetchedListings.filter((listing: Item) =>
     listing.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -66,6 +53,15 @@ export default function MyListingsScreen() {
           onPress={() => router.push('/profile/myListings/category')}
         >
           <Text className="text-white text-base font-bold">Add New Listing</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          className="h-14 rounded-full border items-center justify-center mb-10"
+          style={{ borderColor: Colors.primary }}
+          activeOpacity={0.8}
+          onPress={() => router.push('/header/chat/inbox')}
+        >
+          <Text style={{ color: Colors.primary }} className="text-base font-bold">Inbox</Text>
         </TouchableOpacity>
 
         {/* Search Bar */}
@@ -94,7 +90,7 @@ export default function MyListingsScreen() {
           /* Listings */
           <>
             {filteredListings.length > 0 ? (
-              filteredListings.map((listing) => (
+              filteredListings.map((listing: Item) => (
                 <MyListingCard 
                   key={listing.id}
                   listing={{
@@ -102,7 +98,7 @@ export default function MyListingsScreen() {
                     title: listing.title,
                     description: listing.description,
                     condition: listing.condition || 'Used',
-                    image: listing.imageUrl || 'https://via.placeholder.com/150',
+                    image: getImageUrl(listing.imageUrl),
                     rentals: 0, // Placeholder for now as backend doesn't return rental count yet
                     isActive: listing.status === 'available',
                   }}

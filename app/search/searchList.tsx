@@ -69,8 +69,9 @@ export default function SearchList({ categoryId, searchQuery, filters }: SearchL
             extraPrice: '- Per day',
             title: item.title,
             owner: item.owner?.individualUser?.fullName || item.owner?.company?.companyName || 'N/A',
-            rating: '5.0', // Mock rating for now
-            distance: '5.6 km', // Mock distance
+            ownerId: item.owner?.id,
+            rating: '5.0',
+            distance: '5.6 km',
             location: item.address?.address || 'N/A',
             delivery: true
           };

@@ -1,3 +1,5 @@
+//app/header/chat/chatDetails.tsx
+
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -6,20 +8,139 @@ import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useLocalSearchParams } from 'expo-router';
+import { useGetThreadMessagesQuery, useGetUserThreadsQuery, useGetThreadDetailsQuery, chatApi, ChatMessage } from '@/api/chat.service';
+import { apiSlice } from '@/api/apiSlice';
+import { useGetProfileQuery } from '@/api/user.service';
+import { socketService } from '@/utils/socket.service';
+import { getImageUrl } from '@/utils/image';
+import { ChatMessageSchema } from '@/types/schemas';
+import { useEffect, useRef, useMemo } from 'react';
+import { useDispatch } from 'react-redux';
+
 export default function ChatDetailsScreen() {
   const router = useRouter();
-  const [message, setMessage] = useState('');
+  const { threadId } = useLocalSearchParams();
+  const threadIdNum = Number(threadId);
+  
+  const { data: profile } = useGetProfileQuery();
+  const userId = profile?.id;
+  
+  const { data: thread, isLoading: isLoadingThread } = useGetThreadDetailsQuery(threadIdNum, {
+    skip: !threadIdNum,
+  });
 
-  const messages = [
-      { id: '1', text: 'Hela Quintin', type: 'header_info', subText: 'Angelina is a partner of QENT' },
-      { id: '2', text: 'Ready for your next adventure? Book a car today and get 20% off your first rental!\nDon’t miss out—limited-time offer.\nReserve your ride now!', type: 'received', time: '09:10 am', avatar: 'https://i.pravatar.cc/150?u=Hela' },
-      { id: '3', text: 'Hi, I’m interested in renting your car. Is it available from [Date] to [Date]?', type: 'sent', time: '09:10 am' },
-      { id: '4', text: 'Hello! Yes, the car is available on those dates. Could you please confirm the pickup and drop-off locations?', type: 'received', time: '09:15 am', avatar: 'https://i.pravatar.cc/150?u=Hela' },
-      { id: '5', text: 'Great! I’d like to pick it up from [Pickup Location] and return it to [Drop-off Location].', type: 'sent', time: '09:17 am' },
-      { id: '6', type: 'voice', time: '09:18 am', duration: '0:12' },
-      { id: '7', text: 'It’s ok no problem', type: 'received', time: '09:19 am', avatar: 'https://i.pravatar.cc/150?u=Hela' },
-      { id: '8', type: 'typing', text: 'Typing......' },
-  ];
+  const otherUser = thread?.userOneId === userId ? thread?.userTwo : thread?.userOne;
+  const otherUserName = otherUser?.individualUser?.fullName || otherUser?.company?.companyName || 'Chat';
+  
+  const [otherUserStatus, setOtherUserStatus] = useState<'Online' | 'Offline'>('Offline');
+
+  const { data: threadMessages, isLoading: isLoadingMessages } = useGetThreadMessagesQuery(threadIdNum, {
+    skip: !threadIdNum,
+  });
+
+  const dispatch = useDispatch();
+  const [message, setMessage] = useState('');
+  const scrollViewRef = useRef<any>(null);
+
+  const displayMessages = useMemo(() => {
+    if (!threadMessages || !userId) return [];
+    return threadMessages.map((m: ChatMessage) => ({
+        id: m.id.toString(),
+        text: m.content,
+        type: m.senderId === userId ? 'sent' : 'received',
+        time: m.createdAt ? new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+        avatar: getImageUrl(m.sender?.profileImage)
+    }));
+  }, [threadMessages, userId]);
+
+  useEffect(() => {
+    const setupSocket = async () => {
+      if (threadIdNum && userId) {
+        await socketService.connect();
+        socketService.onNewMessage((data) => {
+            try {
+                const newMessage = ChatMessageSchema.parse(data);
+                
+                if (newMessage.id && (newMessage.threadId === threadIdNum || newMessage.thread?.id === threadIdNum)) {
+                    dispatch(
+                      chatApi.util.updateQueryData('getThreadMessages', threadIdNum, (draft: ChatMessage[]) => {
+                        if (!draft.find((m: ChatMessage) => m.id === newMessage.id)) {
+                          draft.push(newMessage);
+                        }
+                      }) as any
+                    );
+                }
+
+                // Update inbox threads list to show last message instantly
+                dispatch(
+                  chatApi.util.updateQueryData('getUserThreads', undefined as void, (draft: any[]) => {
+                    const threadIndex = draft.findIndex(t => t.id === (newMessage.threadId || newMessage.thread?.id));
+                    if (threadIndex !== -1) {
+                      draft[threadIndex].lastMessage = newMessage;
+                      const [thread] = draft.splice(threadIndex, 1);
+                      draft.unshift(thread);
+                    }
+                  }) as any
+                );
+            } catch (err) {
+                console.error('[ChatDetails] Socket message validation failed:', err);
+                // Log the raw data to see why it failed
+                console.log('[ChatDetails] Raw message data:', data);
+            }
+        });
+
+        socketService.joinRoom(threadIdNum);
+
+        // Initial status check for other user
+        if (otherUser?.id) {
+            const status = await socketService.checkStatus(otherUser.id);
+            setOtherUserStatus(status === 'online' ? 'Online' : 'Offline');
+        }
+        
+        socketService.onUserStatus(({ userId: statusUserId, status }) => {
+            if (statusUserId === otherUser?.id) {
+                setOtherUserStatus(status === 'online' ? 'Online' : 'Offline');
+            }
+        });
+      }
+    };
+    
+    setupSocket();
+
+    return () => {
+      if (threadIdNum) {
+        socketService.leaveRoom(threadIdNum);
+        socketService.offNewMessage();
+        socketService.offUserStatus();
+      }
+    };
+  }, [threadIdNum, userId]);
+
+  useEffect(() => {
+    if (displayMessages.length > 0) {
+        setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
+    }
+  }, [displayMessages.length]);
+
+  const handleSend = async () => {
+    if (message.trim() && threadIdNum && userId) {
+      const content = message.trim();
+      setMessage(''); // Optimistic UI: clear input
+      await socketService.sendMessage({
+        threadId: threadIdNum,
+        content
+      });
+    }
+  };
+
+  if (isLoadingThread) {
+    return (
+      <SafeAreaView className="flex-1 bg-white items-center justify-center">
+        <Text>Loading chat...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
@@ -37,16 +158,16 @@ export default function ChatDetailsScreen() {
             
             <View className="relative mr-3">
                 <Image
-                    source={{ uri: 'https://i.pravatar.cc/150?u=Hela' }}
+                    source={{ uri: getImageUrl(otherUser?.profileImage) || ('https://i.pravatar.cc/150?u=' + (otherUser?.id || 'default')) }}
                     style={{ width: 44, height: 44, borderRadius: 22 }}
                     contentFit="cover"
                 />
-                <View className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+                <View className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white ${otherUserStatus === 'Online' ? 'bg-green-500' : 'bg-gray-400'}`} />
             </View>
             
             <View>
-                <Text className="text-base font-bold text-black font-Outfit-Bold">Hela Quintin</Text>
-                <Text className="text-xs text-gray-500 font-Outfit">Online</Text>
+                <Text className="text-base font-bold text-black font-Outfit-Bold">{otherUserName}</Text>
+                <Text className="text-xs text-gray-500 font-Outfit">{otherUserStatus}</Text>
             </View>
         </View>
 
@@ -60,11 +181,13 @@ export default function ChatDetailsScreen() {
         className="flex-1"
       >
         <ScrollView 
+            ref={scrollViewRef}
             className="flex-1 px-6"
             contentContainerStyle={{ paddingVertical: 20 }}
             showsVerticalScrollIndicator={false}
+            onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
         >
-            {messages.map((msg) => (
+            {displayMessages.map((msg: any) => (
                 <View key={msg.id} className="mb-6">
                     {msg.type === 'header_info' && (
                         <View className="items-center mb-8">
@@ -73,16 +196,16 @@ export default function ChatDetailsScreen() {
                         </View>
                     )}
                     
-                    {msg.type === 'received' && (
+                    {msg.type === 'sent' && ( // SENDER (ME) on LEFT
                         <View className="flex-row items-end">
                             <Image
-                                source={{ uri: msg.avatar }}
+                                source={{ uri: msg.avatar || 'https://i.pravatar.cc/150?u=' + userId }}
                                 style={{ width: 32, height: 32, borderRadius: 16 }}
                                 className="mr-2"
                                 contentFit="cover"
                             />
                             <View className="flex-1">
-                                <View className="bg-gray-50 rounded-2xl rounded-bl-none p-4 max-w-[90%]">
+                                <View className="bg-cyan-50 border border-cyan-100 rounded-2xl rounded-bl-none p-4 max-w-[90%]">
                                     <Text className="text-sm text-black leading-5 font-Outfit">{msg.text}</Text>
                                 </View>
                                 <Text className="text-[10px] text-gray-400 mt-1 ml-1 font-Outfit">{msg.time}</Text>
@@ -90,43 +213,20 @@ export default function ChatDetailsScreen() {
                         </View>
                     )}
 
-                    {msg.type === 'sent' && (
+                    {msg.type === 'received' && ( // OTHER on RIGHT
                         <View className="items-end">
-                             <View className="bg-white border border-gray-100 rounded-2xl rounded-br-none p-4 max-w-[85%]">
-                                <Text className="text-sm text-black leading-5 font-Outfit">{msg.text}</Text>
-                            </View>
-                            <Text className="text-[10px] text-gray-400 mt-1 mr-1 font-Outfit">{msg.time}</Text>
-                        </View>
-                    )}
-
-                    {msg.type === 'voice' && (
-                        <View className="items-end">
-                            <View className="flex-row items-center bg-white border border-gray-100 rounded-2xl rounded-br-none p-3 max-w-[85%]">
-                                <TouchableOpacity className="w-8 h-8 rounded-full border border-gray-200 items-center justify-center mr-2">
-                                    <Ionicons name="play" size={16} color="#666" style={{ marginLeft: 2 }} />
-                                </TouchableOpacity>
-                                <View className="flex-1 h-6 justify-center">
-                                    <View className="flex-row items-center gap-x-1">
-                                        {[1, 2, 3, 4, 3, 2, 4, 5, 3, 2, 1, 2, 3, 2, 4, 3, 2, 1].map((h, i) => (
-                                            <View key={i} className="w-[1.5px] bg-gray-300 rounded-full" style={{ height: h * 4 }} />
-                                        ))}
-                                    </View>
+                            <View className="flex-row items-end justify-end">
+                                <View className="bg-gray-50 border border-gray-100 rounded-2xl rounded-br-none p-4 max-w-[85%]">
+                                    <Text className="text-sm text-black leading-5 font-Outfit">{msg.text}</Text>
                                 </View>
-                                <Ionicons name="checkmark-done" size={16} color="#2FA2B9" className="ml-2" />
+                                <Image
+                                    source={{ uri: msg.avatar || 'https://i.pravatar.cc/150?u=' + otherUserName }}
+                                    style={{ width: 32, height: 32, borderRadius: 16 }}
+                                    className="ml-2"
+                                    contentFit="cover"
+                                />
                             </View>
-                            <Text className="text-[10px] text-gray-400 mt-1 mr-1 font-Outfit">{msg.time}</Text>
-                        </View>
-                    )}
-
-                    {msg.type === 'typing' && (
-                        <View className="flex-row items-center">
-                             <Image
-                                source={{ uri: 'https://i.pravatar.cc/150?u=Hela' }}
-                                style={{ width: 32, height: 32, borderRadius: 16 }}
-                                className="mr-2"
-                                contentFit="cover"
-                            />
-                            <Text className="text-xs text-gray-400 font-Outfit italic">Typing......</Text>
+                            <Text className="text-[10px] text-gray-400 mt-1 mr-9 font-Outfit">{msg.time}</Text>
                         </View>
                     )}
                 </View>
@@ -139,7 +239,11 @@ export default function ChatDetailsScreen() {
             <View className="flex-row items-center justify-between mb-4">
                 <View className="flex-row gap-x-2">
                     {['Thanks', 'Thank you', 'Tnq'].map((reply) => (
-                        <TouchableOpacity key={reply} className="px-5 py-2.5 rounded-lg bg-gray-50 border border-gray-100">
+                        <TouchableOpacity 
+                            key={reply} 
+                            className="px-5 py-2.5 rounded-lg bg-gray-50 border border-gray-100"
+                            onPress={() => setMessage(reply)}
+                        >
                             <Text className="text-xs text-gray-500 font-Outfit">{reply}</Text>
                         </TouchableOpacity>
                     ))}
@@ -151,9 +255,7 @@ export default function ChatDetailsScreen() {
 
             {/* Input Bar */}
             <View className="flex-row items-center bg-gray-50 rounded-full px-4 h-14">
-                <TouchableOpacity className="w-10 h-10 items-center justify-center">
-                    <Ionicons name="chevron-forward-circle-outline" size={28} color="#9CA3AF" />
-                </TouchableOpacity>
+                
                 
                 <TextInput
                     className="flex-1 h-full px-2 text-sm text-black font-Outfit"
@@ -163,12 +265,12 @@ export default function ChatDetailsScreen() {
                     onChangeText={setMessage}
                 />
                 
-                <TouchableOpacity className="w-8 h-8 items-center justify-center mx-1">
-                    <Ionicons name="happy-outline" size={24} color="#666" />
-                </TouchableOpacity>
-                
-                <TouchableOpacity className="w-10 h-10 items-center justify-center">
-                    <Ionicons name="paper-plane-outline" size={24} color="#9CA3AF" />
+                <TouchableOpacity 
+                    className={`w-10 h-10 items-center justify-center ${message.trim() ? 'bg-[#2FA2B9]' : ''} rounded-full`}
+                    onPress={handleSend}
+                    disabled={!message.trim()}
+                >
+                    <Ionicons name="paper-plane-outline" size={20} color={message.trim() ? "white" : "#9CA3AF"} />
                 </TouchableOpacity>
             </View>
         </View>

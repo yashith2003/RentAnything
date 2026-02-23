@@ -1,3 +1,5 @@
+//RentAnything/app/(tabs)/profile.tsx
+
 
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import StatsSection from '@/components/ownerProfile/StatsSection';
@@ -46,8 +48,8 @@ export default function ProfileScreen() {
     return {
       name: isCompany ? (details as any)?.companyName || '' : (details as any)?.fullName || '',
       email: profile.email,
-      joined: new Date().getFullYear().toString(), // Should ideally come from backend
-      image: profile.profileImage
+      joined: profile.joinedAt ? new Date(profile.joinedAt).getFullYear().toString() : '2021',
+      image: isCompany ? (details as any)?.logoUrl : (details as any)?.avatarUrl
     };
   }, [profile]);
 
@@ -152,10 +154,7 @@ export default function ProfileScreen() {
       icon: 'log-out-outline',
       iconType: 'ionicons',
       label: t('profile.logout'),
-      onPress: () => {
-        // Navigate back to login
-        router.replace('/(auth)/login' as any);
-      },
+      onPress: handleLogout,
     },
   ];
 
@@ -165,12 +164,12 @@ export default function ProfileScreen() {
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header Section */}
-        <View className="items-center pt-8 pb-6 px-4 bg-white">
+        <View className="items-center pt-8 pb-6">
           {/* Profile Image with Edit Badge */}
-          <View className="relative mb-4">
-            <View className="w-28 h-28 rounded-full bg-gray-100 overflow-hidden border-4 border-white shadow-sm">
+          <View className="relative mb-2">
+            <View className="w-28 h-28 rounded-full bg-gray-100 overflow-hidden">
               <Image
-                source={{ uri: getImageUrl(userProfile?.image) }}
+                source={userProfile?.image ? { uri: getImageUrl(userProfile.image) } : require('@/assets/images/profile_icon.avif')}
                 style={{ width: '100%', height: '100%' }}
                 contentFit="cover"
               />
@@ -188,10 +187,7 @@ export default function ProfileScreen() {
           <Text className="text-sm text-gray-500 mb-1">
             {userProfile?.email || ''}
           </Text>
-
-          {/* Joined Date */}
-          <Text className="text-xs text-gray-400">{t('profile.joined')} {userProfile?.joined || '2021'}</Text>
-        </View>
+            </View>
 
         {/* Stats Section */}
         {/* <StatsSection stats={stats} /> */}

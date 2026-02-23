@@ -169,9 +169,7 @@ export default function FilterScreen() {
           </View>
         ) : dynamicConfigs.length > 0 ? (
           <View>
-             <Text className="text-[#2FA2B9] text-[10px] font-bold mb-6 uppercase tracking-widest text-center">
-                Attribute specific filters
-             </Text>
+            
              {dynamicConfigs.map(config => (
                <DynamicFilterRenderer
                  key={config.id}

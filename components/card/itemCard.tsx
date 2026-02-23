@@ -1,18 +1,23 @@
+//RentAnything/components/card/itemCard.tsx
+
 import { SavedItem, useSavedItems } from '@/context/SavedItemsContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+import { getImageUrl } from '@/utils/image';
+import { useCreateThreadMutation, useGetUserThreadsQuery } from '@/api/chat.service';
 
 interface ItemCardProps {
   item: {
     id: number | string;
-    image: string;
+    image: string | null | undefined;
     price: string;
     extraPrice?: string;
     title: string;
     owner: string;
+    ownerId?: number;
     rating: string | number;
     distance: string;
     location: string;
@@ -25,8 +30,11 @@ interface ItemCardProps {
 
 export default function ItemCard({ item, onPress }: ItemCardProps) {
   const router = useRouter();
-  const { isSaved, addItem, removeItem } = useSavedItems();
-  const saved = isSaved(item.id);
+  const { isSaved, toggleItem } = useSavedItems();
+  const saved = isSaved(Number(item.id));
+
+  const [createThread] = useCreateThreadMutation();
+  const { data: threads } = useGetUserThreadsQuery();
 
   const handlePress = () => {
     if (onPress) {
@@ -36,17 +44,37 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
     }
   };
 
-  const toggleSave = () => {
-    if (saved) {
-      removeItem(item.id);
-    } else {
-      // Ensure compatibility with SavedItem type
-      const itemToSave: SavedItem = {
-          ...item,
-          extraPrice: item.extraPrice || '', // Provide default if undefined
-          delivery: item.delivery ?? item.deliveryAvailable ?? false // Handle mapping
-      };
-      addItem(itemToSave);
+  const handleSave = async () => {
+    await toggleItem(Number(item.id));
+  };
+
+  const handleChat = async () => {
+    try {
+      const otherUserId = item.ownerId || (item as any).owner?.id;
+
+      if (!otherUserId) {
+        console.warn('[ItemCard] Cannot start chat, missing ownerId/otherUserId');
+        return;
+      }
+
+      const itemIdNum = Number(item.id);
+      const existingThread = Array.isArray(threads) ? threads.find(t => Number(t.itemId) === itemIdNum) : undefined;
+      
+      if (existingThread) {
+        router.push({ pathname: '/header/chat/chatDetails', params: { threadId: existingThread.id } } as any);
+        return;
+      }
+
+      const result = await createThread({
+        itemId: itemIdNum,
+        otherUserId: Number(otherUserId),
+      }).unwrap();
+      
+      if (result?.id) {
+        router.push({ pathname: '/header/chat/chatDetails', params: { threadId: result.id } } as any);
+      }
+    } catch (err) {
+      console.error('[ItemCard] handleChat error:', err);
     }
   };
 
@@ -64,12 +92,18 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
       }}
     >
       <View className="relative">
-        <Image source={{ uri: item.image }} style={{ width: '100%', height: 160 }} contentFit="cover" />
+        <Image 
+          source={{ uri: getImageUrl(item.image) }} 
+          style={{ width: '100%', height: 160 }} 
+          contentFit="cover"
+          placeholder="https://via.placeholder.com/400?text=Loading..."
+          transition={200}
+        />
         <TouchableOpacity 
             className="absolute top-3 right-3"
-            onPress={toggleSave}
+            onPress={handleSave}
         >
-          <Ionicons name={saved ? "heart" : "heart-outline"} size={20} color={saved ? "#FF4D4D" : "#000"} />
+          <Ionicons name={saved ? "heart" : "heart-outline"} size={22} color={saved ? "#FF0000" : "#000"} />
         </TouchableOpacity>
       </View>
 
@@ -110,7 +144,10 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
             <TouchableOpacity className="w-8 h-8 rounded-full border border-gray-100 items-center justify-center">
                 <Ionicons name="call" size={14} color="#666" />
             </TouchableOpacity>
-            <TouchableOpacity className="w-8 h-8 rounded-full border border-gray-100 items-center justify-center">
+            <TouchableOpacity
+              className="w-8 h-8 rounded-full border border-gray-100 items-center justify-center"
+              onPress={handleChat}
+            >
                 <Ionicons name="chatbubble-ellipses" size={14} color="#666" />
             </TouchableOpacity>
           </View>

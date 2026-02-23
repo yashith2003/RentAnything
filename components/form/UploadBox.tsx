@@ -2,33 +2,53 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import React from 'react';
-import { DimensionValue, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, DimensionValue, Text, TouchableOpacity, View } from 'react-native';
 
 interface UploadBoxProps {
   label?: string;
   onImageSelect?: (uri: string) => void;
-  imageUri?: string;
+  imageUri?: string | null;
   allowedTypes?: string;
   containerStyle?: string;
   height?: DimensionValue;
+  isLoading?: boolean;
+  error?: string | null;
+  openCamera?: boolean;
+  disabled?: boolean;
 }
 
 export const UploadBox: React.FC<UploadBoxProps> = ({
   label = 'Click here to upload Image',
   onImageSelect,
   imageUri,
-  allowedTypes = 'Allowed *.jpeg, *.jpg, *.png, *.gif',
+  allowedTypes = 'Allowed *.jpeg, *.jpg, *.png',
   containerStyle = '',
   height = 160,
+  isLoading = false,
+  error = null,
+  openCamera = false,
+  disabled = false,
 }) => {
   const pickImage = async () => {
-    // No permissions request is necessary for launching the image library
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+    if (isLoading || disabled) return;
+
+    let result;
+    if (openCamera) {
+      result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+        cameraType: ImagePicker.CameraType.front,
+      });
+    } else {
+      result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+    }
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
       onImageSelect?.(result.assets[0].uri);
@@ -38,11 +58,16 @@ export const UploadBox: React.FC<UploadBoxProps> = ({
   return (
     <TouchableOpacity 
       onPress={pickImage}
-      activeOpacity={0.7}
+      activeOpacity={disabled ? 1 : 0.7}
       style={{ height: height }}
-      className={`w-full bg-[#F9FAFB] rounded-2xl border border-gray-200 border-dashed items-center justify-center overflow-hidden ${containerStyle}`}
+      className={`w-full bg-[#F9FAFB] rounded-2xl border ${error ? 'border-red-500' : 'border-gray-200'} border-dashed items-center justify-center overflow-hidden ${containerStyle} ${disabled ? 'opacity-70' : ''}`}
     >
-      {imageUri ? (
+      {isLoading ? (
+        <View className="items-center">
+            <ActivityIndicator color="#2FA2B9" size="large" />
+            <Text className="text-[#2FA2B9] text-xs font-medium mt-2">Uploading...</Text>
+        </View>
+      ) : imageUri ? (
         <Image 
           source={{ uri: imageUri }} 
           style={{ width: '100%', height: '100%' }}
@@ -55,6 +80,7 @@ export const UploadBox: React.FC<UploadBoxProps> = ({
           </View>
           <Text className="text-gray-500 font-medium mb-1">{label}</Text>
           <Text className="text-gray-400 text-xs">{allowedTypes}</Text>
+          {error && <Text className="text-red-500 text-[10px] mt-1">{error}</Text>}
         </>
       )}
     </TouchableOpacity>

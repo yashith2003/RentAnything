@@ -1,12 +1,14 @@
 // api/file.service.ts
 import apiClient from './client';
+import * as SecureStore from 'expo-secure-store';
+import { Config } from '@/constants/config';
 
 const fileService = {
   uploadImage: async (uri: string) => {
     const formData = new FormData();
-    const filename = uri.split('/').pop();
-    const match = /\.(\w+)$/.exec(filename || '');
-    const type = match ? `image/${match[1]}` : `image`;
+    const filename = uri.split('/').pop() || 'upload.jpg';
+    const match = /\.(\w+)$/.exec(filename);
+    const type = match ? `image/${match[1].toLowerCase()}` : 'image/jpeg';
 
     formData.append('file', {
       uri,
@@ -14,13 +16,31 @@ const fileService = {
       type,
     } as any);
 
-    const response = await apiClient.post<{ url: string }>('/items/upload', formData, {
+    // Using native fetch instead of Axios. Axios in React Native has notorious issues 
+    // with FormData serialization which results in the backend receiving no file (400 Bad Request).
+    const token = await SecureStore.getItemAsync('access_token');
+    
+    const response = await fetch(`${Config.API_URL}/items/upload`, {
+      method: 'POST',
+      body: formData,
       headers: {
-        'Content-Type': 'multipart/form-data',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        'Accept': 'application/json',
+        // Note: fetch will automatically set Content-Type with the correct form-data boundary
       },
     });
 
-    return response.data;
+    if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Upload failed (${response.status}): ${errText}`);
+    }
+
+    const result = await response.json();
+
+    // Handle NestJS TransformInterceptor wrapper if present
+    const url: string = result?.data?.url ?? result?.url;
+    if (!url) throw new Error('Upload succeeded but no URL was returned from the server.');
+    return { url };
   },
 };
 

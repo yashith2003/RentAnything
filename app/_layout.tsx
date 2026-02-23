@@ -21,11 +21,11 @@ import { store } from '@/store';
 export default function RootLayout() {
   return (
     <Provider store={store}>
-      <SavedItemsProvider>
-        <UserProvider>
+      <UserProvider>
+        <SavedItemsProvider>
           <RootLayoutContent />
-        </UserProvider>
-      </SavedItemsProvider>
+        </SavedItemsProvider>
+      </UserProvider>
     </Provider>
   );
 }

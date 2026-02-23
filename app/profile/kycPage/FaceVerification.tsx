@@ -1,4 +1,4 @@
-// app/profile/kycPage/FaceVerification.tsx
+//RentAnything/app/profile/kycPage/FaceVerification.tsx
 
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
@@ -7,12 +7,53 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { Switch, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ActivityIndicator, Switch, Text, TouchableOpacity, View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { useUploadKycDocumentMutation, useGetKycStatusQuery } from '@/api/kyc.service';
+import { UploadBox } from '@/components/form/UploadBox';
+import { getImageUrl } from '@/utils/image';
 
 export default function FaceVerification() {
   const router = useRouter();
   const [biometricEnabled, setBiometricEnabled] = useState(true);
+  const [localImage, setLocalImage] = useState<any>(null);
+  
+  const { data: kycStatus } = useGetKycStatusQuery();
+  const [uploadDocument, { isLoading: isUploading }] = useUploadKycDocumentMutation();
+  
+  const selfieStatus = kycStatus?.items?.FACE_SELFIE;
+  const isReadOnly = selfieStatus?.status === 'PENDING' || selfieStatus?.status === 'VERIFIED';
+  const displayUri = localImage?.uri || (selfieStatus?.fileUrl ? getImageUrl(selfieStatus.fileUrl) : null);
+
+  const handleImageSelect = (uri: string) => {
+    if (isReadOnly) return;
+    const filename = uri.split('/').pop() || 'selfie.jpg';
+    const match = /\.(\w+)$/.exec(filename);
+    const ext = match ? match[1] : 'jpg';
+    const type = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+    
+    setLocalImage({ uri, name: filename, type });
+  };
+
+  const handleSubmit = async () => {
+    if (localImage) {
+      try {
+        await uploadDocument({ type: 'FACE_SELFIE', file: localImage }).unwrap();
+        Alert.alert("Success", "Selfie uploaded successfully and is now pending review.");
+        if (selfieStatus?.status === 'REJECTED') {
+          router.replace('/profile/kycPage' as any);
+        } else {
+          router.replace('/profile/kycPage/NICVerification' as any);
+        }
+      } catch (err) {
+        console.error('[FaceVerification] Upload error:', err);
+        Alert.alert("Error", "Failed to upload selfie. Please try again.");
+      }
+    } else {
+      router.replace('/profile/kycPage/NICVerification' as any);
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -20,35 +61,41 @@ export default function FaceVerification() {
 
       <ScreenHeader title="Step 1" />
 
-      <View className={`flex-1 px-${getTailwindSpacing(Spacing.pageHorizontal)} pt-4 pb-8 justify-between`}>
+      <ScrollView 
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'space-between' }} 
+        className={`px-${getTailwindSpacing(Spacing.pageHorizontal)} pt-4 pb-8`} 
+        showsVerticalScrollIndicator={false}
+      >
         <View>
           <Text className="text-2xl font-bold text-black mb-3">Face Verification</Text>
           <Text className="text-sm text-gray-400 leading-6 mb-8">
             Take a real time selfie using your mobile device, ensuring your face is fully visible and face to be matched to your ID document.
           </Text>
 
-          {/* Placeholder Area */}
-          <View className="w-full aspect-square bg-[#F9FAFB] rounded-[32px] border border-gray-100 items-center justify-center relative overflow-hidden">
-             {/* Simple corner guides mock */}
-             <View className="absolute top-8 left-8 w-12 h-0.5 bg-gray-200" />
-             <View className="absolute top-8 left-8 w-0.5 h-12 bg-gray-200" />
-             
-             <View className="absolute top-8 right-8 w-12 h-0.5 bg-gray-200" />
-             <View className="absolute top-8 right-8 w-0.5 h-12 bg-gray-200" />
-             
-             <View className="absolute bottom-8 left-8 w-12 h-0.5 bg-gray-200" />
-             <View className="absolute bottom-8 left-8 w-0.5 h-12 bg-gray-200" />
-             
-             <View className="absolute bottom-8 right-8 w-12 h-0.5 bg-gray-200" />
-             <View className="absolute bottom-8 right-8 w-0.5 h-12 bg-gray-200" />
+          <UploadBox
+            height={320}
+            imageUri={displayUri}
+            isLoading={isUploading}
+            label={isReadOnly ? "Selfie uploaded" : "Tap to take or choose selfie"}
+            onImageSelect={handleImageSelect}
+            containerStyle="rounded-[32px]"
+            openCamera={true}
+            disabled={isReadOnly}
+          />
+          
+          {selfieStatus?.status === 'REJECTED' && (
+            <View className="mt-4 p-3 bg-red-50 rounded-xl border border-red-100">
+                <Text className="text-red-600 font-bold text-xs mb-1">Selfie Rejected</Text>
+                {selfieStatus.rejectionReasons?.map((reason, i) => (
+                    <Text key={i} className="text-red-500 text-[10px]">• {reason}</Text>
+                ))}
+            </View>
+          )}
 
-             <View className="w-64 h-64 rounded-full border-[10px] border-gray-100 items-center justify-center bg-gray-50">
-                <Ionicons name="person" size={160} color="#D1D5DB" />
-             </View>
-          </View>
+   
         </View>
 
-        <View>
+        <View className="mt-8">
           {/* Biometric Section */}
           <View className="flex-row items-center justify-between mb-2">
             <Text className="text-lg font-bold text-black">Advanced Biometric Verification</Text>
@@ -65,14 +112,17 @@ export default function FaceVerification() {
 
           {/* Submit Button */}
           <TouchableOpacity
-            onPress={() => router.back()} // Mock submit action
+            onPress={handleSubmit}
             className="py-4 rounded-full items-center justify-center"
-            style={{ backgroundColor: Colors.primary }}
+            style={{ backgroundColor: (isReadOnly || (!localImage && (!selfieStatus || selfieStatus.status === 'NOT_STARTED'))) ? '#E0E0E0' : Colors.primary }}
+            disabled={isReadOnly || (!localImage && (!selfieStatus || selfieStatus.status === 'NOT_STARTED')) || isUploading}
           >
-            <Text className="text-white text-lg font-bold">Submit</Text>
+            <Text className="text-white text-lg font-bold">
+              {isReadOnly ? "Submitted" : isUploading ? "Uploading..." : "Next Step"}
+            </Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }

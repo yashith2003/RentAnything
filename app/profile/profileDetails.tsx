@@ -1,7 +1,9 @@
+//RentAnything/app/profile/profileDetails.tsx
+
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import PrimaryButton from '@/components/ui/PrimaryButton';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
-import { useGetProfileQuery, useUpdateProfileMutation } from '@/api/user.service';
+import { useGetProfileQuery, useUpdateProfileMutation, useUploadProfileImageMutation } from '@/api/user.service';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -17,10 +19,6 @@ export default function ProfileDetailsScreen() {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
 
-  const { data: profile, isLoading, error } = useGetProfileQuery();
-  const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
-
-  // User data state
   const [userData, setUserData] = useState({
     name: '',
     email: '',
@@ -29,9 +27,14 @@ export default function ProfileDetailsScreen() {
     description: '',
     location: '',
     profileImage: '',
+    joinedAt: '',
   });
 
   const [isUploading, setIsUploading] = useState(false);
+  
+  const { data: profile, isLoading, error } = useGetProfileQuery();
+  const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
+  const [uploadProfileImage] = useUploadProfileImageMutation();
 
   // Derived profile details
   useEffect(() => {
@@ -44,9 +47,10 @@ export default function ProfileDetailsScreen() {
         email: profile.email || '',
         address: (details as any)?.address || '',
         phone: profile.phone || '', 
-        description: '', // Description doesn't seem to be in the schema yet
-        location: (details as any)?.address || '', 
-        profileImage: profile.profileImage || '',
+        description: (details as any)?.description || '',
+        location: (details as any)?.location || '', 
+        profileImage: isCompany ? (details as any)?.logoUrl || '' : (details as any)?.avatarUrl || '',
+        joinedAt: profile.joinedAt || '',
       };
       setUserData(mappedData);
       setOriginalData(mappedData);
@@ -63,14 +67,28 @@ export default function ProfileDetailsScreen() {
 
   const handleSave = async () => {
     try {
-      // For now, only partial updates are handled.
-      // We need to map userData back to UserProfile format if necessary.
-      await updateProfile({
+      const isCompany = profile?.role === 'company';
+      
+      const payload: any = {
         email: userData.email,
         phone: userData.phone,
-        profileImage: userData.profileImage,
-        // Individual/Company specific fields would need more logic if we want to update them here.
-      }).unwrap();
+      };
+
+      if (isCompany) {
+        payload.companyName = userData.name;
+        payload.logoUrl = userData.profileImage;
+        payload.address = userData.address;
+        payload.description = userData.description;
+        payload.location = userData.location;
+      } else {
+        payload.fullName = userData.name;
+        payload.avatarUrl = userData.profileImage;
+        payload.address = userData.address;
+        payload.description = userData.description;
+        payload.location = userData.location;
+      }
+
+      await updateProfile(payload).unwrap();
       
       Alert.alert('Success', 'Profile updated successfully');
       setIsEditing(false);
@@ -91,7 +109,7 @@ export default function ProfileDetailsScreen() {
 
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.5,
@@ -110,32 +128,29 @@ export default function ProfileDetailsScreen() {
     try {
         setIsUploading(true);
         // Create form data
-        const formData = new FormData();
-        formData.append('file', {
-            uri,
-            type: 'image/jpeg',
-            name: 'profile-image.jpg',
-        } as any);
+        const filename = uri.split('/').pop() || 'profile-image.jpg';
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : `image`;
 
-        // We need a specific endpoint for profile image upload or use a generic file upload
-        // and then update the user profile with the returned URL.
-        // Assuming a generic upload endpoint for now, similar to items
-        // OR if userService has a specific method.
-        // Let's assume we update profile with the new image URL after uploading
-        
-        // For now, let's try to update the local state to show the image
-        // and assume we'll implement the actual upload if a specific endpoint exists
-        // or if we need to send it with the profile update.
-        
-        // BETTER APPROACH: Upload to a file upload endpoint, get URL, set in userData
-        // Checking if we have a file upload service... we saw `item.service.ts` uploading images.
-        // Let's implement a quick upload in userService or similar.
-        
-        // Since I don't have a dedicated file service yet, I'll mock the upload by just setting the local URI
-        // allowing the user to "Save" the profile which would send the URI (or file) to backend.
-        // But normally backend expects a URL string for the image.
-        
-        setUserData({ ...userData, profileImage: uri });
+        const file = {
+            uri,
+            type,
+            name: filename,
+        } as any;
+
+        const result = await uploadProfileImage(file).unwrap();
+        const imageUrl = result.url;
+
+        // Update local state
+        setUserData(prev => ({ ...prev, profileImage: imageUrl }));
+
+        // Immediately persist the image URL to the database
+        const isCompany = profile?.role === 'company';
+        const imagePayload: any = isCompany
+          ? { logoUrl: imageUrl }
+          : { avatarUrl: imageUrl };
+
+        await updateProfile(imagePayload).unwrap();
         
     } catch (error) {
         console.error('Error uploading image:', error);
@@ -171,7 +186,7 @@ export default function ProfileDetailsScreen() {
                 </View>
              ) : (
                 <Image
-                source={{ uri: getImageUrl(userData.profileImage) }}
+                source={userData.profileImage ? { uri: getImageUrl(userData.profileImage) } : require('@/assets/images/profile_icon.avif')}
                 style={{ width: '100%', height: '100%' }}
                 contentFit="cover"
                 />
@@ -179,10 +194,10 @@ export default function ProfileDetailsScreen() {
              
              {isEditing && (
                  <TouchableOpacity 
-                    className="absolute bottom-0 left-0 right-0 h-8 bg-black/50 items-center justify-center"
+                    className="absolute bottom-0 left-0 right-0 h-8  items-center justify-center"
                     onPress={pickImage}
                  >
-                     <Ionicons name="camera" size={16} color="white" />
+                     <Ionicons name="camera" size={19} color="grey" />
                  </TouchableOpacity>
              )}
           </View>
@@ -197,8 +212,7 @@ export default function ProfileDetailsScreen() {
             {userData.email}
           </Text>
 
-          {/* Joined Date */}
-          <Text className="text-xs text-gray-400">Joined 2021</Text>
+
         </View>
 
         {/* Form Fields */}
@@ -311,9 +325,17 @@ export default function ProfileDetailsScreen() {
               />
             </View>
           </View>
-
-          {/* Buttons */}
-          {isEditing ? (
+          {/* Edit Button (View mode only) */}
+          {!isEditing && (
+            <PrimaryButton 
+              title="Edit Profile" 
+              onPress={handleEdit}
+              style={{flex:1}}
+              variant="outlined"
+            />
+          )}
+          {/* Buttons (Edit mode only) */}
+          {isEditing && (
             <View className="flex-row gap-x-4 mb-6">
               <PrimaryButton 
                 title="Cancel" 
@@ -325,14 +347,9 @@ export default function ProfileDetailsScreen() {
                 title="Save" 
                 onPress={handleSave}
                 style={{ flex: 1 }}
+                isLoading={isUpdating}
               />
             </View>
-          ) : (
-            <PrimaryButton 
-              title="Edit" 
-              onPress={handleEdit}
-              className="mb-6"
-            />
           )}
         </View>
         </>

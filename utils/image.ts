@@ -10,19 +10,20 @@ import { Config } from '@/constants/config';
  * 4. Null/Undefined - returns undefined or a placeholder
  */
 export const getImageUrl = (url: string | null | undefined) => {
-  if (!url) return undefined;
+  if (!url || url === 'null' || url === 'undefined') {
+    return 'https://via.placeholder.com/400?text=No+Image';
+  }
   
-  // If it's already an absolute URL (http or https)
+  // If it's already an absolute URL
   if (url.startsWith('http://') || url.startsWith('https://')) {
     return url;
   }
   
-  // If it's a local URI (common in buggy existing data)
-  // We don't prepend BASE_URL to these
+  // If it's a local URI/Data URI
   if (url.startsWith('file://') || url.startsWith('content://') || url.startsWith('data:')) {
     return url;
   }
   
-  // If it's a relative path from our server
+  // Prepends BASE_URL for relative paths
   return `${Config.BASE_URL}/${url.startsWith('/') ? url.slice(1) : url}`;
 };

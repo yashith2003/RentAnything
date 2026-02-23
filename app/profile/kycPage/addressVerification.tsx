@@ -1,3 +1,5 @@
+//RentAnything/app/profile/kycPage/addressVerification.tsx
+
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { UploadBox } from '@/components/form/UploadBox';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
@@ -6,18 +8,59 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { useUploadKycDocumentMutation, useGetKycStatusQuery } from '@/api/kyc.service';
+import { getImageUrl } from '@/utils/image';
 
 export default function AddressVerification() {
   const router = useRouter();
-  const [confirmed, setConfirmed] = useState(false);
+  const { data: kycStatus } = useGetKycStatusQuery();
+  const addressDoc = kycStatus?.items?.PROOF_OF_ADDRESS;
+  const isReadOnly = addressDoc?.status === 'PENDING' || addressDoc?.status === 'VERIFIED';
 
-  const CheckboxRow = ({ checked, setChecked, label }: { checked: boolean, setChecked: (val: boolean) => void, label: string }) => (
+  const [confirmed, setConfirmed] = useState(isReadOnly);
+  const [localImage, setLocalImage] = useState<any>(null);
+
+  const [uploadDocument, { isLoading: isUploading }] = useUploadKycDocumentMutation();
+
+  const displayUri = localImage?.uri || (addressDoc?.fileUrl ? getImageUrl(addressDoc.fileUrl) : null);
+
+  const handleUpload = (uri: string) => {
+    if (isReadOnly) return;
+    const filename = uri.split('/').pop() || 'address.jpg';
+    const match = /\.(\w+)$/.exec(filename);
+    const ext = match ? match[1] : 'jpg';
+    const file = {
+      uri,
+      name: filename,
+      type: `image/${ext === 'jpg' ? 'jpeg' : ext}`,
+    } as any;
+
+    setLocalImage(file);
+  };
+
+  const handleSubmit = async () => {
+    if (localImage) {
+      try {
+        await uploadDocument({ type: 'PROOF_OF_ADDRESS', file: localImage }).unwrap();
+        Alert.alert("Success", "Proof of address uploaded successfully and is now pending review.");
+        router.replace('/profile/kycPage' as any);
+      } catch (err) {
+        console.error('[AddressVerification] Upload error:', err);
+        Alert.alert("Error", "Failed to upload proof of address.");
+      }
+    } else {
+        router.replace('/profile/kycPage' as any);
+    }
+  };
+
+  const CheckboxRow = ({ checked, setChecked, label, disabled }: { checked: boolean, setChecked: (val: boolean) => void, label: string, disabled?: boolean }) => (
     <TouchableOpacity 
-      activeOpacity={0.8}
-      onPress={() => setChecked(!checked)}
-      className="flex-row items-start gap-3 mb-8"
+      activeOpacity={disabled ? 1 : 0.8}
+      onPress={() => !disabled && setChecked(!checked)}
+      className={`flex-row items-start gap-3 mb-8 ${disabled ? 'opacity-70' : ''}`}
     >
       <View className={`w-6 h-6 rounded border ${checked ? 'bg-primary border-primary' : 'bg-white border-gray-300'} items-center justify-center`} style={{ borderColor: checked ? Colors.primary : '#D1D5DB', backgroundColor: checked ? Colors.primary : 'white' }}>
         {checked && <Ionicons name="checkmark" size={16} color="white" />}
@@ -36,26 +79,36 @@ export default function AddressVerification() {
         <View className="mb-6">
           <Text className="text-2xl font-bold text-black mb-3">Proof of address</Text>
           <Text className="text-sm text-gray-400 leading-6 mb-8">
-            Take a real time selfie using your mobile device, ensuring your face is fully visible and face to be matched to your ID document.
+            Please upload a utility bill, bank statement, or any government-issued document that shows your current address.
           </Text>
 
-          <UploadBox height={192} containerStyle="mb-4" />
+          <UploadBox 
+            height={240} 
+            containerStyle="mb-4"
+            imageUri={displayUri}
+            isLoading={isUploading}
+            onImageSelect={handleUpload}
+            error={addressDoc?.status === 'REJECTED' ? addressDoc.rejectionReasons?.join(', ') : null}
+            disabled={isReadOnly}
+          />
 
           <CheckboxRow 
             checked={confirmed} 
             setChecked={setConfirmed} 
             label="I confirm that I have uploaded the valid government issued proof of address."
+            disabled={isReadOnly}
           />
 
           {/* Submit Button */}
           <TouchableOpacity
-            onPress={() => {
-              router.push('/profile/kycPage' as any);
-            }}
+            onPress={handleSubmit}
+            disabled={isReadOnly || !(localImage || (addressDoc && addressDoc.status !== 'NOT_STARTED')) || !confirmed || isUploading}
             className="py-4 rounded-full items-center justify-center"
-            style={{ backgroundColor: Colors.primary }}
+            style={{ backgroundColor: (isReadOnly || (!localImage && (!addressDoc || addressDoc.status === 'NOT_STARTED')) || !confirmed) ? '#E0E0E0' : Colors.primary }}
           >
-            <Text className="text-white text-lg font-bold">Submit</Text>
+            <Text className="text-white text-lg font-bold">
+              {isReadOnly ? "Submitted" : isUploading ? "Uploading..." : "Submit"}
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

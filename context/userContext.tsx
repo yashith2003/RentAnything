@@ -2,6 +2,7 @@
 
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
+import { setAuthToken } from '../api/apiSlice';
 
 export type UserRole = 'INDIVIDUAL' | 'COMPANY' | 'individual' | 'company' | null;
 
@@ -33,6 +34,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       if (storedToken && storedRole) {
         setToken(storedToken);
         setRole(storedRole);
+        setAuthToken(storedToken); // Give to RTK Query synchronously
       }
     } catch (error) {
       console.error('Failed to load session:', error);
@@ -50,6 +52,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       }
       setToken(accessToken);
       setRole(userRole);
+      setAuthToken(accessToken); // Give to RTK Query synchronously
     } catch (error) {
       console.error('Failed to save session:', error);
     }
@@ -62,6 +65,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
       await SecureStore.deleteItemAsync('user_role');
       setToken(null);
       setRole(null);
+      setAuthToken(null);
+
     } catch (error) {
       console.error('Failed to clear session:', error);
     }

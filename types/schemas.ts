@@ -1,3 +1,5 @@
+//RentAnything/types/schemas.ts
+
 import { z } from 'zod';
 
 export const AddressSchema = z.object({
@@ -13,19 +15,27 @@ export const UserProfileSchema = z.object({
   phone: z.string().optional().nullable(),
   role: z.string(),
   profileImage: z.string().optional().nullable(),
+  joinedAt: z.string(),
+  updatedAt: z.string().optional().nullable(),
   individualUser: z.object({
     id: z.number(),
     fullName: z.string(),
+    avatarUrl: z.string().optional().nullable(),
     nic: z.string().optional().nullable(),
     address: z.string().optional().nullable(),
+    description: z.string().optional().nullable(),
+    location: z.string().optional().nullable(),
     dateOfBirth: z.string().optional().nullable(),
     gender: z.string().optional().nullable(),
   }).optional().nullable(),
   company: z.object({
     id: z.number(),
     companyName: z.string(),
+    logoUrl: z.string().optional().nullable(),
     registrationNumber: z.string().optional().nullable(),
     address: z.string().optional().nullable(),
+    description: z.string().optional().nullable(),
+    location: z.string().optional().nullable(),
     contactPerson: z.string().optional().nullable(),
     industry: z.string().optional().nullable(),
   }).optional().nullable(),
@@ -33,6 +43,7 @@ export const UserProfileSchema = z.object({
 
 export const UserSchema = z.object({
   id: z.number(),
+  profileImage: z.string().optional().nullable(),
   individualUser: z.object({ fullName: z.string() }).optional().nullable(),
   company: z.object({ companyName: z.string() }).optional().nullable(),
 });
@@ -98,6 +109,7 @@ export const CategoryDetailsSchema = z.object({
 export const CategorySchema = z.object({
   id: z.number(),
   name: z.string(),
+  slug: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
 });
 
@@ -117,6 +129,8 @@ export const ItemSchema = z.object({
   address: AddressSchema.optional().nullable(),
   category: CategorySchema.optional().nullable(),
   categoryDetails: CategoryDetailsSchema.optional().nullable(),
+  deliveryAvailable: z.boolean().optional().nullable(),
+  pickupAvailable: z.boolean().optional().nullable(),
   pricings: z.array(z.any()).optional().nullable(),
   availabilities: z.array(z.any()).optional().nullable(),
 });
@@ -152,6 +166,45 @@ export const CreateItemSchema = z.object({
 
 
 
+export const ChatMessageSchema = z.object({
+  id: z.number(),
+  content: z.string(),
+  senderId: z.preprocess((val: any) => {
+    if (typeof val === 'number') return val;
+    if (val && typeof val === 'object' && 'id' in val) return val.id;
+    return val;
+  }, z.number()),
+  threadId: z.preprocess((val: any) => {
+    if (typeof val === 'number') return val;
+    if (val && typeof val === 'object' && 'id' in val) return val.id;
+    return val;
+  }, z.number().optional()),
+  createdAt: z.preprocess((val: any) => {
+    if (val instanceof Date) return val.toISOString();
+    return val;
+  }, z.string()),
+  sender: UserSchema.optional().nullable(),
+  thread: z.object({
+    id: z.number(),
+  }).optional().nullable(),
+});
+
+export const ChatThreadSchema = z.object({
+  id: z.number(),
+  itemId: z.number(),
+  userOneId: z.number(),
+  userTwoId: z.number(),
+  createdAt: z.string(),
+  lastMessage: ChatMessageSchema.optional().nullable(),
+  item: z.object({
+    id: z.number(),
+    title: z.string(),
+    imageUrl: z.string().optional().nullable(),
+  }).optional().nullable(),
+  userOne: UserSchema.optional().nullable(),
+  userTwo: UserSchema.optional().nullable(),
+});
+
 export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
   z.object({
     data: dataSchema,
@@ -160,3 +213,30 @@ export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
 export type Item = z.infer<typeof ItemSchema>;
 export type Address = z.infer<typeof AddressSchema>;
 export type User = z.infer<typeof UserSchema>;
+export type ChatThread = z.infer<typeof ChatThreadSchema>;
+export type ChatMessage = z.infer<typeof ChatMessageSchema>;
+
+export const KycStatusEnum = z.enum(['NOT_STARTED', 'PENDING', 'VERIFIED', 'REJECTED']);
+
+export const KycDocumentTypeSchema = z.enum([
+  'FACE_SELFIE',
+  'NIC_FRONT',
+  'NIC_BACK',
+  'DRIVING_LICENSE',
+  'PASSPORT',
+  'PROOF_OF_ADDRESS',
+]);
+
+export const KycItemSchema = z.object({
+  status: KycStatusEnum,
+  fileUrl: z.string().optional().nullable(),
+  rejectionReasons: z.array(z.string()).optional().nullable(),
+});
+
+export const KycStatusResponseSchema = z.object({
+  overallStatus: KycStatusEnum,
+  items: z.record(KycDocumentTypeSchema, KycItemSchema),
+});
+
+export type KycStatusResponse = z.infer<typeof KycStatusResponseSchema>;
+export type KycDocumentType = z.infer<typeof KycDocumentTypeSchema>;

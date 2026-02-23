@@ -1,8 +1,10 @@
+//RentAnything/components/itemDetails/OwnerAbout.tsx
+
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 
 interface OwnerAboutProps {
   owner: {
@@ -12,9 +14,12 @@ interface OwnerAboutProps {
     rating: string;
     listings: string;
   };
+  onChat?: () => void;
+  isChatLoading?: boolean;
+  isChatDisabled?: boolean;
 }
 
-export default function OwnerAbout({ owner }: OwnerAboutProps) {
+export default function OwnerAbout({ owner, onChat, isChatLoading, isChatDisabled }: OwnerAboutProps) {
   const router = useRouter();
 
   return (
@@ -44,8 +49,16 @@ export default function OwnerAbout({ owner }: OwnerAboutProps) {
           <TouchableOpacity className="w-10 h-10 items-center justify-center rounded-full bg-gray-50 border border-gray-100">
             <Ionicons name="call-outline" size={20} color="#6B7280" />
           </TouchableOpacity>
-          <TouchableOpacity className="w-10 h-10 items-center justify-center rounded-full bg-gray-50 border border-gray-100">
-            <Ionicons name="chatbubble-ellipses-outline" size={20} color="#6B7280" />
+          <TouchableOpacity
+            className={`w-10 h-10 items-center justify-center rounded-full bg-gray-50 border border-gray-100 ${isChatDisabled ? 'opacity-50' : ''}`}
+            onPress={onChat}
+            disabled={isChatLoading || isChatDisabled}
+          >
+            {isChatLoading ? (
+                <ActivityIndicator size="small" color="#2FA2B9" />
+            ) : (
+                <Ionicons name="chatbubble-ellipses-outline" size={20} color={isChatDisabled ? "#9CA3AF" : "#6B7280"} />
+            )}
           </TouchableOpacity>
         </View>
       </View>

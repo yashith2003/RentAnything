@@ -1,102 +1,100 @@
-import React, { createContext, ReactNode, useContext, useState } from 'react';
+//RentAnything/context/SavedItemsContext.tsx
 
-// Define the structure of a saved item
-// This should roughly match the structure expected by SavedScreen and ItemCard
+import React, { createContext, ReactNode, useContext, useMemo, useState } from 'react';
+import { useGetSavedItemsQuery, useToggleSaveItemMutation } from '../api/savedItemApi';
+import { useUser } from './userContext';
+
 export interface SavedItem {
   id: number | string;
-  image: string;
+  imageUrl: string | null | undefined;
   title: string;
-  price: string;
-  extraPrice: string;
-  owner: string;
-  rating: string | number;
-  distance: string;
-  location: string;
-  delivery: boolean;
-  deliveryAvailable?: boolean; // For compatibility
+  description: string;
+  status: string;
+  deliveryAvailable: boolean;
+  category: { id: number; name: string };
+  owner: { id: number; phone: string; individualUser?: { firstName: string; lastName: string } };
 }
 
 interface SavedItemsContextType {
-  savedItems: SavedItem[];
-  addItem: (item: SavedItem) => void;
-  removeItem: (id: number | string) => void;
-  isSaved: (id: number | string) => boolean;
+  savedItems: any[];
+  isLoading: boolean;
+  toggleItem: (id: number) => Promise<void>;
+  isSaved: (id: number) => boolean;
 }
 
 const SavedItemsContext = createContext<SavedItemsContextType | undefined>(undefined);
 
 export const SavedItemsProvider = ({ children }: { children: ReactNode }) => {
-  // Initialize with some dummy data if needed, or empty array
-  const [savedItems, setSavedItems] = useState<SavedItem[]>([
-      {
-        id: 1,
-        image: 'https://images.unsplash.com/photo-1524338198850-8a2ff63aaceb?q=80&w=400&auto=format&fit=crop', // Security Camera
-        title: 'Tesla Model S',
-        price: 'Rs:1000',
-        extraPrice: '- Per day',
-        owner: 'Malith Perera',
-        rating: '5.0',
-        distance: '5.6 km',
-        location: 'Nugegoda',
-        delivery: true,
-      },
-      {
-        id: 2,
-        image: 'https://images.unsplash.com/photo-1599727402636-1e96a40a233b?q=80&w=400&auto=format&fit=crop', // Plastic Barrels
-        title: 'Tesla Model S',
-        price: 'Rs:1000',
-        extraPrice: '- Per day | Rs: 1500 - 2 days',
-        owner: 'Malith Perera',
-        rating: '5.0',
-        distance: '5.6 km',
-        location: 'Nugegoda',
-        delivery: true,
-      },
-      {
-        id: 3,
-        image: 'https://images.unsplash.com/photo-1519326844852-704caea5679e?q=80&w=400&auto=format&fit=crop', // Heater (Assuming heater)
-        title: 'Tesla Model S',
-        price: 'Rs:1000',
-        extraPrice: '- 1 day',
-        owner: 'Malith Perera',
-        rating: '5.0',
-        distance: '5.6 km',
-        location: 'Nugegoda',
-        delivery: true,
-      },
-      {
-        id: 4,
-        image: 'https://images.unsplash.com/photo-1581147036324-c17ac41dfa6c?q=80&w=400&auto=format&fit=crop', // Sledgehammer
-        title: 'Tesla Model S',
-        price: 'Rs:1000',
-        extraPrice: '- 1 day | Rs: 1500 - 2 days',
-        owner: 'Malith Perera',
-        rating: '5.0',
-        distance: '5.6 km',
-        location: 'Nugegoda',
-        delivery: true,
-      },
-  ]);
+  const { token, isLoading: isLoadingUser } = useUser();
+  const {
+    data: rawSavedItems = [],
+    isLoading: isQueryLoading,
+    error,
+    refetch
+  } = useGetSavedItemsQuery(undefined, {
+    skip: isLoadingUser || !token,
+  });
 
-  const addItem = (item: SavedItem) => {
-    setSavedItems((prev) => {
-      if (!prev.find((i) => i.id === item.id)) {
-        return [...prev, item];
+  const isLoading = isLoadingUser || isQueryLoading;
+
+  if (error) {
+    console.error('[SavedItemsCtx] getSavedItems error:', JSON.stringify(error, null, 2));
+  }
+
+  const [toggleSave] = useToggleSaveItemMutation();
+
+  // Track IDs removed optimistically — avoids copying server state into useState
+  const [removedIds, setRemovedIds] = useState<Set<number>>(new Set());
+
+  // Derive saved items from server data, filtered by optimistic removals
+  const savedItems = useMemo(() => {
+    // console.log('[SavedItemsCtx] rawSavedItems:', Array.isArray(rawSavedItems) ? `array[${rawSavedItems.length}]` : typeof rawSavedItems, rawSavedItems);
+    if (!Array.isArray(rawSavedItems)) return [];
+    const result = rawSavedItems
+      .filter((si: any) => si?.item && !removedIds.has(Number(si.item.id)))
+      .map((si: any) => ({
+        ...si.item,
+        savedId: si.id,
+        createdAt: si.createdAt,
+      }));
+    console.log('[SavedItemsCtx] computed savedItems count:', result.length);
+    return result;
+  }, [rawSavedItems, removedIds]);
+
+  const toggleItem = async (id: number) => {
+    const exists = savedItems.some((item: any) => Number(item.id) === Number(id));
+    try {
+      if (exists) {
+        // Optimistically hide immediately
+        setRemovedIds(prev => new Set(prev).add(id));
+        await toggleSave(id).unwrap();
+        // Server confirmed — clean up the removed set and re-sync
+        setRemovedIds(prev => { const n = new Set(prev); n.delete(id); return n; });
+        await refetch();
+      } else {
+        // For adds, just call the server and refetch
+        await toggleSave(id).unwrap();
+        await refetch();
       }
-      return prev;
-    });
+    } catch (error) {
+      console.error('Failed to toggle save item:', error);
+      // Revert optimistic removal on error
+      setRemovedIds(prev => { const n = new Set(prev); n.delete(id); return n; });
+    }
   };
 
-  const removeItem = (id: number | string) => {
-    setSavedItems((prev) => prev.filter((item) => item.id !== id));
-  };
+  const isSaved = (id: number) =>
+    savedItems.some((item: any) => Number(item.id) === Number(id));
 
-  const isSaved = (id: number | string) => {
-    return savedItems.some((item) => item.id === id);
-  };
+  const value = useMemo(() => ({
+    savedItems,
+    isLoading,
+    toggleItem,
+    isSaved,
+  }), [savedItems, isLoading]);
 
   return (
-    <SavedItemsContext.Provider value={{ savedItems, addItem, removeItem, isSaved }}>
+    <SavedItemsContext.Provider value={value}>
       {children}
     </SavedItemsContext.Provider>
   );

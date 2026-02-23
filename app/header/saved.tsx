@@ -1,3 +1,5 @@
+//app/header/saved.tsx
+
 import SearchBar from '@/components/form/searchbar';
 import RemoveSavedModal from '@/components/modal/itemSavePopup';
 import { useSavedItems } from '@/context/SavedItemsContext';
@@ -8,21 +10,22 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { getImageUrl } from '@/utils/image';
 
 export default function SavedScreen() {
   const router = useRouter();
-  const { savedItems, removeItem } = useSavedItems();
+  const { savedItems, toggleItem, isLoading } = useSavedItems();
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<number | string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<number | null>(null);
 
-  const handleRemovePress = (id: number | string) => {
+  const handleRemovePress = (id: number) => {
     setSelectedItem(id);
     setModalVisible(true);
   };
 
-  const handleConfirmRemove = () => {
+  const handleConfirmRemove = async () => {
     if (selectedItem !== null) {
-      removeItem(selectedItem);
+      await toggleItem(selectedItem);
       setModalVisible(false);
       setSelectedItem(null);
     }
@@ -60,13 +63,23 @@ export default function SavedScreen() {
 
         {/* Grid of Saved Items */}
         <View className="flex-row flex-wrap justify-between px-6 pb-10">
-          {savedItems.map((item) => (
-            <SavedItemCard 
-                key={item.id} 
-                item={item} 
-                onRemove={() => handleRemovePress(item.id)}
-            />
-          ))}
+          {isLoading ? (
+            <View className="w-full py-20 items-center">
+              <Text className="text-gray-400">Loading saved items...</Text>
+            </View>
+          ) : savedItems.length === 0 ? (
+            <View className="w-full py-20 items-center">
+              <Text className="text-gray-400">No saved items yet.</Text>
+            </View>
+          ) : (
+            savedItems.map((item) => (
+              <SavedItemCard 
+                  key={item.id} 
+                  item={item} 
+                  onRemove={() => handleRemovePress(item.id)}
+              />
+            ))
+          )}
         </View>
       </ScrollView>
 
@@ -81,6 +94,16 @@ export default function SavedScreen() {
 
 function SavedItemCard({ item, onRemove }: { item: any, onRemove: () => void }) {
   const router = useRouter();
+  
+  // Format price from pricings array
+  const mainPricing = item.pricings?.[0];
+  const priceDisplay = mainPricing ? `Rs:${String(mainPricing.price).split('.')[0]}` : 'N/A';
+  const unitDisplay = mainPricing ? `- Per ${mainPricing.rateType}` : '';
+
+  const ownerName = item.owner?.individualUser 
+    ? `${item.owner.individualUser.firstName} ${item.owner.individualUser.lastName}`
+    : 'N/A';
+
   return (
     <TouchableOpacity
       activeOpacity={0.9}
@@ -96,7 +119,12 @@ function SavedItemCard({ item, onRemove }: { item: any, onRemove: () => void }) 
     >
       {/* Product Image */}
       <View className="relative">
-        <Image source={{ uri: item.image }} style={{ width: '100%', height: 160 }} contentFit="cover" />
+        <Image 
+          source={{ uri: getImageUrl(item.imageUrl) }} 
+          style={{ width: '100%', height: 160 }} 
+          contentFit="cover" 
+          placeholder="https://via.placeholder.com/400?text=No+Image"
+        />
         <TouchableOpacity 
             className="absolute top-3 right-3 "
             onPress={onRemove}
@@ -108,8 +136,8 @@ function SavedItemCard({ item, onRemove }: { item: any, onRemove: () => void }) 
       <View className="p-3">
         {/* Price */}
         <View className="flex-row flex-wrap items-baseline">
-          <Text className="text-[#2FA2B9] font-bold text-xs">{item.price}</Text>
-          <Text className="text-gray-400 text-[9px] ml-0.5">{item.extraPrice}</Text>
+          <Text className="text-[#2FA2B9] font-bold text-xs">{priceDisplay}</Text>
+          <Text className="text-gray-400 text-[9px] ml-0.5">{unitDisplay}</Text>
         </View>
 
         {/* Title */}
@@ -119,7 +147,7 @@ function SavedItemCard({ item, onRemove }: { item: any, onRemove: () => void }) 
 
         {/* Owner */}
         <View className="flex-row items-center mt-1">
-          <Text className="text-gray-400 text-[10px]" numberOfLines={1}>Owner: {typeof item.owner === 'string' ? item.owner : 'N/A'}</Text>
+          <Text className="text-gray-400 text-[10px]" numberOfLines={1}>Owner: {ownerName}</Text>
           <View className="ml-1 w-3 h-3 bg-[#2D8CFF] rounded-full items-center justify-center">
             <Ionicons name="checkmark" size={8} color="white" />
           </View>
@@ -127,17 +155,13 @@ function SavedItemCard({ item, onRemove }: { item: any, onRemove: () => void }) 
 
         {/* Rating & Distance */}
         <View className="flex-row items-center mt-1">
-            <Text className="text-gray-500 font-bold text-[10px] mr-1">{item.rating}</Text>
+            <Text className="text-gray-500 font-bold text-[10px] mr-1">5.0</Text>
             <Ionicons name="star" size={12} color="#FFCC00" />
         </View>
         <View className="flex-row items-center mt-0.5">
-          <Image
-            source={require('@/assets/icons/location.svg')}
-            style={{ width: 12, height: 12 }}
-            tintColor="#2FA2B9"
-          />
+          <Ionicons name="location-outline" size={12} color="#2FA2B9" />
           <Text className="text-[#2FA2B9] text-[10px] font-medium ml-1">
-            {item.distance} - {item.location}
+            5.6 km - {item.address?.city || 'N/A'}
           </Text>
         </View>
 
@@ -147,22 +171,25 @@ function SavedItemCard({ item, onRemove }: { item: any, onRemove: () => void }) 
             <Text className="text-white text-[9px] font-bold">Request for rent</Text>
           </TouchableOpacity>
           <View className="flex-row gap-x-1">
-            <TouchableOpacity hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}>
-                <Image source={require('@/assets/icons/callIcon.svg')} style={{ width: 22, height: 22 }} />
+            <TouchableOpacity className="w-8 h-8 rounded-full border border-gray-100 items-center justify-center">
+                <Ionicons name="call" size={14} color="#666" />
             </TouchableOpacity>
-            <TouchableOpacity hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}>
-                <Image source={require('@/assets/icons/messageIcon.svg')} style={{ width: 22, height: 22 }} />
+            <TouchableOpacity className="w-8 h-8 rounded-full border border-gray-100 items-center justify-center">
+                <Ionicons name="chatbubble-ellipses" size={14} color="#666" />
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Delivery Info */}
         <View className="flex-row items-center mt-2.5">
-          <Image source={require('@/assets/icons/delivaryIcon.svg')} style={{ width: 14, height: 14 }} />
-          <Text className="text-gray-400 text-[9px] font-medium ml-1.5">Delivery Available</Text>
+          <Ionicons name="bicycle" size={14} color="#9ca3af" />
+          <Text className="text-gray-400 text-[9px] font-medium ml-1.5">
+            {item.deliveryAvailable ? 'Delivery Available' : 'Pickup Only'}
+          </Text>
         </View>
       </View>
 
     </TouchableOpacity>
   );
 }
+

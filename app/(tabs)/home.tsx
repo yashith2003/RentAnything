@@ -14,6 +14,7 @@ import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import itemService, { useGetItemsQuery } from '@/api/item.service';
 import { useEffect } from 'react';
+import { getImageUrl } from '@/utils/image';
 import { FilterParamsSchema } from '@/types/schemas';
  
 
@@ -159,9 +160,10 @@ export default function HomeScreen() {
                 item={{
                   id: item.id,
                   title: item.title,
-                  image: item.imageUrl || 'https://via.placeholder.com/400',
+                  image: getImageUrl(item.imageUrl),
                   price: `Rs: ${(item.price || item.pricings?.[0]?.price || 0).toLocaleString()}`,
                   owner: item.owner?.individualUser?.fullName || item.owner?.company?.companyName || 'N/A',
+                  ownerId: item.owner?.id,
                   rating: '5.0',
                   distance: '5.6 km',
                   location: item.address?.address || 'N/A',

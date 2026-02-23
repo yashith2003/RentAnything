@@ -14,8 +14,8 @@ export interface FilterConfig {
 class FilterService {
   async getFiltersByCategory(categoryId: number): Promise<FilterConfig[]> {
     try {
-      const response = await apiClient.get(`/categories/${categoryId}/filters`);
-      return response.data;
+      const response = await apiClient.get<{ data: FilterConfig[] }>(`/categories/${categoryId}/filters`);
+      return response.data.data;
     } catch (error) {
       console.error(`Failed to fetch filters for category ${categoryId}:`, error);
       return [];

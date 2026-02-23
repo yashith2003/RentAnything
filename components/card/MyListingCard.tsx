@@ -10,7 +10,7 @@ interface MyListingCardProps {
     title: string;
     description: string;
     condition: string;
-    image: string;
+    image: string | null | undefined;
     rentals: number;
     isActive: boolean;
   };
@@ -44,7 +44,9 @@ export const MyListingCard: React.FC<MyListingCardProps> = ({
           <Image
             source={{ uri: getImageUrl(listing.image) }}
             style={{ width: '100%', height: '100%' }}
-            contentFit="contain"
+            contentFit="cover"
+            placeholder="https://via.placeholder.com/150?text=Loading..."
+            transition={200}
           />
         </View>
 
