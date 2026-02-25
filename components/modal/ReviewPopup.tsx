@@ -10,16 +10,28 @@ interface ReviewPopupProps {
   onClose: () => void;
   onSubmit: (rating: number, feedback: string) => void;
   title?: string;
+  initialRating?: number;
+  initialFeedback?: string;
 }
 
 export default function ReviewPopup({ 
   isVisible, 
   onClose, 
   onSubmit, 
-  title = "How would you rate the Renter?" 
+  title = "How would you rate the Renter?",
+  initialRating = 0,
+  initialFeedback = ''
 }: ReviewPopupProps) {
-  const [rating, setRating] = useState(0);
-  const [feedback, setFeedback] = useState('');
+  const [rating, setRating] = useState(initialRating);
+  const [feedback, setFeedback] = useState(initialFeedback);
+
+  // Update state when initial values change (e.g. when data is fetched)
+  React.useEffect(() => {
+    if (isVisible) {
+      setRating(initialRating);
+      setFeedback(initialFeedback);
+    }
+  }, [isVisible, initialRating, initialFeedback]);
 
   const handleRating = (index: number) => {
     setRating(index + 1);
@@ -32,6 +44,10 @@ export default function ReviewPopup({
   };
 
   const handleSubmit = () => {
+    if (rating === 0) {
+      alert('Please select a star rating');
+      return;
+    }
     onSubmit(rating, feedback);
     resetAndClose();
   };
@@ -105,7 +121,8 @@ export default function ReviewPopup({
                 </TouchableOpacity>
                 <TouchableOpacity 
                     onPress={handleSubmit}
-                    className="flex-1 h-12 rounded-full bg-cyan-500 items-center justify-center"
+                    disabled={rating === 0}
+                    className={`flex-1 h-12 rounded-full items-center justify-center ${rating === 0 ? 'bg-gray-200' : 'bg-cyan-500'}`}
                 >
                     <Text className="text-white font-bold">Submit</Text>
                 </TouchableOpacity>

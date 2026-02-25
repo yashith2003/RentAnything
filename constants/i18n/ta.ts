@@ -79,6 +79,7 @@ export default {
     search: "தேடல்",
     addListing: "பட்டியல் சேர்க்க",
     rentals: "வாடகை",
+    inbox: "செய்திகள்",
     profile: "சுயவிவரம்",
   },
 

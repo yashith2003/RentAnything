@@ -20,7 +20,7 @@ import CustomTextInput from '@/components/form/CustomTextInput';
 import PrimaryButton from '@/components/ui/PrimaryButton';
 import { Spacing } from '@/constants/spacing';
 
-import SuccessPopup from '@/components/AlertPopup/successPopup';
+import SuccessPopup from '@/components/AlertPopup/SuccessPopup';
 import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
 
 import { useTranslation } from 'react-i18next';

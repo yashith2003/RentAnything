@@ -79,6 +79,7 @@ export default {
     search: "සොයන්න",
     addListing: "දැන්වීම එක් කරන්න",
     rentals: "කුලී",
+    inbox: "පණිවිඩ",
     profile: "පැතිකඩ",
   },
 

@@ -7,7 +7,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { Alert, ActivityIndicator, Switch, Text, TouchableOpacity, View, ScrollView } from 'react-native';
+import { ActivityIndicator, Switch, Text, TouchableOpacity, View, ScrollView } from 'react-native';
+import SuccessPopup from '@/components/AlertPopup/SuccessPopup';
+import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useUploadKycDocumentMutation, useGetKycStatusQuery } from '@/api/kyc.service';
@@ -18,6 +20,9 @@ export default function FaceVerification() {
   const router = useRouter();
   const [biometricEnabled, setBiometricEnabled] = useState(true);
   const [localImage, setLocalImage] = useState<any>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   
   const { data: kycStatus } = useGetKycStatusQuery();
   const [uploadDocument, { isLoading: isUploading }] = useUploadKycDocumentMutation();
@@ -40,7 +45,7 @@ export default function FaceVerification() {
     if (localImage) {
       try {
         await uploadDocument({ type: 'FACE_SELFIE', file: localImage }).unwrap();
-        Alert.alert("Success", "Selfie uploaded successfully and is now pending review.");
+        setShowSuccess(true);
         if (selfieStatus?.status === 'REJECTED') {
           router.replace('/profile/kycPage' as any);
         } else {
@@ -48,7 +53,8 @@ export default function FaceVerification() {
         }
       } catch (err) {
         console.error('[FaceVerification] Upload error:', err);
-        Alert.alert("Error", "Failed to upload selfie. Please try again.");
+        setErrorMessage("Failed to upload selfie. Please make sure your face is clearly visible.");
+        setShowError(true);
       }
     } else {
       router.replace('/profile/kycPage/NICVerification' as any);
@@ -123,6 +129,28 @@ export default function FaceVerification() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Popups */}
+      <SuccessPopup 
+        visible={showSuccess}
+        title="Success"
+        message="Selfie uploaded successfully and is now pending review."
+        onNext={() => {
+          setShowSuccess(false);
+          if (selfieStatus?.status === 'REJECTED') {
+            router.replace('/profile/kycPage' as any);
+          } else {
+            router.replace('/profile/kycPage/NICVerification' as any);
+          }
+        }}
+      />
+
+      <ErrorPopup 
+        visible={showError}
+        title="Upload Error"
+        message={errorMessage}
+        onClose={() => setShowError(false)}
+      />
     </SafeAreaView>
   );
 }

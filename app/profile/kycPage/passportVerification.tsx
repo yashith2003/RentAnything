@@ -8,8 +8,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SuccessPopup from '@/components/AlertPopup/SuccessPopup';
+import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
 
 import { useUploadKycDocumentMutation, useGetKycStatusQuery } from '@/api/kyc.service';
 import { getImageUrl } from '@/utils/image';
@@ -24,6 +26,9 @@ export default function PassportVerification() {
   const [localImage, setLocalImage] = useState<any>(null);
 
   const [uploadDocument, { isLoading: isUploading }] = useUploadKycDocumentMutation();
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const displayUri = localImage?.uri || (passportDoc?.fileUrl ? getImageUrl(passportDoc.fileUrl) : null);
 
@@ -45,7 +50,7 @@ export default function PassportVerification() {
     if (localImage) {
       try {
         await uploadDocument({ type: 'PASSPORT', file: localImage }).unwrap();
-        Alert.alert("Success", "Passport uploaded successfully and is now pending review.");
+        setShowSuccess(true);
         if (passportDoc?.status === 'REJECTED') {
           router.replace('/profile/kycPage' as any);
         } else {
@@ -53,7 +58,8 @@ export default function PassportVerification() {
         }
       } catch (err) {
         console.error('[PassportVerification] Upload error:', err);
-        Alert.alert("Error", "Failed to upload passport.");
+        setErrorMessage("Failed to upload passport. Please check your connection and try again.");
+        setShowError(true);
       }
     } else {
       router.replace('/profile/kycPage/addressVerification' as any);
@@ -116,6 +122,28 @@ export default function PassportVerification() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Popups */}
+      <SuccessPopup 
+        visible={showSuccess}
+        title="Success"
+        message="Passport uploaded successfully and is now pending review."
+        onNext={() => {
+          setShowSuccess(false);
+          if (passportDoc?.status === 'REJECTED') {
+            router.replace('/profile/kycPage' as any);
+          } else {
+            router.replace('/profile/kycPage/addressVerification' as any);
+          }
+        }}
+      />
+
+      <ErrorPopup 
+        visible={showError}
+        title="Upload Error"
+        message={errorMessage}
+        onClose={() => setShowError(false)}
+      />
     </SafeAreaView>
   );
 }

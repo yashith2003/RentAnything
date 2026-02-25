@@ -47,17 +47,42 @@ const FAQ_DATA: FAQSection[] = [
     ],
   },
   {
-    title: 'Payments',
+    title: 'Listings & Earnings',
     items: [
       {
         id: '4',
-        question: 'When will I be charged?',
-        answer: 'You will be charged at the time of booking. This ensures that the item is reserved for your rental period. If there are any issues with the rental, please contact our support team.',
+        question: 'How do I list my items for rent?',
+        answer: 'Go to the "Add Listing" tab, upload high-quality photos of your item, set a price (daily, weekly, or monthly), and provide a detailed description. Once approved, your listing will be live for others to rent.',
       },
       {
         id: '5',
-        question: 'Can I cancel my rental?',
-        answer: 'Yes, you can cancel your rental up to 24 hours before the rental start time for a full refund. Cancellations made within 24 hours may be subject to a cancellation fee.',
+        question: 'How and when do I get paid?',
+        answer: 'Earnings are automatically credited to your linked bank account after a successful rental completion. Processing usually takes 3-5 business days depending on your bank.',
+      },
+      {
+        id: '6',
+        question: 'Is there a fee for listing items?',
+        answer: 'Listing items is free! We only take a small commission from successful rentals to help maintain the platform and provide insurance coverage.',
+      },
+    ],
+  },
+  {
+    title: 'Safety & Trust',
+    items: [
+      {
+        id: '7',
+        question: 'Is my equipment insured?',
+        answer: 'Yes, we provide basic insurance coverage for items listed on our platform. In case of damage or theft, please report an incident immediately through the app.',
+      },
+      {
+        id: '8',
+        question: 'What is KYC and why do I need it?',
+        answer: 'KYC (Know Your Customer) is a verification process that ensures the safety of our community. Both owners and renters must verify their identity using a valid government ID to participate.',
+      },
+      {
+        id: '9',
+        question: 'What should I do if an item is damaged?',
+        answer: 'If an item is damaged during a rental, take photos immediately and report it via the "Incident Report" section in your profile. Our support team will mediate and resolve the issue.',
       },
     ],
   },

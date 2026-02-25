@@ -58,7 +58,7 @@ export default function InboxScreen() {
     return (
       <TouchableOpacity 
         activeOpacity={0.7}
-        onPress={() => router.push({ pathname: '/header/chat/chatDetails', params: { threadId: item.id } } as any)}
+        onPress={() => router.push({ pathname: '/chat/chatDetails', params: { threadId: item.id } } as any)}
         className={`flex-row items-center py-4 px-4 border-b border-gray-50 ${isUnread ? 'bg-[#E0F7FA]' : ''}`}
       >
         <View className="relative mr-4">

@@ -1,8 +1,9 @@
-//context/userContext.tsx
+//RentAnything/context/userContext.tsx
 
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
-import { setAuthToken } from '../api/apiSlice';
+import { setAuthToken, apiSlice } from '../api/apiSlice';
+import { useDispatch } from 'react-redux';
 
 export type UserRole = 'INDIVIDUAL' | 'COMPANY' | 'individual' | 'company' | null;
 
@@ -21,6 +22,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<UserRole>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     loadSession();
@@ -45,6 +47,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const login = async (accessToken: string, refreshToken: string, userRole: UserRole) => {
     try {
+      console.log(`[UserContext] Logging in, setting auth token and resetting state...`);
       await SecureStore.setItemAsync('access_token', accessToken);
       await SecureStore.setItemAsync('refresh_token', refreshToken);
       if (userRole) {
@@ -53,6 +56,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setToken(accessToken);
       setRole(userRole);
       setAuthToken(accessToken); // Give to RTK Query synchronously
+      
+      // Clear stale cache data from previous user session
+      dispatch(apiSlice.util.resetApiState());
     } catch (error) {
       console.error('Failed to save session:', error);
     }
@@ -60,13 +66,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
+      console.log(`[UserContext] Logging out, clearing auth token and resetting state...`);
       await SecureStore.deleteItemAsync('access_token');
       await SecureStore.deleteItemAsync('refresh_token');
       await SecureStore.deleteItemAsync('user_role');
       setToken(null);
       setRole(null);
       setAuthToken(null);
-
+      
+      // Clear stale cache data
+      dispatch(apiSlice.util.resetApiState());
     } catch (error) {
       console.error('Failed to clear session:', error);
     }

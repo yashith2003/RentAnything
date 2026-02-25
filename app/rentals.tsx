@@ -1,4 +1,4 @@
-//app/(tabs)/rentals.tsx
+//app/rentals.tsx
 
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -6,8 +6,8 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import MyOrders from '../rentalsPage/myOrders';
-import MyRentals from '../rentalsPage/myRentals';
+import MyOrders from './rentalsPage/myOrders';
+import MyRentals from './rentalsPage/myRentals';
 
 type TabType = 'rentals' | 'orders';
 
@@ -76,4 +76,3 @@ export default function RentalsScreen() {
     </SafeAreaView>
   );
 }
-

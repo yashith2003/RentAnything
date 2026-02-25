@@ -1,4 +1,4 @@
-//app/header/chat/chatDetails.tsx
+//app/chat/chatDetails.tsx
 
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -11,7 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { useGetThreadMessagesQuery, useGetUserThreadsQuery, useGetThreadDetailsQuery, useMarkThreadAsReadMutation, chatApi, ChatMessage } from '@/api/chat.service';
 import { apiSlice } from '@/api/apiSlice';
-import { useGetProfileQuery } from '@/api/user.service';
+import { useGetProfileQuery, useGetPublicProfileQuery } from '@/api/user.service';
 import { socketService } from '@/utils/socket.service';
 import { getAvatarSource } from '@/utils/avatar';
 import { getImageUrl } from '@/utils/image';
@@ -40,6 +40,22 @@ export default function ChatDetailsScreen() {
   const otherUser = thread?.userOneId === userId ? thread?.userTwo : thread?.userOne;
   const otherUserName = otherUser?.individualUser?.fullName || otherUser?.company?.companyName || 'Chat';
   
+  const { data: otherUserProfile } = useGetPublicProfileQuery(otherUser?.id as number, {
+    skip: !otherUser?.id,
+  });
+
+  const handleCall = () => {
+    if (otherUserProfile?.phone) {
+      Linking.openURL(`tel:${otherUserProfile.phone}`);
+    }
+  };
+
+  const handleViewProfile = () => {
+    if (otherUser?.id) {
+      router.push({ pathname: '/item/ownerProfile', params: { id: otherUser.id } } as any);
+    }
+  };
+
   const [otherUserStatus, setOtherUserStatus] = useState<'Online' | 'Offline'>('Offline');
 
   const { data: threadMessages, isLoading: isLoadingMessages } = useGetThreadMessagesQuery(threadIdNum, {
@@ -91,9 +107,18 @@ export default function ChatDetailsScreen() {
                 if (newMessage.id && (newMessage.threadId === threadIdNum || newMessage.thread?.id === threadIdNum)) {
                     dispatch(
                       chatApi.util.updateQueryData('getThreadMessages', threadIdNum, (draft: ChatMessage[]) => {
-                        if (!draft.find((m: ChatMessage) => m.id === newMessage.id)) {
-                          draft.push(newMessage);
+                        // Prevent duplicates by real ID
+                        if (draft.find((m: ChatMessage) => m.id === newMessage.id)) return;
+
+                        // If it's a message from me, remove the optimistic counterpart (negative ID)
+                        if (newMessage.senderId === userId) {
+                          const optIndex = draft.findIndex(m => m.id < 0 && m.content === newMessage.content);
+                          if (optIndex !== -1) {
+                            draft.splice(optIndex, 1);
+                          }
                         }
+
+                        draft.push(newMessage);
                       }) as any
                     );
                 }
@@ -338,22 +363,31 @@ export default function ChatDetailsScreen() {
                 <Ionicons name="chevron-back" size={24} color="#000" />
             </TouchableOpacity>
             
-            <View className="relative mr-3">
-                <Image
-                    source={getAvatarSource(otherUser?.individualUser?.avatarUrl || otherUser?.company?.logoUrl)}
-                    style={{ width: 44, height: 44, borderRadius: 22 }}
-                    contentFit="cover"
-                />
-                <View className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white ${otherUserStatus === 'Online' ? 'bg-green-500' : 'bg-gray-400'}`} />
-            </View>
-            
-            <View>
-                <Text className="text-base font-bold text-black font-Outfit-Bold">{otherUserName}</Text>
-                <Text className="text-xs text-gray-500 font-Outfit">{otherUserStatus}</Text>
-            </View>
+            <TouchableOpacity 
+                onPress={handleViewProfile}
+                className="flex-row items-center"
+                activeOpacity={0.7}
+            >
+                <View className="relative mr-3">
+                    <Image
+                        source={getAvatarSource(otherUser?.individualUser?.avatarUrl || otherUser?.company?.logoUrl)}
+                        style={{ width: 44, height: 44, borderRadius: 22 }}
+                        contentFit="cover"
+                    />
+                    <View className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white ${otherUserStatus === 'Online' ? 'bg-green-500' : 'bg-gray-400'}`} />
+                </View>
+                
+                <View>
+                    <Text className="text-base font-bold text-black font-Outfit-Bold">{otherUserName}</Text>
+                    <Text className="text-xs text-gray-500 font-Outfit">{otherUserStatus}</Text>
+                </View>
+            </TouchableOpacity>
         </View>
 
-        <TouchableOpacity className="w-10 h-10 items-center justify-center">
+        <TouchableOpacity 
+            onPress={handleCall}
+            className="w-10 h-10 items-center justify-center"
+        >
           <Ionicons name="call-outline" size={24} color="#666" />
         </TouchableOpacity>
       </View>

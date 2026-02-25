@@ -1,4 +1,4 @@
-//app/(tabs)/home.tsx
+//RentAnything/app/(tabs)/home.tsx
 
 import ItemCard from '@/components/card/itemCard';
 import LocationDropdown from '@/components/form/LocationDropdown';
@@ -12,8 +12,9 @@ import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import itemService, { useGetItemsQuery } from '@/api/item.service';
+import itemService, { useGetItemsQuery, useGetTrendingItemsQuery } from '@/api/item.service';
 import { useEffect } from 'react';
+import { useGetProfileQuery } from '@/api/user.service';
 import { getImageUrl } from '@/utils/image';
 import { FilterParamsSchema } from '@/types/schemas';
  
@@ -41,9 +42,11 @@ export default function HomeScreen() {
     }
   }, [searchParams]);
 
-  const { data: trendingItems, isLoading, error } = useGetItemsQuery({
+  const { data: userProfile } = useGetProfileQuery();
+
+  const { data: trendingItems, isLoading, error } = useGetTrendingItemsQuery({
     category: selectedCategoryId?.toString(),
-    filters: activeFilters,
+    filters: { ...activeFilters, excludeOwnerId: userProfile?.id, limit: 10 },
   });
 
   // Automatically sync category from URL if it was set in FilterScreen
@@ -84,17 +87,11 @@ export default function HomeScreen() {
             </View>
           </View>
           <View className="flex-row items-center gap-x-4">
-            <TouchableOpacity onPress={() => router.push('/header/chat/inbox' as any)}>
-              <Image source={require('@/assets/icons/message.svg')} style={{ width: 22, height: 22 }} />
-            </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/header/notifications' as any)}>
               <Image source={require('@/assets/icons/notifications.svg')} style={{ width: 21, height: 22 }} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/header/saved' as any)}>
               <Image source={require('@/assets/icons/saved.svg')} style={{ width: 22, height: 22 }} />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Image source={require('@/assets/icons/menu.svg')} style={{ width: 22, height: 22 }} />
             </TouchableOpacity>
           </View>
         </View>
@@ -144,37 +141,43 @@ export default function HomeScreen() {
         {/* Trending Items Header */}
         <View className="flex-row items-center justify-between mb-4">
           <Text className="text-xl font-bold">{t('home.trending')}</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/trendingItems')}>
             <Text className="text-gray-400 font-medium">{t('home.viewAll')}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Trending Items Grid */}
-        <View className="flex-row flex-wrap justify-between pb-10">
+        <View className="flex-row flex-wrap justify-between pb-4 ">
           {isLoading ? (
             <Text className="text-gray-400 text-center w-full py-10">Loading items...</Text>
           ) : trendingItems && trendingItems.length > 0 ? (
-            trendingItems.map((item) => (
-              <ItemCard 
-                key={item.id} 
-                item={{
-                  id: item.id,
-                  title: item.title,
-                  image: getImageUrl(item.imageUrl),
-                  price: `Rs: ${(item.price || item.pricings?.[0]?.price || 0).toLocaleString()}`,
-                  owner: item.owner?.individualUser?.fullName || item.owner?.company?.companyName || 'N/A',
-                  ownerId: item.owner?.id,
-                  rating: '5.0',
-                  distance: '5.6 km',
-                  location: item.address?.address || 'N/A',
-                  phone: item.phone || undefined,
-                }} 
-              />
+            trendingItems.slice(0, 10).map((item) => (
+              <View key={item.id} className="w-[48%]">
+                <ItemCard 
+                  item={{
+                    id: item.id,
+                    title: item.title,
+                    image: getImageUrl(item.imageUrl),
+                    price: `Rs: ${(item.price || item.pricings?.[0]?.price || 0).toLocaleString()}`,
+                    owner: item.owner?.individualUser?.fullName || item.owner?.company?.companyName || 'N/A',
+                    ownerId: item.owner?.id,
+                    rating: '5.0',
+                    distance: '5.6 km',
+                    location: item.address?.address || 'N/A',
+                    phone: item.phone || undefined,
+                  }} 
+                />
+              </View>
             ))
           ) : (
             <Text className="text-gray-400 text-center w-full py-10">No items found</Text>
           )}
         </View>
+         {trendingItems && trendingItems.length > 0 && (
+           <TouchableOpacity onPress={() => router.push('/trendingItems')}>
+              <Text className="text-gray-400 font-medium text-center mb-8">{t('home.viewAll')}</Text>
+            </TouchableOpacity>
+         )}
       </ScrollView>
 
       {/* Location Dropdown Modal */}

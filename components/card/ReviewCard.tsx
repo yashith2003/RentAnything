@@ -6,11 +6,11 @@ import { getImageUrl } from '@/utils/image';
 
 interface ReviewCardProps {
   name: string;
-  image: string;
+  image?: string | null;
   rating: number;
-  comment: string;
+  comment?: string | null;
   date?: string;
-  reviewerStatus?: string;
+  reviewerStatus?: string | null;
   containerStyle?: string;
 }
 

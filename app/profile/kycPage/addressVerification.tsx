@@ -8,8 +8,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SuccessPopup from '@/components/AlertPopup/SuccessPopup';
+import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
 
 import { useUploadKycDocumentMutation, useGetKycStatusQuery } from '@/api/kyc.service';
 import { getImageUrl } from '@/utils/image';
@@ -24,6 +26,9 @@ export default function AddressVerification() {
   const [localImage, setLocalImage] = useState<any>(null);
 
   const [uploadDocument, { isLoading: isUploading }] = useUploadKycDocumentMutation();
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const displayUri = localImage?.uri || (addressDoc?.fileUrl ? getImageUrl(addressDoc.fileUrl) : null);
 
@@ -45,11 +50,12 @@ export default function AddressVerification() {
     if (localImage) {
       try {
         await uploadDocument({ type: 'PROOF_OF_ADDRESS', file: localImage }).unwrap();
-        Alert.alert("Success", "Proof of address uploaded successfully and is now pending review.");
+        setShowSuccess(true);
         router.replace('/profile/kycPage' as any);
       } catch (err) {
         console.error('[AddressVerification] Upload error:', err);
-        Alert.alert("Error", "Failed to upload proof of address.");
+        setErrorMessage("Failed to upload proof of address. Please ensure the document shows your full name and address.");
+        setShowError(true);
       }
     } else {
         router.replace('/profile/kycPage' as any);
@@ -112,6 +118,24 @@ export default function AddressVerification() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Popups */}
+      <SuccessPopup 
+        visible={showSuccess}
+        title="Success"
+        message="Proof of address uploaded successfully and is now pending review."
+        onNext={() => {
+          setShowSuccess(false);
+          router.replace('/profile/kycPage' as any);
+        }}
+      />
+
+      <ErrorPopup 
+        visible={showError}
+        title="Upload Error"
+        message={errorMessage}
+        onClose={() => setShowError(false)}
+      />
     </SafeAreaView>
   );
 }

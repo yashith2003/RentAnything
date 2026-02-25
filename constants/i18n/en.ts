@@ -79,6 +79,7 @@ export default {
     search: "Search",
     addListing: "Add Listing",
     rentals: "Rentals",
+    inbox: "Inbox",
     profile: "Profile",
   },
 

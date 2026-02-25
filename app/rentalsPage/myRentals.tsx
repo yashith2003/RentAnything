@@ -2,7 +2,7 @@ import SearchBar from '@/components/form/searchbar';
 import CancelRentalPopup from '@/components/modal/CancelRentalPopup';
 import ConditionConfirmationPopup from '@/components/modal/ConditionConfirmationPopup';
 import RentalCancelledPopup from '@/components/modal/RentalCancelledPopup';
-import SuccessPopup from '@/components/AlertPopup/successPopup';
+import SuccessPopup from '@/components/AlertPopup/SuccessPopup';
 import StatusTabGroup from '@/components/shared/StatusTabGroup';
 import SummaryBanner from '@/components/shared/SummaryBanner';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';

@@ -45,7 +45,7 @@ export default function LoginScreen() {
       // Navigate to OTP verification page
       router.push({
         pathname: '/(auth)/otpPage',
-        params: { phone: phoneNumber }
+        params: { phone: sanitizedPhone }
       });
     } catch (error: any) {
       console.warn('Login failed:', error);

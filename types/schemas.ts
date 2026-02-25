@@ -265,3 +265,24 @@ export const KycStatusResponseSchema = z.object({
 
 export type KycStatusResponse = z.infer<typeof KycStatusResponseSchema>;
 export type KycDocumentType = z.infer<typeof KycDocumentTypeSchema>;
+
+export const ReviewSchema = z.object({
+  id: z.number(),
+  rating: z.number(),
+  comment: z.string().optional().nullable(),
+  name: z.string(),
+  image: z.string().optional().nullable(),
+  createdAt: z.string(),
+  itemName: z.string().optional().nullable(),
+  reviewerStatus: z.string().optional().nullable(),
+});
+
+export const ReviewsResponseSchema = z.object({
+  totalReviews: z.number(),
+  averageRating: z.number(),
+  starCounts: z.record(z.coerce.string(), z.number()),
+  reviews: z.array(ReviewSchema),
+});
+
+export type Review = z.infer<typeof ReviewSchema>;
+export type ReviewsResponse = z.infer<typeof ReviewsResponseSchema>;

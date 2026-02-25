@@ -19,7 +19,7 @@ export default function ItemReviewsScreen() {
   );
 
   const filteredReviews = data?.reviews?.filter(
-    (review) => review.comment.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (review) => (review.comment?.toLowerCase() || '').includes(searchQuery.toLowerCase()) || 
                 review.name.toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
 
@@ -38,7 +38,7 @@ export default function ItemReviewsScreen() {
         <TouchableOpacity className="items-center justify-center w-10 h-10 rounded-full bg-gray-50">
            <Ionicons name="ellipsis-horizontal" size={24} color="#000" />
         </TouchableOpacity>
-      </View>
+      </View> 
 
       <View className="flex-1" style={PaddingStyles.page}>
         {/* Rating Summary */}

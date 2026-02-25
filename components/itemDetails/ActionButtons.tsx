@@ -3,14 +3,13 @@ import { Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 interface ActionButtonsProps {
-  onCreateBundle: () => void;
-  onRequestRent: () => void;
+  onCall: () => void;
   onChat: () => void;
   isChatLoading?: boolean;
   isChatDisabled?: boolean;
 }
 
-export default function ActionButtons({ onCreateBundle, onRequestRent, onChat, isChatLoading, isChatDisabled }: ActionButtonsProps) {
+export default function ActionButtons({ onCall, onChat, isChatLoading, isChatDisabled }: ActionButtonsProps) {
   return (
     <View className="absolute bottom-0 left-0 right-0 bg-white pt-2 pb-8 px-6 flex-row gap-x-4 border-t border-gray-100">
       <TouchableOpacity 
@@ -24,17 +23,13 @@ export default function ActionButtons({ onCreateBundle, onRequestRent, onChat, i
             <Ionicons name="chatbubble-ellipses-outline" size={24} color="#666" />
         )}
       </TouchableOpacity>
+      
       <TouchableOpacity 
-        onPress={onCreateBundle}
-        className="flex-1 h-14 border border-cyan-500 rounded-2xl items-center justify-center"
+        onPress={onCall}
+        className="flex-1 h-14 bg-cyan-500 rounded-2xl items-center justify-center flex-row gap-x-2"
       >
-        <Text className="text-cyan-500 text-sm font-bold">Bundle</Text>
-      </TouchableOpacity>
-      <TouchableOpacity 
-        onPress={onRequestRent}
-        className="flex-1 h-14 bg-cyan-500 rounded-2xl items-center justify-center"
-      >
-        <Text className="text-white text-sm font-bold">Rent Now</Text>
+        <Ionicons name="call-outline" size={20} color="white" />
+        <Text className="text-white text-base font-bold">Connect</Text>
       </TouchableOpacity>
     </View>
   );

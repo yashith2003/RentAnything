@@ -10,8 +10,10 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next'; // Assuming translation is used elsewhere or good to have
-import { ScrollView, Text, TextInput, View, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { ScrollView, Text, TextInput, View, TouchableOpacity, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import SuccessPopup from '@/components/AlertPopup/SuccessPopup';
+import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
 import { getImageUrl } from '@/utils/image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -31,6 +33,10 @@ export default function ProfileDetailsScreen() {
   });
 
   const [isUploading, setIsUploading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [errorConfig, setErrorConfig] = useState<{ visible: boolean; title?: string; message?: string }>({
+    visible: false,
+  });
   
   const { data: profile, isLoading, error } = useGetProfileQuery();
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
@@ -90,11 +96,15 @@ export default function ProfileDetailsScreen() {
 
       await updateProfile(payload).unwrap();
       
-      Alert.alert('Success', 'Profile updated successfully');
+      setShowSuccess(true);
       setIsEditing(false);
     } catch (err) {
       console.error('Failed to update profile:', err);
-      Alert.alert('Error', 'Failed to update profile');
+      setErrorConfig({
+        visible: true,
+        title: 'Update Failed',
+        message: 'Unable to update your profile. Please try again later.',
+      });
     }
   };
 
@@ -120,7 +130,11 @@ export default function ProfileDetailsScreen() {
       }
     } catch (error) {
         console.error('Error picking image:', error);
-        Alert.alert('Error', 'Failed to pick image');
+        setErrorConfig({
+          visible: true,
+          title: 'Image Picker Error',
+          message: 'Failed to pick an image from your library.',
+        });
     }
   };
 
@@ -154,7 +168,11 @@ export default function ProfileDetailsScreen() {
         
     } catch (error) {
         console.error('Error uploading image:', error);
-        Alert.alert('Error', 'Failed to upload image');
+        setErrorConfig({
+          visible: true,
+          title: 'Upload Failed',
+          message: 'Failed to upload your profile image.',
+        });
     } finally {
         setIsUploading(false);
     }
@@ -355,6 +373,21 @@ export default function ProfileDetailsScreen() {
         </>
         )}
       </ScrollView>
+
+      {/* Popups */}
+      <SuccessPopup 
+        visible={showSuccess}
+        title="Success"
+        message="Profile updated successfully"
+        onNext={() => setShowSuccess(false)}
+      />
+
+      <ErrorPopup 
+        visible={errorConfig.visible}
+        title={errorConfig.title}
+        message={errorConfig.message}
+        onClose={() => setErrorConfig({ ...errorConfig, visible: false })}
+      />
     </SafeAreaView>
   );
 }

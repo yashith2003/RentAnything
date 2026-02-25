@@ -8,8 +8,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SuccessPopup from '@/components/AlertPopup/SuccessPopup';
+import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
 
 import { useUploadKycDocumentMutation, useGetKycStatusQuery } from '@/api/kyc.service';
 import { getImageUrl } from '@/utils/image';
@@ -25,6 +27,9 @@ export default function DrivingLicenseVerification() {
   const [localImage, setLocalImage] = useState<any>(null);
 
   const [uploadDocument, { isLoading: isUploading }] = useUploadKycDocumentMutation();
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const displayUri = localImage?.uri || (licenseDoc?.fileUrl ? getImageUrl(licenseDoc.fileUrl) : null);
 
@@ -46,7 +51,7 @@ export default function DrivingLicenseVerification() {
     if (localImage) {
       try {
         await uploadDocument({ type: 'DRIVING_LICENSE', file: localImage }).unwrap();
-        Alert.alert("Success", "Driving license uploaded successfully and is now pending review.");
+        setShowSuccess(true);
         if (licenseDoc?.status === 'REJECTED') {
           router.replace('/profile/kycPage' as any);
         } else {
@@ -54,7 +59,8 @@ export default function DrivingLicenseVerification() {
         }
       } catch (err) {
         console.error('[DrivingLicenseVerification] Upload error:', err);
-        Alert.alert("Error", "Failed to upload driving license.");
+        setErrorMessage("Failed to upload driving license. Please check your image clarity.");
+        setShowError(true);
       }
     } else {
       router.replace('/profile/kycPage/passportVerification' as any);
@@ -117,6 +123,28 @@ export default function DrivingLicenseVerification() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Popups */}
+      <SuccessPopup 
+        visible={showSuccess}
+        title="Success"
+        message="Driving license uploaded successfully and is now pending review."
+        onNext={() => {
+          setShowSuccess(false);
+          if (licenseDoc?.status === 'REJECTED') {
+            router.replace('/profile/kycPage' as any);
+          } else {
+            router.replace('/profile/kycPage/passportVerification' as any);
+          }
+        }}
+      />
+
+      <ErrorPopup 
+        visible={showError}
+        title="Upload Error"
+        message={errorMessage}
+        onClose={() => setShowError(false)}
+      />
     </SafeAreaView>
   );
 }

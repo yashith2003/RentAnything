@@ -8,6 +8,7 @@ import React from 'react';
 import { Text, TouchableOpacity, View, Linking } from 'react-native';
 import { getImageUrl } from '@/utils/image';
 import { useCreateThreadMutation, useGetUserThreadsQuery } from '@/api/chat.service';
+import { useRecordInteractionMutation } from '@/api/item.service';
 
 interface ItemCardProps {
   item: {
@@ -36,6 +37,7 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
 
   const [createThread] = useCreateThreadMutation();
   const { data: threads } = useGetUserThreadsQuery();
+  const [recordInteraction] = useRecordInteractionMutation();
 
   const handlePress = () => {
     if (onPress) {
@@ -51,6 +53,7 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
 
   const handleCall = () => {
     if (item.phone) {
+      recordInteraction({ itemId: Number(item.id), type: 'CALL' });
       Linking.openURL(`tel:${item.phone}`);
     } else {
       console.warn('[ItemCard] Cannot call, missing phone number');
@@ -59,6 +62,7 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
 
   const handleChat = async () => {
     try {
+      recordInteraction({ itemId: Number(item.id), type: 'CHAT' });
       const otherUserId = item.ownerId || (item as any).owner?.id;
 
       if (!otherUserId) {
@@ -70,7 +74,7 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
       const existingThread = Array.isArray(threads) ? threads.find(t => Number(t.itemId) === itemIdNum) : undefined;
       
       if (existingThread) {
-        router.push({ pathname: '/header/chat/chatDetails', params: { threadId: existingThread.id } } as any);
+        router.push({ pathname: '/chat/chatDetails', params: { threadId: existingThread.id } } as any);
         return;
       }
 
@@ -80,7 +84,7 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
       }).unwrap();
       
       if (result?.id) {
-        router.push({ pathname: '/header/chat/chatDetails', params: { threadId: result.id } } as any);
+        router.push({ pathname: '/chat/chatDetails', params: { threadId: result.id } } as any);
       }
     } catch (err) {
       console.error('[ItemCard] handleChat error:', err);
@@ -91,7 +95,7 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
     <TouchableOpacity
       activeOpacity={0.9}
       onPress={handlePress}
-      className="w-[48%] bg-white rounded-[24px] mb-4 border border-gray-100 overflow-hidden"
+      className="w-full bg-white rounded-[24px] mb-4 border border-gray-100 overflow-hidden"
       style={{
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
@@ -145,24 +149,21 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
           </Text>
         </View>
 
-        <View className="flex-row items-center mt-3 gap-x-1.5">
-          <TouchableOpacity className="flex-1 bg-[#2FA2B9] rounded-xl py-2.5 items-center">
-            <Text className="text-white text-[9px] font-bold">Request for rent</Text>
+        <View className="flex-row items-center mt-3 gap-x-2">
+          <TouchableOpacity 
+            onPress={handleCall}
+            className="flex-1 bg-[#2FA2B9] rounded-xl py-2.5 items-center flex-row justify-center gap-x-1"
+          >
+            <Ionicons name="call" size={12} color="white" />
+            <Text className="text-white text-[10px] font-bold">Connect</Text>
           </TouchableOpacity>
-          <View className="flex-row gap-x-1">
-            <TouchableOpacity 
-              className="w-8 h-8 rounded-full border border-gray-100 items-center justify-center"
-              onPress={handleCall}
-            >
-                <Ionicons name="call" size={14} color="#666" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              className="w-8 h-8 rounded-full border border-gray-100 items-center justify-center"
-              onPress={handleChat}
-            >
-                <Ionicons name="chatbubble-ellipses" size={14} color="#666" />
-            </TouchableOpacity>
-          </View>
+          
+          <TouchableOpacity
+            className="w-9 h-9 rounded-full border border-gray-100 items-center justify-center"
+            onPress={handleChat}
+          >
+            <Ionicons name="chatbubble-ellipses" size={16} color="#666" />
+          </TouchableOpacity>
         </View>
       </View>
     </TouchableOpacity>

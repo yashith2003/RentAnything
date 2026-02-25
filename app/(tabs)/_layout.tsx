@@ -78,12 +78,12 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="rentals"
+        name="inbox"
         options={{
-          title: t('tabs.rentals'),
+          title: t('tabs.inbox'),
           tabBarIcon: ({ color }) => (
             <Image 
-              source={require('@/assets/icons/rentals.svg')} 
+              source={require('@/assets/icons/message.svg')} 
               style={{ width: 24, height: 24 }} 
               tintColor={color}
             />

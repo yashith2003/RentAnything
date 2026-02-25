@@ -76,7 +76,11 @@ export default function SearchList({ categoryId, searchQuery, filters }: SearchL
             phone: item.phone || undefined,
             delivery: true
           };
-          return <ItemCard key={item.id} item={cardItem} />;
+          return (
+            <View key={item.id} className="w-[48%]">
+              <ItemCard item={cardItem} />
+            </View>
+          );
         })}
         {items.length === 0 && (
           <View className="w-full items-center py-10">

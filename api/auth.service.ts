@@ -18,6 +18,7 @@ export interface RegisterCompanyDto {
 
 export interface LoginResponse {
   message: string;
+  phone: string;
 }
 
 export interface VerifyOtpResponse {

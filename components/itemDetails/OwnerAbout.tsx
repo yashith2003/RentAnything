@@ -7,6 +7,8 @@ import React from 'react';
 import { Text, TouchableOpacity, View, ActivityIndicator, Linking } from 'react-native';
 import { useGetUserReviewsQuery } from '@/api/review.service';
 import { getImageUrl } from '@/utils/image';
+import { useRecordInteractionMutation } from '@/api/item.service';
+import { useLocalSearchParams } from 'expo-router';
 
 interface OwnerAboutProps {
   owner: {
@@ -27,11 +29,13 @@ interface OwnerAboutProps {
 
 export default function OwnerAbout({ owner, onChat, isChatLoading, isChatDisabled }: OwnerAboutProps) {
   const router = useRouter();
-  
+  const { id: itemId } = useLocalSearchParams();
+  const [recordInteraction] = useRecordInteractionMutation();
   const { data: ownerReviewsData } = useGetUserReviewsQuery({ userId: owner.id! }, { skip: !owner.id });
 
   const handleCall = () => {
-    if (owner.phone) {
+    if (owner.phone && itemId) {
+      recordInteraction({ itemId: Number(itemId), type: 'CALL' });
       Linking.openURL(`tel:${owner.phone}`);
     } else {
       console.warn('[OwnerAbout] No phone number available');
@@ -39,12 +43,13 @@ export default function OwnerAbout({ owner, onChat, isChatLoading, isChatDisable
   };
 
   return (
-    <View className="mt-8">
+    <View className="mt-8 bg-white p-2 rounded-xl shadow-md border border-gray-100">
+      
       <Text className="text-base font-bold mb-4">About the Owner</Text>
       <View className="flex-row items-center justify-between">
         <TouchableOpacity 
           className="flex-row items-center gap-x-3"
-          onPress={() => router.push(`/item/ownerProfile?id=${owner.id}`)}
+          onPress={() => router.push(`/item/ownerProfile?id=${owner.id}&itemId=${itemId}`)}
         >
           <Image 
             source={owner.image ? { uri: getImageUrl(owner.image) } : require('@/assets/images/profile_icon.avif')} 
@@ -86,7 +91,7 @@ export default function OwnerAbout({ owner, onChat, isChatLoading, isChatDisable
           </TouchableOpacity>
         </View>
       </View>
-      <Text className="text-gray-400 text-xs mt-4 leading-5">
+      <Text className="text-gray-400 text-xs mt-4 leading-5 mb-5">
         {owner.description || 'No description available'}
       </Text>
     </View>

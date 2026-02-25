@@ -11,8 +11,10 @@ import CategoryItemCard from '@/components/itemDetails/CategoryItemCard';
 import ReviewPopup from '@/components/modal/ReviewPopup';
 import { CategoryDetailRenderer } from '@/components/itemDetails/CategoryDetailRenderer';
 import { CategoryTag } from '@/components/itemDetails/CategoryTag';
-import { useGetItemQuery, useGetItemsQuery } from '@/api/item.service';
-import { useGetItemReviewsQuery, useSubmitReviewMutation } from '@/api/review.service';
+import { useGetItemQuery, useGetItemsQuery, useGetTrendingItemsQuery, useRecordInteractionMutation } from '@/api/item.service';
+import { useGetItemReviewsQuery, useSubmitReviewMutation, useGetMyReviewForItemQuery } from '@/api/review.service';
+import { useGetProfileQuery } from '@/api/user.service';
+import { skipToken } from '@reduxjs/toolkit/query';
 import { useItemChat } from '@/hooks/useItemChat';
 import { getImageUrl } from '@/utils/image';
 import { PaddingStyles } from '@/constants/spacing';
@@ -21,9 +23,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SuccessPopup from '@/components/AlertPopup/SuccessPopup';
+import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
+import ConfirmationPopup from '@/components/AlertPopup/ConfirmationPopup';
 
 
 
@@ -56,13 +61,20 @@ const reviews = [
 export default function ItemDetailsScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
+  const { data: profile } = useGetProfileQuery();
   const [activeTab, setActiveTab] = useState('Description');
   const [isReviewPopupVisible, setIsReviewPopupVisible] = useState(false);
+  const [showReviewSuccess, setShowReviewSuccess] = useState(false);
+  const [reviewError, setReviewError] = useState<{ visible: boolean; message: string }>({
+    visible: false,
+    message: '',
+  });
   
   const { isSaved, toggleItem } = useSavedItems();
   const saved = id ? isSaved(Number(id)) : false;
 
   const { data: reviewsData } = useGetItemReviewsQuery({ itemId: Number(id) }, { skip: !id });
+  const { data: myReview } = useGetMyReviewForItemQuery(Number(id), { skip: !id });
   const [submitReview, { isLoading: isSubmittingReview }] = useSubmitReviewMutation();
 
   const handleSave = async () => {
@@ -74,14 +86,67 @@ export default function ItemDetailsScreen() {
   const { data: item, isLoading, error } = useGetItemQuery(Number(id), {
     skip: !id,
   });
-  const { handleChat, isCreatingThread, isOwnListing } = useItemChat(item);
 
-  const { data: categoryItems } = useGetItemsQuery(
-    item?.category?.id
-      ? { filters: { excludeId: Number(id) }, category: item.category.id.toString() }
-      : undefined,
-    { skip: !item?.category?.id }
+  const [recordInteraction] = useRecordInteractionMutation();
+
+  // Track product view
+  useEffect(() => {
+    if (id) {
+      recordInteraction({ itemId: Number(id), type: 'VIEW' });
+    }
+  }, [id, recordInteraction]);
+  const { handleChat, isCreatingThread, isOwnListing, error: chatError, notice: chatNotice, clearMessages: clearChatMessages } = useItemChat(item);
+
+  const handleCall = () => {
+    if (item?.phone) {
+      recordInteraction({ itemId: Number(id), type: 'CALL' });
+      Linking.openURL(`tel:${item.phone}`);
+    } else {
+      console.warn('[ItemDetails] No phone number available');
+    }
+  };
+
+  const { data: ownerCategoryItems } = useGetItemsQuery(
+    item?.category?.id && item?.owner?.id
+      ? {
+          filters: {
+            ownerId: item.owner.id,
+            excludeId: Number(id),
+            limit: 10,
+          },
+          category: item.category.id.toString(),
+        }
+      : skipToken
   );
+
+  const { data: trendingCategoryItems } = useGetTrendingItemsQuery(
+    item?.category?.id
+      ? {
+          category: item.category.id.toString(),
+          filters: {
+            excludeId: Number(id),
+            excludeOwnerId: item.owner?.id,
+            limit: 10,
+          },
+        }
+      : skipToken
+  );
+
+  const combinedSimilarItems = React.useMemo(() => {
+    const ownerItems = ownerCategoryItems || [];
+    const trendingItems = trendingCategoryItems || [];
+  
+    const merged = [...ownerItems, ...trendingItems];
+  
+    const unique = merged
+      .filter(
+        (sim, index, self) =>
+          index === self.findIndex((i) => i.id === sim.id)
+      )
+      .filter((sim) => sim.owner?.id !== profile?.id);
+  
+    return unique.slice(0, 10);
+  }, [ownerCategoryItems, trendingCategoryItems, profile?.id]);
 
   if (isLoading) {
     return (
@@ -229,7 +294,6 @@ export default function ItemDetailsScreen() {
                 isChatDisabled={isOwnListing}
             />
 
-            {/* Write Review Button */}
             {!isOwnListing && (
                 <View className="mt-8">
                     <TouchableOpacity 
@@ -237,20 +301,22 @@ export default function ItemDetailsScreen() {
                         onPress={() => setIsReviewPopupVisible(true)}
                     >
                         <Ionicons name="pencil" size={18} color="#2FA2B9" />
-                        <Text className="ml-2 text-sm font-bold text-[#2FA2B9]">Write a Review</Text>
+                        <Text className="ml-2 text-sm font-bold text-[#2FA2B9]">
+                            {myReview ? 'Edit your review' : 'Write a Review'}
+                        </Text>
                     </TouchableOpacity>
                 </View>
             )}
 
-            {/* Reviews Section Component */}
+            {/* Reviews Section Component 
             <ItemReviews 
                 reviews={reviewsData?.reviews || []} 
                 totalReviews={reviewsData?.totalReviews || 0} 
                 onViewAll={() => router.push(`/item/reviews/${id}`)}
-            />
+            />*/}
 
-            {/* Trust Banners Component */}
-            <TrustBanners />
+            {/* Trust Banners Component 
+            <TrustBanners />*/}
 
             {/* Tabs */}
             <View className="flex-row mt-8 border-b border-gray-100">
@@ -313,19 +379,16 @@ export default function ItemDetailsScreen() {
               </View>
             )}
 
-            {/* More in Category */}
-            {categoryItems && categoryItems.length > 0 && (
+            {/* Similar Items */}
+            {combinedSimilarItems && combinedSimilarItems.length > 0 && (
               <View className="mt-8">
                 <View className="flex-row items-center justify-between mb-4">
                   <Text className="text-base font-bold">
-                    More in {item.category?.name || 'Category'}
+                    Similar Items
                   </Text>
-                  <TouchableOpacity onPress={() => router.push({ pathname: '/item/categoryListings/[id]', params: { id: item.category?.id } } as any)}>
-                    <Text className="text-xs font-medium text-[#2FA2B9]">See All</Text>
-                  </TouchableOpacity>
                 </View>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 4 }}>
-                  {categoryItems.map((sim) => (
+                  {combinedSimilarItems.map((sim) => (
                     <CategoryItemCard key={sim.id} item={sim} />
                   ))}
                 </ScrollView>
@@ -338,27 +401,61 @@ export default function ItemDetailsScreen() {
       {/* Bottom Sticky Action Buttons Component */}
       <ActionButtons 
         onChat={handleChat}
+        onCall={handleCall}
         isChatLoading={isCreatingThread}
         isChatDisabled={isOwnListing}
-        onCreateBundle={() => router.push('/item/bundle')}
-        onRequestRent={() => router.push('/item/rentalDetails')}
       />
 
       {/* Review Popup Modal */}
       <ReviewPopup 
         isVisible={isReviewPopupVisible}
         onClose={() => setIsReviewPopupVisible(false)}
+        initialRating={myReview?.rating}
+        initialFeedback={myReview?.comment}
         onSubmit={async (rating, feedback) => {
           try {
             await submitReview({ itemId: Number(id), rating, feedback }).unwrap();
             setIsReviewPopupVisible(false);
+            setShowReviewSuccess(true);
           } catch (err: any) {
             console.error('[id].tsx] Review submission error:', err);
             const errorMessage = err?.data?.message || 'Failed to submit review. Please try again later.';
-            Alert.alert('Cannot Submit Review', errorMessage);
+            setReviewError({
+              visible: true,
+              message: errorMessage,
+            });
           }
         }}
-        title="Write a Review for this Item"
+        title={myReview ? "Edit your Review" : "Write a Review for this Item"}
+      />
+      <SuccessPopup 
+        visible={showReviewSuccess}
+        title="Review Submitted"
+        message="Thank you for your feedback! Your review has been submitted successfully."
+        onNext={() => setShowReviewSuccess(false)}
+      />
+
+      <ErrorPopup 
+        visible={reviewError.visible}
+        title="Cannot Submit Review"
+        message={reviewError.message}
+        onClose={() => setReviewError({ ...reviewError, visible: false })}
+      />
+
+      <ConfirmationPopup 
+        visible={!!chatNotice}
+        title={chatNotice?.title || 'Notice'}
+        message={chatNotice?.message || ''}
+        confirmLabel="OK"
+        onConfirm={clearChatMessages}
+        onCancel={clearChatMessages}
+      />
+
+      <ErrorPopup 
+        visible={!!chatError}
+        title={chatError?.title || 'Chat Error'}
+        message={chatError?.message || ''}
+        onClose={clearChatMessages}
       />
     </SafeAreaView>
   );

@@ -59,7 +59,7 @@ export default function MyListingsScreen() {
           className="h-14 rounded-full border items-center justify-center mb-10"
           style={{ borderColor: Colors.primary }}
           activeOpacity={0.8}
-          onPress={() => router.push('/header/chat/inbox')}
+          onPress={() => router.push('/inbox')}
         >
           <Text style={{ color: Colors.primary }} className="text-base font-bold">Inbox</Text>
         </TouchableOpacity>

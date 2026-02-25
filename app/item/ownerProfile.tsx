@@ -1,3 +1,5 @@
+//RentAnything/app/item/ownerProfile.tsx
+
 import ReviewCard from '@/components/card/ReviewCard';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import ReviewPopup from '@/components/modal/ReviewPopup';
@@ -13,21 +15,31 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useGetPublicProfileQuery } from '@/api/user.service';
+import { useGetPublicProfileQuery, useGetProfileQuery } from '@/api/user.service';
 import { useGetOwnerItemsQuery } from '@/api/item.service';
-import { useGetUserReviewsQuery } from '@/api/review.service';
+import { useGetUserReviewsQuery, useSubmitReviewMutation } from '@/api/review.service';
 import { getImageUrl } from '@/utils/image';
+import SuccessPopup from '@/components/AlertPopup/SuccessPopup';
+import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
 
 export default function OwnerProfileScreen() {
   const router = useRouter();
-  const { id } = useLocalSearchParams();
+   const { id, itemId } = useLocalSearchParams();
   const ownerId = Number(id);
+  const targetItemId = Number(itemId);
   const [isReviewPopupVisible, setIsReviewPopupVisible] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [errorConfig, setErrorConfig] = useState<{ visible: boolean; title?: string; message?: string }>({
+    visible: false,
+  });
+
+  const [submitReview, { isLoading: isSubmitting }] = useSubmitReviewMutation();
 
   const { data: profile, isLoading: isProfileLoading } = useGetPublicProfileQuery(ownerId, { skip: !ownerId });
+  const { data: currentUser } = useGetProfileQuery();
   const { data: ownerItems, isLoading: isItemsLoading } = useGetOwnerItemsQuery(ownerId, { skip: !ownerId });
-  const { data: reviewsData, isLoading: isReviewsLoading } = useGetUserReviewsQuery({ userId: ownerId }, { skip: !ownerId });
-
+  const { data: reviewsData, isLoading: isReviewsLoading, refetch: refetchReviews } = useGetUserReviewsQuery({ userId: ownerId }, { skip: !ownerId });
+  
   if (isProfileLoading || isItemsLoading || isReviewsLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
@@ -134,23 +146,29 @@ export default function OwnerProfileScreen() {
                     <Text className="text-gray-400 text-xs mt-1">{reviewsData?.totalReviews || 0} reviews</Text>
                 </View>
             </View>
+            
+            {currentUser?.id !== ownerId && (
+              <TouchableOpacity 
+                  onPress={() => setIsReviewPopupVisible(true)}
+                  className="bg-[#2FA2B9] h-12 rounded-2xl items-center justify-center mb-6"
+              >
+                  <Text className="text-white font-bold">Write a review</Text>
+              </TouchableOpacity>
+            )}
 
-            <TouchableOpacity 
-                onPress={() => setIsReviewPopupVisible(true)}
-                className="bg-[#2FA2B9] h-12 rounded-2xl items-center justify-center mb-6"
-            >
-                <Text className="text-white font-bold">Write a review</Text>
-            </TouchableOpacity>
-
-            {/* Progress Bars (Static for now as we don't have per-star counts in API) */}
-            {[5, 4, 3, 2, 1].map((r) => (
-                <ProgressBar 
-                   key={r}
-                   label={`${r}.0`}
-                   progress={0}
-                   subLabel="0 reviews"
-                />
-            ))}
+            {/* Progress Bars */}
+            {[5, 4, 3, 2, 1].map((r) => {
+                const count = reviewsData?.starCounts?.[r] || 0;
+                const progress = reviewsData?.totalReviews ? ((count / reviewsData.totalReviews) * 100) : 0;
+                return (
+                    <ProgressBar 
+                       key={r}
+                       label={`${r}.0`}
+                       progress={progress}
+                       subLabel={`${count} reviews`}
+                    />
+                );
+            })}
           </View>
         </View>
 
@@ -160,10 +178,10 @@ export default function OwnerProfileScreen() {
              <ReviewCard 
                key={rev.id}
                name={rev.name}
-               image={rev.image}
+               image={rev.image ?? null}
                rating={rev.rating}
-               comment={rev.comment}
-               reviewerStatus={rev.reviewerStatus}
+               comment={rev.comment ?? null}
+               reviewerStatus={rev.reviewerStatus ?? null}
                date={new Date(rev.createdAt).toLocaleDateString()}
              />
            ))}
@@ -196,11 +214,44 @@ export default function OwnerProfileScreen() {
 
       <ReviewPopup 
         isVisible={isReviewPopupVisible}
+        title="How would you rate the Owner?"
         onClose={() => setIsReviewPopupVisible(false)}
-        onSubmit={(rating, feedback) => {
-            console.log('Review submitted:', { rating, feedback });
-            // Handle submission logic here
+        onSubmit={async (rating, feedback) => {
+          if (!targetItemId) {
+            setErrorConfig({
+              visible: true,
+              title: 'Missing Item Info',
+              message: 'Please navigate from an item to review the owner.'
+            });
+            return;
+          }
+          try {
+            await submitReview({ itemId: targetItemId, rating, feedback }).unwrap();
+            setShowSuccess(true);
+            refetchReviews();
+          } catch (err: any) {
+            console.error('Failed to submit review:', err);
+            setErrorConfig({
+              visible: true,
+              title: 'Submission Failed',
+              message: err.data?.message || 'Unable to submit your review at this time. Please try again later.'
+            });
+          }
         }}
+      />
+
+      <SuccessPopup 
+        visible={showSuccess}
+        title="Success"
+        message="Review submitted successfully!"
+        onNext={() => setShowSuccess(false)}
+      />
+
+      <ErrorPopup 
+        visible={errorConfig.visible}
+        title={errorConfig.title}
+        message={errorConfig.message}
+        onClose={() => setErrorConfig({ ...errorConfig, visible: false })}
       />
     </SafeAreaView>
   );

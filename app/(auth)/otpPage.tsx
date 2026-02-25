@@ -7,7 +7,7 @@ import { useEffect, useRef, useState, Fragment } from 'react';
 import { Keyboard, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import SuccessPopup from '@/components/AlertPopup/successPopup';
+import SuccessPopup from '@/components/AlertPopup/SuccessPopup';
 import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
 import PrimaryButton from '@/components/ui/PrimaryButton';
 
@@ -47,6 +47,7 @@ export default function OTPPage() {
 
     setIsVerifying(true);
     try {
+      console.log(`[OTPPage] Verifying OTP for phone: ${phone}, OTP: ${otp}`);
       const response = await authService.verifyOtp(phone, otp);
       await login(response.access_token, response.refresh_token, response.user.role);
       Keyboard.dismiss();

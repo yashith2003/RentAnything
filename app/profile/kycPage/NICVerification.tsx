@@ -8,8 +8,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SuccessPopup from '@/components/AlertPopup/SuccessPopup';
+import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
 
 import { useUploadKycDocumentMutation, useGetKycStatusQuery } from '@/api/kyc.service';
 import { getImageUrl } from '@/utils/image';
@@ -31,6 +33,9 @@ export default function NICVerification() {
 
   const [localFrontImage, setLocalFrontImage] = useState<any>(null);
   const [localBackImage, setLocalBackImage] = useState<any>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const allReadOnly = frontReadOnly && backReadOnly;
   
@@ -60,7 +65,7 @@ export default function NICVerification() {
       if (localBackImage) await uploadDocument({ type: 'NIC_BACK', file: localBackImage }).unwrap();
       
       if (localFrontImage || localBackImage) {
-        Alert.alert("Success", "NIC uploaded successfully and is now pending review.");
+        setShowSuccess(true);
       }
 
       if (nicFront?.status === 'REJECTED' || nicBack?.status === 'REJECTED') {
@@ -70,7 +75,8 @@ export default function NICVerification() {
       }
     } catch (err) {
       console.error(`[NICVerification] upload error:`, err);
-      Alert.alert("Error", `Failed to upload NIC.`);
+      setErrorMessage("Failed to upload NIC details. Please try again.");
+      setShowError(true);
     }
   };
 
@@ -149,6 +155,28 @@ export default function NICVerification() {
           </Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Popups */}
+      <SuccessPopup 
+        visible={showSuccess}
+        title="Success"
+        message="NIC uploaded successfully and is now pending review."
+        onNext={() => {
+          setShowSuccess(false);
+          if (nicFront?.status === 'REJECTED' || nicBack?.status === 'REJECTED') {
+            router.replace('/profile/kycPage' as any);
+          } else {
+            router.replace('/profile/kycPage/DrivingLicenseVerification' as any);
+          }
+        }}
+      />
+
+      <ErrorPopup 
+        visible={showError}
+        title="Upload Error"
+        message={errorMessage}
+        onClose={() => setShowError(false)}
+      />
     </SafeAreaView>
   );
 }

@@ -100,12 +100,13 @@ export default function ProfileScreen() {
       label: t('profile.reviews'),
       onPress: () => router.push('/profile/reviewsPage'),
     },
-    {
+   /* {
       icon: 'receipt-outline',
       iconType: 'ionicons',
       label: t('profile.rentals'),
       onPress: () => router.push('/profile/rentals' as any),
     },
+    */
     {
       icon: 'list-outline',
       iconType: 'ionicons',

@@ -5,7 +5,7 @@ import { LabelledInput } from '@/components/form/LabelledInput';
 import { ChipGroup } from '@/components/form/ChipGroup';
 import { UploadBox } from '@/components/form/UploadBox';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
-import SuccessPopup from '@/components/AlertPopup/successPopup';
+import SuccessPopup from '@/components/AlertPopup/SuccessPopup';
 import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
 import { Colors } from '@/constants/theme';
 import { useGetItemQuery, useUpdateItemMutation } from '@/api/item.service';

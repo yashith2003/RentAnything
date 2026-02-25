@@ -8,6 +8,10 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { getImageUrl } from '@/utils/image';
 import { Item } from '@/types/schemas';
 
+import { useItemChat } from '@/hooks/useItemChat';
+import { useRecordInteractionMutation } from '@/api/item.service';
+import { Linking } from 'react-native';
+
 const itemImagesFallback = [
   'https://via.placeholder.com/300x200?text=No+Image',
 ];
@@ -18,6 +22,15 @@ interface Props {
 
 export default function CategoryItemCard({ item }: Props) {
   const router = useRouter();
+  const { handleChat, isCreatingThread, isOwnListing } = useItemChat(item);
+  const [recordInteraction] = useRecordInteractionMutation();
+
+  const handleCall = () => {
+    if (item?.phone) {
+      recordInteraction({ itemId: Number(item.id), type: 'CALL' });
+      Linking.openURL(`tel:${item.phone}`);
+    }
+  };
 
   const ownerName =
     item.owner?.individualUser?.fullName ||
@@ -65,15 +78,24 @@ export default function CategoryItemCard({ item }: Props) {
           </Text>
         </View>
 
-        {/* Book Now */}
-        <TouchableOpacity
-          onPress={() => router.push(`/item/${item.id}` as any)}
-          className="mt-3 rounded-full py-2 items-center"
-          style={{ backgroundColor: '#2FA2B9' }}
-          activeOpacity={0.8}
-        >
-          <Text className="text-white text-xs font-bold">Book Now</Text>
-        </TouchableOpacity>
+        {/* Buttons */}
+        <View className="flex-row gap-x-2 mt-3">
+          <TouchableOpacity
+            onPress={handleChat}
+            disabled={isCreatingThread || isOwnListing}
+            className={`w-10 h-10 border border-gray-100 rounded-xl items-center justify-center bg-gray-50 ${isOwnListing ? 'opacity-50' : ''}`}
+          >
+            <Ionicons name="chatbubble-ellipses-outline" size={20} color="#666" />
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            onPress={handleCall}
+            className="flex-1 h-10 bg-cyan-500 rounded-xl items-center justify-center flex-row gap-x-2"
+          >
+            <Ionicons name="call-outline" size={16} color="white" />
+            <Text className="text-white text-xs font-bold">Connect</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </TouchableOpacity>
   );
