@@ -65,7 +65,7 @@ class SocketService {
     this.socket?.emit('leaveRoom', threadId.toString());
   }
 
-  async sendMessage(data: { threadId: number; content: string }) {
+  async sendMessage(data: { threadId: number; content: string; attachments?: string[]; attachmentNames?: string[] }) {
     if (!this.socket?.connected) await this.connect();
     console.log(`[SocketService] Sending message to thread ${data.threadId}`);
     this.socket?.emit('sendMessage', data);

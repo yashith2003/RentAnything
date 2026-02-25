@@ -8,84 +8,60 @@ import VerifiedBadge from '@/components/ui/VerifiedBadge';
 import { PaddingStyles } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useGetPublicProfileQuery } from '@/api/user.service';
+import { useGetOwnerItemsQuery } from '@/api/item.service';
+import { useGetUserReviewsQuery } from '@/api/review.service';
+import { getImageUrl } from '@/utils/image';
 
 export default function OwnerProfileScreen() {
   const router = useRouter();
+  const { id } = useLocalSearchParams();
+  const ownerId = Number(id);
   const [isReviewPopupVisible, setIsReviewPopupVisible] = useState(false);
 
+  const { data: profile, isLoading: isProfileLoading } = useGetPublicProfileQuery(ownerId, { skip: !ownerId });
+  const { data: ownerItems, isLoading: isItemsLoading } = useGetOwnerItemsQuery(ownerId, { skip: !ownerId });
+  const { data: reviewsData, isLoading: isReviewsLoading } = useGetUserReviewsQuery({ userId: ownerId }, { skip: !ownerId });
+
+  if (isProfileLoading || isItemsLoading || isReviewsLoading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white">
+        <ActivityIndicator size="large" color="#2FA2B9" />
+      </View>
+    );
+  }
+
   const stats = [
-    { label: 'Active Rentals', value: '12' },
-    { label: 'Reviews', value: '24' },
-    { label: 'Listing Items', value: '15' },
+    { label: 'Reviews', value: reviewsData?.totalReviews?.toString() || '0' },
+    { label: 'Listing Items', value: ownerItems?.length?.toString() || '0' },
+    { label: 'Rating', value: reviewsData?.averageRating?.toFixed(1) || '0.0' },
   ];
 
   const verifiedDetails = [
-    { label: 'Email', value: 'ji****@gmail.com' },
-    { label: 'Phone Number', value: '076 *** ***7' },
-    { label: 'Address', value: 'No ***/**, ******, Colombo' },
+    { label: 'Email', value: profile?.email || 'N/A' },
+    { label: 'Phone Number', value: profile?.phone || 'N/A' },
+    { label: 'Address', value: profile?.individualUser?.address || profile?.company?.address || 'N/A' },
   ];
 
-  const reviews = [
-    {
-      id: 1,
-      name: 'Malith Perera',
-      date: 'Today',
-      rating: 5.0,
-      comment: 'The rental car was clean, reliable, and the service was quick and efficient. Overall, the experience was hassle-free and enjoyable.',
-      image: 'https://i.pravatar.cc/150?u=malith',
-    },
-    {
-      id: 2,
-      name: 'Malith Perera',
-      date: 'Today',
-      rating: 5.0,
-      comment: 'The rental car was clean, reliable, and the service was quick and efficient. Overall, the experience was hassle-free and enjoyable.',
-      image: 'https://i.pravatar.cc/150?u=malith',
-    },
-    {
-      id: 3,
-      name: 'Malith Perera',
-      date: 'Today',
-      rating: 5.0,
-      comment: 'The rental car was clean, reliable, and the service was quick and efficient. Overall, the experience was hassle-free and enjoyable.',
-      image: 'https://i.pravatar.cc/150?u=malith',
-    },
-  ];
+  const reviews = reviewsData?.reviews?.slice(0, 3) || [];
+  
+  const rawImage = profile?.individualUser?.avatarUrl || profile?.company?.logoUrl || profile?.profileImage;
+  const profileImageSource = rawImage ? { uri: getImageUrl(rawImage) } : require('@/assets/images/profile_icon.avif');
 
-  const rentalHistory = [
-    {
-      id: 1,
-      title: 'Tesla Model S',
-      owner: 'Malith Perera',
-      period: '5 days | Rs: 15000.00',
-      ended: 'Ended on 25 May, 2025',
-      location: '5.6 km - Nugegoda',
-      image: 'https://images.unsplash.com/photo-1617788138017-80ad42243c5d?q=80&w=400&auto=format&fit=crop',
-    },
-    {
-      id: 2,
-      title: 'Tesla Model S',
-      owner: 'Malith Perera',
-      period: '5 days | Rs: 15000.00',
-      ended: 'Ended on 25 May, 2025',
-      location: '5.6 km - Nugegoda',
-      image: 'https://images.unsplash.com/photo-1617788138017-80ad42243c5d?q=80&w=400&auto=format&fit=crop',
-    },
-    {
-      id: 3,
-      title: 'Tesla Model S',
-      owner: 'Malith Perera',
-      period: '5 days | Rs: 15000.00',
-      ended: 'Ended on 25 May, 2025',
-      location: '5.6 km - Nugegoda',
-      image: 'https://images.unsplash.com/photo-1617788138017-80ad42243c5d?q=80&w=400&auto=format&fit=crop',
-    },
-  ];
+  const rentalHistory = ownerItems?.slice(0, 3).map(item => ({
+    id: item.id,
+    title: item.title,
+    owner: profile?.individualUser?.fullName || profile?.company?.companyName || 'Owner',
+    period: `Rs: ${item.price || '0.00'}`,
+    ended: '', // We don't have "ended" date for current listings
+    location: item.address?.address || 'N/A',
+    image: item.imageUrl ? getImageUrl(item.imageUrl) : 'https://images.unsplash.com/photo-1617788138017-80ad42243c5d?q=80&w=400&auto=format&fit=crop',
+  })) || [];
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
@@ -98,16 +74,21 @@ export default function OwnerProfileScreen() {
         {/* Profile Info */}
         <View className="items-center mt-4">
           <Image 
-            source={{ uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400&auto=format&fit=crop' }} 
+            source={profileImageSource} 
             style={{ width: 100, height: 100, borderRadius: 50 }} 
           />
           <View className="flex-row items-center mt-4 gap-x-2">
-            <Text className="text-xl font-bold">Jithmi Shihara</Text>
-            <Ionicons name="checkmark-circle" size={20} color="#3B82F6" />
-            <Text>🏆</Text>
+            <Text className="text-xl font-bold">
+              {profile?.individualUser?.fullName || profile?.company?.companyName || 'User'}
+            </Text>
+            {profile?.status === 'verified' && (
+              <Ionicons name="checkmark-circle" size={20} color="#3B82F6" />
+            )}
           </View>
-          <Text className="text-gray-400 text-xs mt-1">jithmishihara@gmail.com</Text>
-          <Text className="text-gray-400 text-[10px] mt-1">Joined 2021</Text>
+          <Text className="text-gray-400 text-xs mt-1">{profile?.email || ''}</Text>
+          <Text className="text-gray-400 text-[10px] mt-1">
+            Joined {profile?.joinedAt ? new Date(profile.joinedAt).getFullYear() : '2024'}
+          </Text>
         </View>
 
         {/* Stats Section Component */}
@@ -117,7 +98,7 @@ export default function OwnerProfileScreen() {
         <View className="mt-8" style={PaddingStyles.page}>
           <Text className="text-base font-bold mb-2">About</Text>
           <Text className="text-gray-400 text-sm leading-5">
-            I'm a photographer and love to travel. I'm always looking for new gear to try out and share my experiences with others.
+            {profile?.individualUser?.description || profile?.company?.description || 'No description available.'}
           </Text>
         </View>
 
@@ -128,7 +109,6 @@ export default function OwnerProfileScreen() {
               <Text className="text-sm font-bold text-gray-800">{detail.label}</Text>
               <View className="flex-row justify-between items-center mt-2">
                 <Text className="text-xs text-gray-400">{detail.value}</Text>
-                <VerifiedBadge />
               </View>
             </View>
           ))}
@@ -139,13 +119,19 @@ export default function OwnerProfileScreen() {
           <Text className="text-base font-bold mb-4">Reviews</Text>
           <View className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
             <View className="flex-row items-center gap-x-4 mb-6">
-                <Text className="text-5xl font-bold">4.0</Text>
+                <Text className="text-5xl font-bold">{reviewsData?.averageRating?.toFixed(1) || '0.0'}</Text>
                 <View>
                     <View className="flex-row gap-x-1">
-                        {[1, 2, 3, 4].map(s => <Ionicons key={s} name="star" size={16} color="#FFD700" />)}
-                        <Ionicons name="star-outline" size={16} color="#FFD700" />
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Ionicons 
+                            key={i} 
+                            name={i < Math.floor(reviewsData?.averageRating || 0) ? "star" : "star-outline"} 
+                            size={16} 
+                            color="#FFD700" 
+                          />
+                        ))}
                     </View>
-                    <Text className="text-gray-400 text-xs mt-1">1k reviews</Text>
+                    <Text className="text-gray-400 text-xs mt-1">{reviewsData?.totalReviews || 0} reviews</Text>
                 </View>
             </View>
 
@@ -156,13 +142,13 @@ export default function OwnerProfileScreen() {
                 <Text className="text-white font-bold">Write a review</Text>
             </TouchableOpacity>
 
-            {/* Progress Bars */}
+            {/* Progress Bars (Static for now as we don't have per-star counts in API) */}
             {[5, 4, 3, 2, 1].map((r) => (
                 <ProgressBar 
                    key={r}
                    label={`${r}.0`}
-                   progress={r * 15}
-                   subLabel="5k reviews"
+                   progress={0}
+                   subLabel="0 reviews"
                 />
             ))}
           </View>
@@ -177,23 +163,34 @@ export default function OwnerProfileScreen() {
                image={rev.image}
                rating={rev.rating}
                comment={rev.comment}
-               date={rev.date}
+               reviewerStatus={rev.reviewerStatus}
+               date={new Date(rev.createdAt).toLocaleDateString()}
              />
            ))}
-           <TouchableOpacity className="h-12 border border-cyan-500 rounded-full items-center justify-center mt-2">
-              <Text className="text-cyan-500 font-bold text-sm">View all</Text>
-           </TouchableOpacity>
+           {(reviewsData?.totalReviews || 0) > 3 && (
+             <TouchableOpacity 
+                onPress={() => router.push(`/item/ownerReviews/${ownerId}`)}
+                className="h-12 border border-cyan-500 rounded-full items-center justify-center mt-2"
+             >
+                <Text className="text-cyan-500 font-bold text-sm">View all</Text>
+             </TouchableOpacity>
+           )}
         </View>
 
-        {/* Rental History */}
+        {/* Listings */}
         <View className="mt-8" style={PaddingStyles.page}>
-           <Text className="text-base font-bold mb-4">Rental History</Text>
+           <Text className="text-base font-bold mb-4">Owner Listings</Text>
            {rentalHistory.map((item) => (
              <RentalHistoryCard key={item.id} item={item} />
            ))}
-           <TouchableOpacity className="h-12 border border-cyan-500 rounded-full items-center justify-center mt-2">
-              <Text className="text-cyan-500 font-bold text-sm">View all</Text>
-           </TouchableOpacity>
+           {(ownerItems?.length || 0) > 3 && (
+             <TouchableOpacity 
+                onPress={() => router.push(`/item/ownerListings/${ownerId}`)}
+                className="h-12 border border-cyan-500 rounded-full items-center justify-center mt-2"
+             >
+                <Text className="text-cyan-500 font-bold text-sm">View all</Text>
+             </TouchableOpacity>
+           )}
         </View>
       </ScrollView>
 
@@ -208,3 +205,4 @@ export default function OwnerProfileScreen() {
     </SafeAreaView>
   );
 }
+

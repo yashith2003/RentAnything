@@ -1,4 +1,4 @@
-//app/header/chat/inbox.tsx
+//RentAnything/app/header/chat/inbox.tsx
 
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,7 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useGetUserThreadsQuery, ChatThread } from '@/api/chat.service';
 import { useGetProfileQuery } from '@/api/user.service';
-import { getImageUrl } from '@/utils/image';
+import { getAvatarSource } from '@/utils/avatar';
 
 export default function InboxScreen() {
   const router = useRouter();
@@ -20,20 +20,50 @@ export default function InboxScreen() {
   const { data: threads, isLoading, refetch } = useGetUserThreadsQuery();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const renderItem = ({ item }: { item: ChatThread }) => {
+    const renderItem = ({ item }: { item: ChatThread }) => {
     const otherUser = item.userOneId === userId ? item.userTwo : item.userOne;
     const name = otherUser?.individualUser?.fullName || otherUser?.company?.companyName || 'Unknown User';
-    const avatar = getImageUrl(otherUser?.profileImage) || 'https://i.pravatar.cc/150?u=' + (otherUser?.id || 'default');
+    const profileImage = otherUser?.individualUser?.avatarUrl || otherUser?.company?.logoUrl || null;
+    const avatarSource = getAvatarSource(profileImage);
+    const isUnread = (item.unreadCount ?? 0) > 0;
+
+    const getLastMessagePreview = () => {
+      const msg = item.lastMessage;
+      if (!msg) return item.item?.title || 'No messages yet';
+      
+      if (msg.content && msg.content.trim().length > 0) {
+        return msg.content;
+      }
+      
+      if (msg.attachments && msg.attachments.length > 0) {
+        // Use attachmentNames if available
+        if (msg.attachmentNames && msg.attachmentNames.length > 0) {
+          const name = msg.attachmentNames[0];
+          if (name.toLowerCase().endsWith('.pdf')) {
+            return name;
+          }
+        }
+        
+        // Fallback to URL parsing if names not present (for old messages)
+        const first = msg.attachments[0];
+        if (first.toLowerCase().endsWith('.pdf')) {
+          return first.split('/').pop() || 'Document.pdf';
+        }
+        return 'Image';
+      }
+      
+      return item.item?.title || 'No messages yet';
+    };
 
     return (
       <TouchableOpacity 
         activeOpacity={0.7}
         onPress={() => router.push({ pathname: '/header/chat/chatDetails', params: { threadId: item.id } } as any)}
-        className="flex-row items-center py-4 border-b border-gray-50"
+        className={`flex-row items-center py-4 px-4 border-b border-gray-50 ${isUnread ? 'bg-[#E0F7FA]' : ''}`}
       >
         <View className="relative mr-4">
           <Image
-            source={{ uri: avatar }}
+            source={avatarSource}
             style={{ width: 56, height: 56, borderRadius: 28 }}
             contentFit="cover"
           />
@@ -46,7 +76,7 @@ export default function InboxScreen() {
               {name}
             </Text>
             <View className="flex-col items-end">
-               <Text className="text-xs text-gray-400">
+               <Text className={`text-xs ${isUnread ? 'text-[#2FA2B9] font-bold' : 'text-gray-400'}`}>
                   {item.lastMessage?.createdAt 
                     ? new Date(item.lastMessage.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                     : ''}
@@ -55,9 +85,17 @@ export default function InboxScreen() {
           </View>
           
           <View className="flex-row justify-between items-center">
-               <Text className="text-sm text-gray-500 flex-1 mr-4" numberOfLines={1}>
-                  {item.item?.title || 'Chat Thread'}
+               <Text 
+                className={`text-sm flex-1 mr-4 ${isUnread ? 'text-gray-800 font-medium' : 'text-gray-400'}`} 
+                numberOfLines={1}
+               >
+                  {getLastMessagePreview()}
                </Text>
+               {isUnread && (
+                 <View className="bg-[#2FA2B9] rounded-full min-w-[20px] h-5 px-1.5 items-center justify-center">
+                    <Text className="text-white text-[10px] font-bold">{item.unreadCount}</Text>
+                 </View>
+               )}
           </View>
         </View>
       </TouchableOpacity>

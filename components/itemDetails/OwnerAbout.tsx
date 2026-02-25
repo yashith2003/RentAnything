@@ -4,15 +4,21 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { Text, TouchableOpacity, View, ActivityIndicator, Linking } from 'react-native';
+import { useGetUserReviewsQuery } from '@/api/review.service';
+import { getImageUrl } from '@/utils/image';
 
 interface OwnerAboutProps {
   owner: {
+    id?: number;
     name: string;
-    image: string;
+    image?: string;
     memberSince: string;
     rating: string;
     listings: string;
+    phone?: string;
+    description?: string;
+    status?: string;
   };
   onChat?: () => void;
   isChatLoading?: boolean;
@@ -21,6 +27,16 @@ interface OwnerAboutProps {
 
 export default function OwnerAbout({ owner, onChat, isChatLoading, isChatDisabled }: OwnerAboutProps) {
   const router = useRouter();
+  
+  const { data: ownerReviewsData } = useGetUserReviewsQuery({ userId: owner.id! }, { skip: !owner.id });
+
+  const handleCall = () => {
+    if (owner.phone) {
+      Linking.openURL(`tel:${owner.phone}`);
+    } else {
+      console.warn('[OwnerAbout] No phone number available');
+    }
+  };
 
   return (
     <View className="mt-8">
@@ -28,25 +44,33 @@ export default function OwnerAbout({ owner, onChat, isChatLoading, isChatDisable
       <View className="flex-row items-center justify-between">
         <TouchableOpacity 
           className="flex-row items-center gap-x-3"
-          onPress={() => router.push('/item/ownerProfile')}
+          onPress={() => router.push(`/item/ownerProfile?id=${owner.id}`)}
         >
-          <Image source={{ uri: owner.image }} style={{ width: 45, height: 45, borderRadius: 25 }} />
+          <Image 
+            source={owner.image ? { uri: getImageUrl(owner.image) } : require('@/assets/images/profile_icon.avif')} 
+            style={{ width: 45, height: 45, borderRadius: 25 }} 
+          />
           <View>
             <View className="flex-row items-center gap-x-1">
               <Text className="font-bold text-sm">{owner.name}</Text>
-              <Ionicons name="checkmark-circle" size={14} color="#3B82F6" />
+              {owner.status === 'verified' && (
+                <Ionicons name="checkmark-circle" size={14} color="#3B82F6" />
+              )}
             </View>
-            <Text className="text-gray-400 text-[10px]">Member since {owner.memberSince}</Text>
-            <View className="flex-row items-center mt-0.5">
+            <Text className="text-gray-400 text-xs mt-0.5">Member since {owner.memberSince}</Text>
+            <View className="flex-row items-center mt-1">
               <Ionicons name="star" size={10} color="#FFD700" />
-              <Text className="text-[10px] font-bold ml-1">{owner.rating}</Text>
+              <Text className="text-xs font-bold ml-1">{ownerReviewsData?.averageRating?.toFixed(1) || '0.0'}</Text>
               <View className="mx-1 w-1 h-1 bg-gray-300 rounded-full" />
-              <Text className="text-[10px] text-gray-400">{owner.listings} Listings</Text>
+              <Text className="text-xs text-gray-400">{owner.listings} Listings</Text>
             </View>
           </View>
         </TouchableOpacity>
         <View className="flex-row items-center gap-x-2">
-          <TouchableOpacity className="w-10 h-10 items-center justify-center rounded-full bg-gray-50 border border-gray-100">
+          <TouchableOpacity 
+            className="w-10 h-10 items-center justify-center rounded-full bg-gray-50 border border-gray-100"
+            onPress={handleCall}
+          >
             <Ionicons name="call-outline" size={20} color="#6B7280" />
           </TouchableOpacity>
           <TouchableOpacity
@@ -63,7 +87,7 @@ export default function OwnerAbout({ owner, onChat, isChatLoading, isChatDisable
         </View>
       </View>
       <Text className="text-gray-400 text-xs mt-4 leading-5">
-        Find reliable space sharing around Sri Lanka, book, or offer your equipment for rent locally. Browse years of experience, vehicle status, and start your rental journey with confidence.
+        {owner.description || 'No description available'}
       </Text>
     </View>
   );

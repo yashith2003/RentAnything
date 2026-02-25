@@ -10,6 +10,10 @@ export const userApi = apiSlice.injectEndpoints({
       transformResponse: validateResponse(UserProfileSchema),
       providesTags: ['User'],
     }),
+    getPublicProfile: builder.query<UserProfile, number>({
+      query: (id) => `/user/${id}/public`,
+      transformResponse: validateResponse(UserProfileSchema),
+    }),
     updateProfile: builder.mutation<UserProfile, Partial<UserProfile>>({
       query: (data) => ({
         url: '/user/profile',
@@ -38,6 +42,7 @@ export const userApi = apiSlice.injectEndpoints({
 
 export const {
   useGetProfileQuery,
+  useGetPublicProfileQuery,
   useUpdateProfileMutation,
   useUploadProfileImageMutation,
 } = userApi;

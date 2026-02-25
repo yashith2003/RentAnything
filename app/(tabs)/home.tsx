@@ -167,6 +167,7 @@ export default function HomeScreen() {
                   rating: '5.0',
                   distance: '5.6 km',
                   location: item.address?.address || 'N/A',
+                  phone: item.phone || undefined,
                 }} 
               />
             ))

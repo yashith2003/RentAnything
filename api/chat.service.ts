@@ -32,6 +32,24 @@ export const chatApi = apiSlice.injectEndpoints({
       transformResponse: validateResponse(ChatThreadSchema),
       providesTags: (result, error, id) => [{ type: 'Chat', id }],
     }),
+    markThreadAsRead: builder.mutation<void, number>({
+      query: (threadId) => ({
+        url: `chat/thread/${threadId}/read`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Chat'],
+    }),
+    uploadChatAttachments: builder.mutation<{ urls: string[]; originalNames: string[] }, { formData: FormData; threadId: number }>({
+      query: ({ formData, threadId }) => ({
+        url: `chat/thread/${threadId}/upload-attachments`,
+        method: 'POST',
+        body: formData,
+      }),
+      transformResponse: validateResponse(z.object({
+        urls: z.array(z.string()),
+        originalNames: z.array(z.string())
+      })),
+    }),
   }),
 });
 
@@ -40,6 +58,8 @@ export const {
   useGetThreadMessagesQuery,
   useCreateThreadMutation,
   useGetThreadDetailsQuery,
+  useMarkThreadAsReadMutation,
+  useUploadChatAttachmentsMutation,
 } = chatApi;
 
 export default chatApi;

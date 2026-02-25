@@ -8,7 +8,7 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getImageUrl } from '@/utils/image';
 
@@ -171,7 +171,18 @@ function SavedItemCard({ item, onRemove }: { item: any, onRemove: () => void }) 
             <Text className="text-white text-[9px] font-bold">Request for rent</Text>
           </TouchableOpacity>
           <View className="flex-row gap-x-1">
-            <TouchableOpacity className="w-8 h-8 rounded-full border border-gray-100 items-center justify-center">
+            <TouchableOpacity 
+              className="w-8 h-8 rounded-full border border-gray-100 items-center justify-center"
+              onPress={() => {
+                if (item.phone) {
+                  Linking.openURL(`tel:${item.phone}`);
+                } else if (item.owner?.phone) {
+                  Linking.openURL(`tel:${item.owner.phone}`);
+                } else {
+                  console.warn('[SavedItemCard] No phone number available');
+                }
+              }}
+            >
                 <Ionicons name="call" size={14} color="#666" />
             </TouchableOpacity>
             <TouchableOpacity className="w-8 h-8 rounded-full border border-gray-100 items-center justify-center">

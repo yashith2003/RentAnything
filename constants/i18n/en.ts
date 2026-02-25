@@ -69,6 +69,11 @@ export default {
     message: "Phone number verification successful! You are now logged in to your account. Welcome back to Rent Anything!",
     next: "Next",
   },
+  noConnectionPopup: {
+    title: "No Connection",
+    message: "Please check your internet connection and try again.",
+    retry: "Try Again",
+  },
    tabs: {
     home: "Home",
     search: "Search",

@@ -28,13 +28,13 @@ export default function ActionButtons({ onCreateBundle, onRequestRent, onChat, i
         onPress={onCreateBundle}
         className="flex-1 h-14 border border-cyan-500 rounded-2xl items-center justify-center"
       >
-        <Text className="text-cyan-500 font-bold">Bundle</Text>
+        <Text className="text-cyan-500 text-sm font-bold">Bundle</Text>
       </TouchableOpacity>
       <TouchableOpacity 
         onPress={onRequestRent}
         className="flex-1 h-14 bg-cyan-500 rounded-2xl items-center justify-center"
       >
-        <Text className="text-white font-bold">Rent Now</Text>
+        <Text className="text-white text-sm font-bold">Rent Now</Text>
       </TouchableOpacity>
     </View>
   );

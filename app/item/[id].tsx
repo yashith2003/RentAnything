@@ -6,18 +6,23 @@ import ItemReviews from '@/components/itemDetails/ItemReviews';
 import OwnerAbout from '@/components/itemDetails/OwnerAbout';
 import TrustBanners from '@/components/itemDetails/TrustBanners';
 import LocationMap from '@/components/itemDetails/LocationMap';
+import AvailabilityCalendarView from '@/components/itemDetails/AvailabilityCalendarView';
+import CategoryItemCard from '@/components/itemDetails/CategoryItemCard';
+import ReviewPopup from '@/components/modal/ReviewPopup';
 import { CategoryDetailRenderer } from '@/components/itemDetails/CategoryDetailRenderer';
 import { CategoryTag } from '@/components/itemDetails/CategoryTag';
-import { useGetItemQuery } from '@/api/item.service';
+import { useGetItemQuery, useGetItemsQuery } from '@/api/item.service';
+import { useGetItemReviewsQuery, useSubmitReviewMutation } from '@/api/review.service';
 import { useItemChat } from '@/hooks/useItemChat';
 import { getImageUrl } from '@/utils/image';
 import { PaddingStyles } from '@/constants/spacing';
+import { useSavedItems } from '@/context/SavedItemsContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
@@ -36,6 +41,7 @@ const reviews = [
     rating: 5.0,
     comment: 'The rental car was clean, reliable, and the service was quick and efficient.',
     image: 'https://i.pravatar.cc/150?u=jack',
+    reviewerStatus: 'verified',
   },
   {
     id: 2,
@@ -43,6 +49,7 @@ const reviews = [
     rating: 5.0,
     comment: 'The rental car was clean, reliable, and the service was quick and efficient.',
     image: 'https://i.pravatar.cc/150?u=jack2',
+    reviewerStatus: 'verified',
   },
 ];
 
@@ -50,11 +57,31 @@ export default function ItemDetailsScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const [activeTab, setActiveTab] = useState('Description');
+  const [isReviewPopupVisible, setIsReviewPopupVisible] = useState(false);
+  
+  const { isSaved, toggleItem } = useSavedItems();
+  const saved = id ? isSaved(Number(id)) : false;
+
+  const { data: reviewsData } = useGetItemReviewsQuery({ itemId: Number(id) }, { skip: !id });
+  const [submitReview, { isLoading: isSubmittingReview }] = useSubmitReviewMutation();
+
+  const handleSave = async () => {
+    if (id) {
+       await toggleItem(Number(id));
+    }
+  };
   
   const { data: item, isLoading, error } = useGetItemQuery(Number(id), {
     skip: !id,
   });
   const { handleChat, isCreatingThread, isOwnListing } = useItemChat(item);
+
+  const { data: categoryItems } = useGetItemsQuery(
+    item?.category?.id
+      ? { filters: { excludeId: Number(id) }, category: item.category.id.toString() }
+      : undefined,
+    { skip: !item?.category?.id }
+  );
 
   if (isLoading) {
     return (
@@ -76,11 +103,15 @@ export default function ItemDetailsScreen() {
   }
 
   const ownerData = {
+    id: item.owner?.id,
     name: item.owner?.individualUser?.fullName || item.owner?.company?.companyName || 'Malith Perera',
-    image: 'https://i.pravatar.cc/150?u=malith', // Still hardcoded if not in schema
-    memberSince: '2018',
-    rating: '5.0 (11 reviews)',
-    listings: '181'
+    image: item.owner?.individualUser?.avatarUrl || item.owner?.company?.logoUrl || item.owner?.profileImage || undefined,
+    memberSince: item.owner?.joinedAt ? new Date(item.owner.joinedAt).getFullYear().toString() : '2024',
+    rating: '5.0 (11 reviews)', // this is overridden by RTK query inside OwnerAbout
+    status: item.owner?.status || undefined,
+    listings: item.owner?.totalListings?.toString() || '0',
+    phone: item.phone || undefined,
+    description: item.owner?.individualUser?.description || item.owner?.company?.description || undefined
   };
 
   const itemImages = item.imageUrl ? [getImageUrl(item.imageUrl)] : itemImagesFallback;
@@ -102,8 +133,11 @@ export default function ItemDetailsScreen() {
             <TouchableOpacity className="items-center justify-center w-10 h-10 rounded-full bg-gray-50">
                 <Ionicons name="share-outline" size={22} color="#000" />
             </TouchableOpacity>
-            <TouchableOpacity className="items-center justify-center w-10 h-10 rounded-full bg-gray-50">
-                <Ionicons name="heart-outline" size={22} color="#000" />
+            <TouchableOpacity 
+                className="items-center justify-center w-10 h-10 rounded-full bg-gray-50"
+                onPress={handleSave}
+            >
+                <Ionicons name={saved ? "heart" : "heart-outline"} size={22} color={saved ? "#FF0000" : "#000"} />
             </TouchableOpacity>
         </View>
       </View>
@@ -116,7 +150,7 @@ export default function ItemDetailsScreen() {
             <View className="flex-row items-center mb-4 gap-x-4">
                 <View className="flex-row items-center">
                     <Ionicons name="star" size={14} color="#FFD700" />
-                    <Text className="ml-1 text-xs font-bold">5.0 (11 Reviews)</Text>
+                    <Text className="ml-1 text-xs font-bold">{reviewsData?.averageRating?.toFixed(1) || '0.0'} ({reviewsData?.totalReviews || 0} Reviews)</Text>
                 </View>
                 <View className="flex-row items-center">
                     <Ionicons name="location-outline" size={14} color="#2FA2B9" />
@@ -128,7 +162,6 @@ export default function ItemDetailsScreen() {
 
             <View className="flex-row items-center gap-x-2">
                 <Text className="text-2xl font-bold">{item.title}</Text>
-                <Ionicons name="checkmark-circle" size={20} color="#3B82F6" />
             </View>
 
             <Text className="mt-2 text-sm leading-5 text-gray-500">
@@ -166,7 +199,7 @@ export default function ItemDetailsScreen() {
             </View>
 
             {/* Date Pickers Placeholder */}
-            <View className="mt-8">
+           {/* <View className="mt-8">
                 <Text className="mb-4 text-base font-bold">Your Rental</Text>
                 <View className="flex-row gap-x-4">
                     <View className="flex-1">
@@ -184,45 +217,9 @@ export default function ItemDetailsScreen() {
                         </TouchableOpacity>
                     </View>
                 </View>
-            </View>
+            </View>  */}
 
-            {/* Availability Calendar Placeholder */}
-            <View className="mt-8">
-                <Text className="mb-4 text-base font-bold">Availability</Text>
-                <View className="p-4 bg-white border border-gray-100 shadow-sm rounded-3xl">
-                    <View className="flex-row items-center justify-between mb-6">
-                        <View className="flex-row items-center px-3 py-2 gap-x-2 bg-cyan-500 rounded-xl">
-                            <Ionicons name="time-outline" size={16} color="white" />
-                            <Text className="text-xs font-bold text-white">10 : 30 am</Text>
-                        </View>
-                        <View className="flex-row items-center px-3 py-2 border border-gray-100 gap-x-2 rounded-xl">
-                            <Ionicons name="time-outline" size={16} color="#9CA3AF" />
-                            <Text className="text-xs text-gray-400">05 : 30 pm</Text>
-                        </View>
-                    </View>
-                    <Text className="mb-4 text-sm font-bold text-center">January 2022</Text>
-                    {/* Simplified Calendar UI */}
-                    <View className="flex-row justify-between mb-4">
-                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
-                            <Text key={d} className="text-[10px] text-gray-400 w-8 text-center">{d}</Text>
-                        ))}
-                    </View>
-                    <View className="flex-row flex-wrap justify-between gap-y-2">
-                        {Array.from({ length: 31 }).map((_, i) => (
-                            <View 
-                                key={i} 
-                                className={`w-8 h-8 items-center justify-center rounded-full 
-                                    ${i+1 === 6 ? 'bg-gray-800' : ''}
-                                    ${[9, 17, 19, 23].includes(i+1) ? 'bg-red-500' : ''}
-                                    ${i+1 === 20 || i+1 === 21 || i+1 === 22 ? 'bg-red-100' : ''}
-                                `}
-                            >
-                                <Text className={`text-[10px] ${(i+1 === 6 || [9, 17, 19, 23].includes(i+1)) ? 'text-white' : 'text-gray-800'}`}>{i+1}</Text>
-                            </View>
-                        ))}
-                    </View>
-                </View>
-            </View>
+            <AvailabilityCalendarView itemId={Array.isArray(id) ? id[0] : id} />
 
             {/* Owner Section Component */}
             <OwnerAbout 
@@ -232,11 +229,24 @@ export default function ItemDetailsScreen() {
                 isChatDisabled={isOwnListing}
             />
 
+            {/* Write Review Button */}
+            {!isOwnListing && (
+                <View className="mt-8">
+                    <TouchableOpacity 
+                        className="flex-row items-center justify-center p-4 bg-gray-50 border border-gray-100 rounded-2xl"
+                        onPress={() => setIsReviewPopupVisible(true)}
+                    >
+                        <Ionicons name="pencil" size={18} color="#2FA2B9" />
+                        <Text className="ml-2 text-sm font-bold text-[#2FA2B9]">Write a Review</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+
             {/* Reviews Section Component */}
             <ItemReviews 
-                reviews={reviews} 
-                totalReviews={11} 
-                onViewAll={() => router.push('/item/reviews')}
+                reviews={reviewsData?.reviews || []} 
+                totalReviews={reviewsData?.totalReviews || 0} 
+                onViewAll={() => router.push(`/item/reviews/${id}`)}
             />
 
             {/* Trust Banners Component */}
@@ -259,19 +269,21 @@ export default function ItemDetailsScreen() {
 
             {/* Tab Content */}
             <View className="mt-4">
-                <Text className="mb-2 text-xs font-bold">Overview :</Text>
-                <Text className="text-[10px] text-gray-400 leading-4">
+                <Text className="mb-2 text-xs font-bold text-gray-700">
+                  {activeTab === 'Description' ? 'Overview' : activeTab} :
+                </Text>
+                <Text className="text-xs text-gray-500 leading-5">
                     {item.description}
                 </Text>
                 
                 {activeTab === 'Rental Terms' && (
-                  <Text className="text-[10px] text-gray-400 mt-2 leading-4">
+                  <Text className="text-xs text-gray-500 mt-2 leading-5">
                     {item.rentalTerms || 'No specific rental terms provided.'}
                   </Text>
                 )}
 
                 {activeTab === 'Instructions to use' && (
-                  <Text className="text-[10px] text-gray-400 mt-2 leading-4">
+                  <Text className="text-xs text-gray-500 mt-2 leading-5">
                     {item.instructions || 'No specific instructions provided.'}
                   </Text>
                 )}
@@ -301,35 +313,26 @@ export default function ItemDetailsScreen() {
               </View>
             )}
 
-            {/* Similar Items Placeholder */}
-            <View className="mt-8">
+            {/* More in Category */}
+            {categoryItems && categoryItems.length > 0 && (
+              <View className="mt-8">
                 <View className="flex-row items-center justify-between mb-4">
-                    <Text className="text-base font-bold">Similar Items</Text>
-                    <TouchableOpacity>
-                        <Text className="text-xs font-medium text-gray-400">View All</Text>
-                    </TouchableOpacity>
+                  <Text className="text-base font-bold">
+                    More in {item.category?.name || 'Category'}
+                  </Text>
+                  <TouchableOpacity onPress={() => router.push({ pathname: '/item/categoryListings/[id]', params: { id: item.category?.id } } as any)}>
+                    <Text className="text-xs font-medium text-[#2FA2B9]">See All</Text>
+                  </TouchableOpacity>
                 </View>
-                {/* Horizontal list of cards (simplified for now) */}
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pb-4 gap-x-4">
-                     {/* One simplified card */}
-                     <View className="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-3xl w-44">
-                        <Image source={{ uri: itemImagesFallback[0] }} style={{ width: '100%', height: 100 }} contentFit="cover" />
-                        <View className="p-3">
-                            <Text className="text-cyan-600 text-[10px] font-bold">Rs: 1500 - per day</Text>
-                            <Text className="mt-1 text-xs font-bold" numberOfLines={1}>Tesla Model S</Text>
-                            <Text className="text-gray-400 text-[8px]">Owner: Malith Perera</Text>
-                        </View>
-                     </View>
-                     <View className="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-3xl w-44">
-                        <Image source={{ uri: itemImagesFallback[1] }} style={{ width: '100%', height: 100 }} contentFit="cover" />
-                        <View className="p-3">
-                            <Text className="text-cyan-600 text-[10px] font-bold">Rs: 1500 - per day</Text>
-                            <Text className="mt-1 text-xs font-bold" numberOfLines={1}>Tesla Model S</Text>
-                            <Text className="text-gray-400 text-[8px]">Owner: Malith Perera</Text>
-                        </View>
-                     </View>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 4 }}>
+                  {categoryItems.map((sim) => (
+                    <CategoryItemCard key={sim.id} item={sim} />
+                  ))}
                 </ScrollView>
-            </View>
+              </View>
+            )}
+
+
         </View>
       </ScrollView>
       {/* Bottom Sticky Action Buttons Component */}
@@ -339,6 +342,23 @@ export default function ItemDetailsScreen() {
         isChatDisabled={isOwnListing}
         onCreateBundle={() => router.push('/item/bundle')}
         onRequestRent={() => router.push('/item/rentalDetails')}
+      />
+
+      {/* Review Popup Modal */}
+      <ReviewPopup 
+        isVisible={isReviewPopupVisible}
+        onClose={() => setIsReviewPopupVisible(false)}
+        onSubmit={async (rating, feedback) => {
+          try {
+            await submitReview({ itemId: Number(id), rating, feedback }).unwrap();
+            setIsReviewPopupVisible(false);
+          } catch (err: any) {
+            console.error('[id].tsx] Review submission error:', err);
+            const errorMessage = err?.data?.message || 'Failed to submit review. Please try again later.';
+            Alert.alert('Cannot Submit Review', errorMessage);
+          }
+        }}
+        title="Write a Review for this Item"
       />
     </SafeAreaView>
   );

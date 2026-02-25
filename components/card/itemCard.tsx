@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View, Linking } from 'react-native';
 import { getImageUrl } from '@/utils/image';
 import { useCreateThreadMutation, useGetUserThreadsQuery } from '@/api/chat.service';
 
@@ -18,6 +18,7 @@ interface ItemCardProps {
     title: string;
     owner: string;
     ownerId?: number;
+    phone?: string;
     rating: string | number;
     distance: string;
     location: string;
@@ -46,6 +47,14 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
 
   const handleSave = async () => {
     await toggleItem(Number(item.id));
+  };
+
+  const handleCall = () => {
+    if (item.phone) {
+      Linking.openURL(`tel:${item.phone}`);
+    } else {
+      console.warn('[ItemCard] Cannot call, missing phone number');
+    }
   };
 
   const handleChat = async () => {
@@ -141,7 +150,10 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
             <Text className="text-white text-[9px] font-bold">Request for rent</Text>
           </TouchableOpacity>
           <View className="flex-row gap-x-1">
-            <TouchableOpacity className="w-8 h-8 rounded-full border border-gray-100 items-center justify-center">
+            <TouchableOpacity 
+              className="w-8 h-8 rounded-full border border-gray-100 items-center justify-center"
+              onPress={handleCall}
+            >
                 <Ionicons name="call" size={14} color="#666" />
             </TouchableOpacity>
             <TouchableOpacity

@@ -149,16 +149,16 @@ export default function ItemDetailScreen() {
           </View>
         )}
 
-        {/* Back Button */}
+        {/* Edit Button */}
          <TouchableOpacity
-            className="h-14 rounded-full items-center justify-center mb-10 border items-center justify-center"
+            className="h-14 rounded-full items-center justify-center mb-10 flex-row gap-2"
             activeOpacity={0.8}
-            style={{ borderColor: Colors.primary, backgroundColor: 'white' }}
-            onPress={() => router.back()}
+            style={{ backgroundColor: Colors.primary }}
+            onPress={() => router.push({ pathname: '/profile/myListings/editItem', params: { id } } as any)}
         >
-            <Text className="text-base font-bold" style={{ color: Colors.primary }}>Back to Listings</Text>
+            <Ionicons name="create-outline" size={20} color="white" />
+            <Text className="text-base font-bold text-white">Edit Listing</Text>
         </TouchableOpacity>
-
       </ScrollView>
 
       {/* Image Modal */}

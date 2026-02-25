@@ -1,3 +1,5 @@
+//RentAnything/components/modal/ReviewPopup.tsx
+
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import React, { useState } from 'react';

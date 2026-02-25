@@ -3,7 +3,7 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, Fragment } from 'react';
 import { Keyboard, Pressable, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -39,8 +39,8 @@ export default function OTPPage() {
   }, []);
 
   const handleNext = async () => {
-    if (otp.length !== 4) {
-      setErrorMessage(t('otpPage.enterFourDigit', 'Please enter a 4-digit OTP'));
+    if (otp.length !== 6) {
+      setErrorMessage(t('otpPage.enterSixDigit', 'Please enter a 6-digit OTP'));
       setShowError(true);
       return;
     }
@@ -77,9 +77,9 @@ export default function OTPPage() {
       inputRef.current?.focus();
   };
 
-  // Display only first 4 digits in the boxes
-  const displayOtp = otp.slice(0, 4).split('');
-  while (displayOtp.length < 4) {
+  // Display only first 6 digits in the boxes
+  const displayOtp = otp.slice(0, 6).split('');
+  while (displayOtp.length < 6) {
     displayOtp.push('');
   }
 
@@ -92,7 +92,7 @@ export default function OTPPage() {
         ref={inputRef}
         value={otp}
         onChangeText={setOtp}
-        maxLength={4}
+        maxLength={6}
         keyboardType="number-pad"
         style={{ position: 'absolute', width: 1, height: 1, opacity: 0 }}
       />
@@ -120,19 +120,25 @@ export default function OTPPage() {
         {/* OTP Input Boxes */}
         <Pressable 
             onPress={handleInputContent}
-            className="flex-row justify-center gap-4 mt-10"
+            className="flex-row justify-center gap-3 mt-10"
         >
           {displayOtp.map((digit, index) => (
-            <View
-              key={index}
-              className={`w-16 h-16 bg-white border rounded-2xl justify-center items-center ${
-                  index === otp.length ? 'border-[#2FA2B9] border-2' : 'border-gray-200'
-              }`}
-            >
-              <Text className="text-2xl font-semibold text-black">
-                {digit}
-              </Text>
-            </View>
+            <Fragment key={index}>
+              <View
+                className={`w-12 h-16 bg-white border rounded-2xl justify-center items-center ${
+                    index === otp.length ? 'border-[#2FA2B9] border-2' : 'border-gray-200'
+                }`}
+              >
+                <Text className="text-2xl font-semibold text-black">
+                  {digit}
+                </Text>
+              </View>
+              {index === 2 && (
+                <View className="justify-center items-center h-16">
+                  <Text className="text-2xl font-semibold text-gray-400">-</Text>
+                </View>
+              )}
+            </Fragment>
           ))}
         </Pressable>
 

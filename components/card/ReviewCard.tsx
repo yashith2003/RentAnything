@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import React from 'react';
 import { Text, View } from 'react-native';
+import { getImageUrl } from '@/utils/image';
 
 interface ReviewCardProps {
   name: string;
@@ -9,7 +10,7 @@ interface ReviewCardProps {
   rating: number;
   comment: string;
   date?: string;
-  isVerified?: boolean;
+  reviewerStatus?: string;
   containerStyle?: string;
 }
 
@@ -19,20 +20,23 @@ export default function ReviewCard({
   rating,
   comment,
   date,
-  isVerified = true,
+  reviewerStatus,
   containerStyle = '',
 }: ReviewCardProps) {
   return (
     <View className={`bg-white border border-gray-100 rounded-3xl p-5 mb-4 shadow-sm shadow-black/5 ${containerStyle}`} style={{ elevation: 2 }}>
       <View className="flex-row justify-between items-center mb-3">
         <View className="flex-row items-center gap-x-3">
-          <Image source={{ uri: image }} style={{ width: 35, height: 35, borderRadius: 20 }} />
+          <Image 
+            source={image ? { uri: getImageUrl(image) } : require('@/assets/images/profile_icon.avif')} 
+            style={{ width: 35, height: 35, borderRadius: 20 }} 
+          />
           <View className="flex-row items-center gap-x-1">
             <Text className="font-bold text-sm text-black">{name}</Text>
-            {isVerified && <Ionicons name="checkmark-circle" size={14} color="#3B82F6" />}
+            {reviewerStatus === 'verified' && <Ionicons name="checkmark-circle" size={14} color="#3B82F6" />}
           </View>
         </View>
-        {date && <Text className="text-gray-400 text-[10px]">{date}</Text>}
+        {date && <Text className="text-gray-400 text-xs">{date}</Text>}
       </View>
       
       <View className="flex-row gap-x-1 mb-2">
@@ -46,7 +50,7 @@ export default function ReviewCard({
         ))}
       </View>
       
-      <Text className="text-gray-400 text-[10px] leading-4" numberOfLines={3}>
+      <Text className="text-gray-500 text-xs leading-5" numberOfLines={3}>
         {comment}
       </Text>
     </View>

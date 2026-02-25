@@ -30,7 +30,7 @@ export default function TrustBanners() {
           </View>
           <View className="flex-1">
             <Text className="text-xs font-bold">{banner.title}</Text>
-            <Text className="text-[10px] text-gray-400">{banner.desc}</Text>
+            <Text className="text-xs text-gray-400 leading-4 mt-0.5">{banner.desc}</Text>
           </View>
         </View>
       ))}

@@ -15,6 +15,7 @@ export const UserProfileSchema = z.object({
   phone: z.string().optional().nullable(),
   role: z.string(),
   profileImage: z.string().optional().nullable(),
+  status: z.string().optional().nullable(),
   joinedAt: z.string(),
   updatedAt: z.string().optional().nullable(),
   individualUser: z.object({
@@ -44,8 +45,19 @@ export const UserProfileSchema = z.object({
 export const UserSchema = z.object({
   id: z.number(),
   profileImage: z.string().optional().nullable(),
-  individualUser: z.object({ fullName: z.string() }).optional().nullable(),
-  company: z.object({ companyName: z.string() }).optional().nullable(),
+  status: z.string().optional().nullable(),
+  joinedAt: z.union([z.string(), z.date()]).optional().nullable(),
+  totalListings: z.number().optional().nullable(),
+  individualUser: z.object({ 
+    fullName: z.string(),
+    avatarUrl: z.string().optional().nullable(),
+    description: z.string().optional().nullable(),
+  }).optional().nullable(),
+  company: z.object({ 
+    companyName: z.string(),
+    logoUrl: z.string().optional().nullable(),
+    description: z.string().optional().nullable(),
+  }).optional().nullable(),
 });
 
 export type UserProfile = z.infer<typeof UserProfileSchema>;
@@ -133,6 +145,8 @@ export const ItemSchema = z.object({
   pickupAvailable: z.boolean().optional().nullable(),
   pricings: z.array(z.any()).optional().nullable(),
   availabilities: z.array(z.any()).optional().nullable(),
+  averageRating: z.number().optional().nullable(),
+  reviewCount: z.number().optional().nullable(),
 });
 
 export const FilterParamsSchema = z.object({
@@ -167,16 +181,18 @@ export const CreateItemSchema = z.object({
 
 
 export const ChatMessageSchema = z.object({
-  id: z.number(),
+  id: z.preprocess((val: any) => (typeof val === 'string' ? parseInt(val, 10) : val), z.number()),
   content: z.string(),
   senderId: z.preprocess((val: any) => {
     if (typeof val === 'number') return val;
-    if (val && typeof val === 'object' && 'id' in val) return val.id;
+    if (typeof val === 'string') return parseInt(val, 10);
+    if (val && typeof val === 'object' && 'id' in val) return (val as any).id;
     return val;
   }, z.number()),
   threadId: z.preprocess((val: any) => {
     if (typeof val === 'number') return val;
-    if (val && typeof val === 'object' && 'id' in val) return val.id;
+    if (typeof val === 'string') return parseInt(val, 10);
+    if (val && typeof val === 'object' && 'id' in val) return (val as any).id;
     return val;
   }, z.number().optional()),
   createdAt: z.preprocess((val: any) => {
@@ -184,6 +200,14 @@ export const ChatMessageSchema = z.object({
     return val;
   }, z.string()),
   sender: UserSchema.optional().nullable(),
+  attachments: z.preprocess((val: any) => {
+    if (typeof val === 'string') return val.split(',').filter(Boolean);
+    return val;
+  }, z.array(z.string()).optional().nullable()),
+  attachmentNames: z.preprocess((val: any) => {
+    if (typeof val === 'string') return val.split(',').filter(Boolean);
+    return val;
+  }, z.array(z.string()).optional().nullable()),
   thread: z.object({
     id: z.number(),
   }).optional().nullable(),
@@ -203,6 +227,7 @@ export const ChatThreadSchema = z.object({
   }).optional().nullable(),
   userOne: UserSchema.optional().nullable(),
   userTwo: UserSchema.optional().nullable(),
+  unreadCount: z.number().optional().default(0),
 });
 
 export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>

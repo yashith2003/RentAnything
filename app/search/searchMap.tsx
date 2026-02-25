@@ -3,7 +3,7 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import React, { useState, useEffect, useCallback } from 'react';
-import { Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { Text, TouchableOpacity, View, ActivityIndicator, Linking } from 'react-native';
 import Map, { MapMarker } from '../../components/shared/map';
 import { itemApi } from '@/api/item.service';
 import { Region } from 'react-native-maps';
@@ -195,7 +195,18 @@ export default function SearchMap({ categoryId, filters }: SearchMapProps) {
               <TouchableOpacity className="flex-1 bg-[#2FA2B9] py-3 rounded-xl items-center justify-center shadow-md shadow-[#2FA2B9]/30">
                 <Text className="text-white text-xs font-bold uppercase tracking-wider">Request for rent</Text>
               </TouchableOpacity>
-              <TouchableOpacity className="w-10 h-10 rounded-full bg-gray-50 border border-gray-100 items-center justify-center">
+              <TouchableOpacity 
+                className="w-10 h-10 rounded-full bg-gray-50 border border-gray-100 items-center justify-center"
+                onPress={() => {
+                  if (selectedItem?.phone) {
+                    Linking.openURL(`tel:${selectedItem.phone}`);
+                  } else if (selectedItem?.owner?.phone) {
+                    Linking.openURL(`tel:${selectedItem.owner.phone}`);
+                  } else {
+                    console.warn('[SearchMap] No phone number available');
+                  }
+                }}
+              >
                 <Ionicons name="call" size={16} color="#666" />
               </TouchableOpacity>
               <TouchableOpacity className="w-10 h-10 rounded-full bg-gray-50 border border-gray-100 items-center justify-center">

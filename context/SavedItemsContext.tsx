@@ -11,6 +11,7 @@ export interface SavedItem {
   description: string;
   status: string;
   deliveryAvailable: boolean;
+  phone?: string;
   category: { id: number; name: string };
   owner: { id: number; phone: string; individualUser?: { firstName: string; lastName: string } };
 }
