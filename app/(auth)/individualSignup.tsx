@@ -17,6 +17,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import CustomTextInput from '@/components/form/CustomTextInput';
+import LocationInput, { LocationData } from '@/components/form/LocationInput';
 import PrimaryButton from '@/components/ui/PrimaryButton';
 import { Spacing } from '@/constants/spacing';
 
@@ -32,7 +33,7 @@ export default function IndividualSignup() {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
-    address: '',
+    location: null as LocationData | null,
   });
 
   const [showSuccess, setShowSuccess] = useState(false);
@@ -42,8 +43,8 @@ export default function IndividualSignup() {
   const { t } = useTranslation();
 
   const handleVerifyEmail = async () => {
-    if (!formData.fullName || !formData.email || !formData.address) {
-      setErrorMessage(t('common.fillAllFields', 'Please fill in all fields'));
+    if (!formData.fullName || !formData.email || !formData.location || !formData.location.lat || !formData.location.lng) {
+      setErrorMessage(t('common.fillAllFields', 'Please fill in all fields and select a valid location from suggestions'));
       setShowError(true);
       return;
     }
@@ -55,7 +56,15 @@ export default function IndividualSignup() {
       
       router.push({
         pathname: '/(auth)/phoneNumberPage',
-        params: { ...formData, type: 'INDIVIDUAL' }
+        params: { 
+          fullName: formData.fullName,
+          email: formData.email,
+          address: formData.location.address,
+          lat: formData.location.lat,
+          lng: formData.location.lng,
+          placeId: formData.location.placeId,
+          type: 'INDIVIDUAL' 
+        }
       });
     } catch (error: any) {
       console.warn('Registration step failed:', error);
@@ -121,10 +130,10 @@ export default function IndividualSignup() {
               keyboardType="email-address"
             />
 
-            <CustomTextInput
-              placeholder={t('individualSignup.address')}
-              value={formData.address}
-              onChangeText={(text) => setFormData({ ...formData, address: text })}
+            <LocationInput
+              placeholder={t('individualSignup.location', 'Location')}
+              value={formData.location}
+              onChange={(loc) => setFormData({ ...formData, location: loc })}
             />
           </View>
 

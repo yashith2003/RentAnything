@@ -54,6 +54,9 @@ export default function PhoneNumberPage() {
           email: params.email as string,
           phone: sanitizedPhone,
           address: params.address as string,
+          lat: params.lat ? Number(params.lat) : undefined,
+          lng: params.lng ? Number(params.lng) : undefined,
+          placeId: params.placeId as string | undefined,
         };
         await authService.registerIndividual(dto);
       } else if (params.type === 'COMPANY') {
@@ -63,6 +66,9 @@ export default function PhoneNumberPage() {
           email: params.email as string,
           phone: sanitizedPhone,
           officeAddress: params.address as string,
+          lat: params.lat ? Number(params.lat) : undefined,
+          lng: params.lng ? Number(params.lng) : undefined,
+          placeId: params.placeId as string | undefined,
         };
         await authService.registerCompany(dto);
       } else {

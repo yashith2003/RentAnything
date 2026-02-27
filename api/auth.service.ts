@@ -6,6 +6,9 @@ export interface RegisterIndividualDto {
   email: string;
   phone: string;
   address: string;
+  lat?: number;
+  lng?: number;
+  placeId?: string;
 }
 
 export interface RegisterCompanyDto {
@@ -14,6 +17,9 @@ export interface RegisterCompanyDto {
   email: string;
   phone: string;
   officeAddress: string;
+  lat?: number;
+  lng?: number;
+  placeId?: string;
 }
 
 export interface LoginResponse {

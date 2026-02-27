@@ -11,6 +11,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SearchList from '../search/searchList';
 import SearchMap from '../search/searchMap';
+import { useSearch } from '@/hooks/useSearch';
 
 
 export default function SearchScreen() {
@@ -21,7 +22,12 @@ export default function SearchScreen() {
 
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>(paramCatId ? Number(paramCatId) : undefined);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
-  const [searchQuery, setSearchQuery] = useState((paramQuery as string) || '');
+  
+  const { query, setQuery, debouncedQuery, triggerSearch, results } = useSearch(selectedCategoryId);
+
+  useEffect(() => {
+    if (paramQuery) setQuery(paramQuery as string);
+  }, [paramQuery]);
 
   // Build active filters array from params
   const activeFilters: Array<{ key: string; label: string; value: any }> = [];
@@ -57,15 +63,14 @@ export default function SearchScreen() {
       pathname: '/(tabs)/search',
       params: { 
         categoryId: selectedCategoryId || '',
-        searchQuery: searchQuery || ''
+        searchQuery: query || ''
       }
     });
   };
 
   useEffect(() => {
     if (paramCatId) setSelectedCategoryId(Number(paramCatId));
-    if (paramQuery) setSearchQuery(paramQuery as string);
-  }, [paramCatId, paramQuery]);
+  }, [paramCatId]);
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
@@ -107,8 +112,9 @@ export default function SearchScreen() {
 
           {/* Search Bar */}
           <SearchBar
-            value={searchQuery}
-            onChangeText={setSearchQuery}
+            value={query}
+            onChangeText={setQuery}
+            onSearch={triggerSearch}
             placeholder={t('common.search')}
             showFilter={true}
             onFilterPress={() => router.push({
@@ -169,7 +175,7 @@ export default function SearchScreen() {
         {/* Dynamic Content */}
         <View className="flex-1">
           {viewMode === 'list' ? 
-            <SearchList categoryId={selectedCategoryId} searchQuery={searchQuery} filters={filtersAsParams} /> : 
+            <SearchList categoryId={selectedCategoryId} searchQuery={debouncedQuery} filters={filtersAsParams} /> : 
             <SearchMap categoryId={selectedCategoryId} filters={filtersAsParams} />
           }
         </View>
@@ -177,4 +183,3 @@ export default function SearchScreen() {
     </SafeAreaView>
   );
 }
-

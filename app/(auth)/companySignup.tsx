@@ -17,6 +17,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import CustomTextInput from '@/components/form/CustomTextInput';
+import LocationInput, { LocationData } from '@/components/form/LocationInput';
 import PrimaryButton from '@/components/ui/PrimaryButton';
 import { Spacing } from '@/constants/spacing';
 
@@ -32,7 +33,7 @@ export default function CompanySignup() {
   const [formData, setFormData] = useState({
     companyName: '',
     email: '',
-    address: '',
+    location: null as LocationData | null,
     registrationNumber: '',
   });
 
@@ -43,8 +44,8 @@ export default function CompanySignup() {
   const { t } = useTranslation();
 
   const handleVerifyEmail = async () => {
-    if (!formData.companyName || !formData.email || !formData.address || !formData.registrationNumber) {
-      setErrorMessage(t('common.fillAllFields', 'Please fill in all fields'));
+    if (!formData.companyName || !formData.email || !formData.location || !formData.location.lat || !formData.location.lng || !formData.registrationNumber) {
+      setErrorMessage(t('common.fillAllFields', 'Please fill in all fields and select a valid location from suggestions'));
       setShowError(true);
       return;
     }
@@ -56,7 +57,16 @@ export default function CompanySignup() {
       
       router.push({
         pathname: '/(auth)/phoneNumberPage',
-        params: { ...formData, type: 'COMPANY' }
+        params: { 
+          companyName: formData.companyName,
+          email: formData.email,
+          registrationNumber: formData.registrationNumber,
+          address: formData.location.address,
+          lat: formData.location.lat,
+          lng: formData.location.lng,
+          placeId: formData.location.placeId,
+          type: 'COMPANY' 
+        }
       });
     } catch (error: any) {
       console.error('Email check failed:', error);
@@ -122,10 +132,10 @@ export default function CompanySignup() {
               keyboardType="email-address"
             />
 
-            <CustomTextInput
-              placeholder={t('companySignup.address')}
-              value={formData.address}
-              onChangeText={(text) => setFormData({ ...formData, address: text })}
+            <LocationInput
+              placeholder={t('companySignup.location', 'Location')}
+              value={formData.location}
+              onChange={(loc) => setFormData({ ...formData, location: loc })}
             />
 
             <CustomTextInput

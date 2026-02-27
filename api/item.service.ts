@@ -135,6 +135,27 @@ export const itemApi = apiSlice.injectEndpoints({
       transformResponse: (response: any) => response.data || response,
       providesTags: [{ type: 'Item', id: 'MY_REVIEWS' }],
     }),
+    searchItems: builder.query<Item[], { q: string; category?: number; page?: number; limit?: number }>({
+      query: (params) => ({
+        url: '/items/search',
+        params,
+      }),
+      serializeQueryArgs: ({ endpointName, queryArgs }) => {
+        const { page, ...otherParams } = queryArgs;
+        return { ...otherParams };
+      },
+      merge: (currentCache, newItems, { arg }) => {
+        if (arg?.page === 1) return newItems;
+        const existingIds = new Set(currentCache.map(i => i.id));
+        const filteredNewItems = newItems.filter(i => !existingIds.has(i.id));
+        return [...currentCache, ...filteredNewItems];
+      },
+      forceRefetch({ currentArg, previousArg }) {
+        return currentArg !== previousArg;
+      },
+      transformResponse: validateResponse(z.array(ItemSchema)),
+      providesTags: ['Item'],
+    }),
   }),
 });
 
@@ -151,6 +172,7 @@ export const {
   useUpdateItemMutation,
   // useDeleteItemMutation, // This endpoint does not exist in the provided itemApi definition
   useGetMapItemsQuery,
+  useSearchItemsQuery,
 } = itemApi;
 
 // Keeping the legacy service for backward compatibility during migration if needed, 

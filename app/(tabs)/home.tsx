@@ -29,6 +29,8 @@ export default function HomeScreen() {
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState('DEFAULT');
 
+  const [searchQuery, setSearchQuery] = useState('');
+
   // Memoize filters to avoid unnecessary re-queries
   const activeFilters = useMemo(() => {
     const { categoryId: _, returnTo: __, ...rest } = searchParams;
@@ -124,8 +126,16 @@ export default function HomeScreen() {
 
         {/* Search Bar */}
         <SearchBar 
+          value={searchQuery}
+          onChangeText={setSearchQuery}
           placeholder={t('common.search')} 
           showFilter={true} 
+          onSearch={() => {
+            router.push({
+              pathname: '/(tabs)/search',
+              params: { searchQuery: searchQuery }
+            });
+          }}
           onFilterPress={() => {
             router.push({
               pathname: '/search/filter',
