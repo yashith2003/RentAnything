@@ -1,4 +1,4 @@
-//app/profile/earnings.tsx
+//RentAnything/app/profile/earnings.tsx
 
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';

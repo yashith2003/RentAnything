@@ -1,4 +1,4 @@
-// app/profile/payments/pendingPayments.tsx
+//RentAnything/app/profile/payments/pendingPayments.tsx
 
 import PaymentCard from '@/components/card/paymentCard';
 import React from 'react';

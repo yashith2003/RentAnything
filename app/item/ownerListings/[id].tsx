@@ -1,3 +1,5 @@
+//RentAnything/app/item/ownerListings/[id].tsx
+
 import RentalHistoryCard from '@/components/ownerProfile/RentalHistoryCard';
 import { PaddingStyles } from '@/constants/spacing';
 import { useGetOwnerItemsQuery } from '@/api/item.service';

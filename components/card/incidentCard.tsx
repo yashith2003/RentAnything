@@ -1,4 +1,4 @@
-// components/incidentCard.tsx
+//RentAnything/components/card/incidentCard.tsx
 
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';

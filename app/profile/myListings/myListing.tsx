@@ -1,3 +1,5 @@
+//RentAnything/app/profile/myListings/myListing.tsx
+
 import { MyListingCard } from '@/components/card/MyListingCard';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { PaddingStyles } from '@/constants/spacing';

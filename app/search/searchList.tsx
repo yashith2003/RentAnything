@@ -1,4 +1,4 @@
-// app/search/searchList.tsx
+//RentAnything/app/search/searchList.tsx
 
 import ItemCard from '@/components/card/itemCard';
 import { PaddingStyles } from '@/constants/spacing';

@@ -1,3 +1,5 @@
+//RentAnything/app/item/rentalDetails.tsx
+
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import CalendarPickerPopup from '@/components/modal/CalendarPickerPopup';
 import { PaddingStyles } from '@/constants/spacing';

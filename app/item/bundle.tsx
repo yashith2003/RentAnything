@@ -1,3 +1,5 @@
+//RentAnything/app/item/bundle.tsx
+
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import ReviewBundlePopup from '@/components/modal/ReviewBundlePopup';
 import VerifiedBadge from '@/components/ui/VerifiedBadge';

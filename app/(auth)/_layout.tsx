@@ -1,4 +1,4 @@
-// app/(auth)/_layout.tsx
+//RentAnything/app/(auth)/_layout.tsx
 
 import { Stack } from 'expo-router';
 

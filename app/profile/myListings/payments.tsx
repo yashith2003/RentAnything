@@ -1,3 +1,5 @@
+//RentAnything/app/profile/myListings/payments.tsx
+
 import { LabelledInput } from '@/components/form/LabelledInput';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Ionicons } from '@expo/vector-icons';

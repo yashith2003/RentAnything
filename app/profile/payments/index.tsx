@@ -1,4 +1,4 @@
-// app/profile/payments/index.tsx
+//RentAnything/app/profile/payments/index.tsx
 
 import SearchBar from '@/components/form/searchbar';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';

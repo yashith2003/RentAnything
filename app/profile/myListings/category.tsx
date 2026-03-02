@@ -1,3 +1,5 @@
+//RentAnything/app/profile/myListings/category.tsx
+
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
@@ -77,7 +79,7 @@ export default function CategoryScreen() {
       // Select first category by default if available
       if (data.length > 0) {
         // Find main categories and select the first one
-        const mainCats = data.filter(c => !c.parentCategory);
+        const mainCats = data.filter((c: Category) => !c.parentCategory);
         if (mainCats.length > 0) {
             setSelectedCategory(mainCats[0]);
         }

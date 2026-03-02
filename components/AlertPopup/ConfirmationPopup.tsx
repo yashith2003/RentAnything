@@ -1,4 +1,4 @@
-// components/modal/ConfirmationPopup.tsx
+//RentAnything/components/AlertPopup/ConfirmationPopup.tsx
 
 import PrimaryButton from '@/components/ui/PrimaryButton';
 import React from 'react';

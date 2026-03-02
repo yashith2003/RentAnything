@@ -1,4 +1,4 @@
-// components/modal/ErrorPopup.tsx
+//RentAnything/components/AlertPopup/ErrorPopup.tsx
 
 import PrimaryButton from '@/components/ui/PrimaryButton';
 import React from 'react';
