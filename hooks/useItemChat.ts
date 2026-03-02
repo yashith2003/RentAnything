@@ -1,3 +1,5 @@
+//RentAnything/hooks/useItemChat.ts
+
 import { useRouter } from 'expo-router';
 import { useCreateThreadMutation, useGetUserThreadsQuery } from '@/api/chat.service';
 import { useRecordInteractionMutation } from '@/api/item.service';

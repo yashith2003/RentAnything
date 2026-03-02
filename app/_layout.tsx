@@ -22,16 +22,21 @@ import { useDispatch } from 'react-redux';
 
 import { SavedItemsProvider } from '@/context/SavedItemsContext';
 import { UserProvider, useUser } from '@/context/userContext';
+import { LocationProvider } from '@/context/LocationContext';
 import { Provider } from 'react-redux';
 import { store } from '@/store';
+import NetInfo from '@react-native-community/netinfo';
+import NoConnectionPopup from '@/components/AlertPopup/NoConnectionPopup';
 
 export default function RootLayout() {
   return (
     <Provider store={store}>
       <UserProvider>
-        <SavedItemsProvider>
-          <RootLayoutContent />
-        </SavedItemsProvider>
+        <LocationProvider>
+          <SavedItemsProvider>
+            <RootLayoutContent />
+          </SavedItemsProvider>
+        </LocationProvider>
       </UserProvider>
     </Provider>
   );
@@ -41,6 +46,14 @@ function RootLayoutContent() {
   const { isLoading, token, login } = useUser();
   const router = useRouter();
   const dispatch = useDispatch();
+  const [isConnected, setIsConnected] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      setIsConnected(state.isConnected ?? true);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const handleDeepLink = async (url: string | null) => {
@@ -115,6 +128,7 @@ function RootLayoutContent() {
             <Stack.Screen name="(auth)" options={{ title: 'Authentication' }} />
           </Stack>
           <StatusBar style="auto" />
+          <NoConnectionPopup visible={!isConnected} onRetry={() => {}} />
         </ThemeProvider>
       </PaperProvider>
     </SafeAreaProvider>

@@ -6,6 +6,7 @@ import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useGetItemQuery } from '@/api/item.service';
+import { getImageUrl } from '@/utils/image';
 
 interface ChatItemMessageProps {
   itemId: number;
@@ -17,12 +18,8 @@ export const ChatItemMessage: React.FC<ChatItemMessageProps> = ({ itemId, isSend
   const { data: item, isLoading, error } = useGetItemQuery(itemId);
 
   useEffect(() => {
-    console.log(`[ChatItemMessage DEBUG] itemId: ${itemId}, isLoading: ${isLoading}, hasItem: ${!!item}`);
-    if (error) console.error(`[ChatItemMessage DEBUG] Error fetching item ${itemId}:`, error);
-    if (item) {
-        console.log(`[ChatItemMessage DEBUG] Data:`, JSON.stringify(item, null, 2));
-    }
-  }, [itemId, item, isLoading, error]);
+    if (error) console.error(`[ChatItemMessage] Error fetching item ${itemId}:`, error);
+  }, [itemId, error]);
 
   const containerBaseClass = "w-[250px] h-[90px] rounded-2xl my-1 bg-[#E6F7FA] justify-center";
   const alignmentClass = isSender ? "self-end rounded-br-[4px]" : "self-start rounded-bl-[4px]";
@@ -39,7 +36,7 @@ export const ChatItemMessage: React.FC<ChatItemMessageProps> = ({ itemId, isSend
   if (!item) {
     return (
         <View className={`${containerBaseClass} ${alignmentClass} items-center border-[0.5px] border-[#36bcd7ff]`}>
-            <Text className="text-[#2FA2B9] text-xs font-bold mt-1">Item Not Found (${itemId})</Text>
+            <Text className="text-[#2FA2B9] text-xs font-bold mt-1">Item Not Found ({itemId})</Text>
         </View>
     );
   }
@@ -53,8 +50,8 @@ export const ChatItemMessage: React.FC<ChatItemMessageProps> = ({ itemId, isSend
       <View className="flex-row px-[10px] items-center w-full h-full">
         <View className="w-[70px] h-[70px] bg-white rounded-xl border border-[#BEE7EF] justify-center items-center">
           <Image
-            source={{ uri: item?.imageUrl || 'https://via.placeholder.com/150' }}
-            className="w-[64px] h-[64px] rounded-[10px]"
+            source={{ uri: getImageUrl(item?.imageUrl) }}
+            style={{ width: 64, height: 64, borderRadius: 10 }}
             contentFit="cover"
           />
         </View>

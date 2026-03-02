@@ -1,3 +1,5 @@
+//RentAnything/components/shared/ActionListItem.tsx
+
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import React from 'react';

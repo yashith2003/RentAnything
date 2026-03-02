@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet, Dimensions, Share, Platform } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, Share, Platform } from 'react-native';
 import { Ionicons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 import { useRouter } from 'expo-router';
@@ -11,8 +11,6 @@ interface SharePopupProps {
   itemId: number;
   itemTitle: string;
 }
-
-const { width } = Dimensions.get('window');
 
 export const SharePopup: React.FC<SharePopupProps> = ({ visible, onClose, itemId, itemTitle }) => {
   const router = useRouter();
@@ -59,54 +57,57 @@ export const SharePopup: React.FC<SharePopupProps> = ({ visible, onClose, itemId
       onRequestClose={onClose}
     >
       <TouchableOpacity 
-        style={styles.overlay} 
+        className="flex-1 bg-black/50 justify-end"
         activeOpacity={1} 
         onPress={onClose}
       >
-        <View style={styles.content}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Share As Options</Text>
+        <View 
+          className="bg-white rounded-t-[24px] p-6"
+          style={{ paddingBottom: Platform.OS === 'ios' ? 40 : 24 }}
+        >
+          <View className="flex-row justify-between items-center mb-6">
+            <Text className="text-xl font-bold text-black">Share As Options</Text>
             <TouchableOpacity onPress={onClose}>
               <Ionicons name="close" size={24} color="#666" />
             </TouchableOpacity>
           </View>
 
-          <View style={styles.optionsContainer}>
+          <View className="flex-row flex-wrap justify-between">
             {!isGuest && (
-              <TouchableOpacity style={styles.option} onPress={handleInternalShare}>
-                <View style={[styles.iconContainer, { backgroundColor: Colors.primary }]}>
+              <TouchableOpacity className="w-[22%] items-center mb-6" onPress={handleInternalShare}>
+                <View className="w-14 h-14 rounded-full justify-center items-center mb-2 shadow-sm shadow-black/10" style={{ backgroundColor: Colors.primary, elevation: 2 }}>
                   <Ionicons name="chatbubble-ellipses" size={24} color="#fff" />
                 </View>
-                <Text style={styles.optionText}>Rent Anything</Text>
+                <Text className="text-[12px] text-[#333] text-center">Rent Anything</Text>
               </TouchableOpacity>
             )}
 
-            <TouchableOpacity style={styles.option} onPress={handleSystemShare}>
-              <View style={[styles.iconContainer, { backgroundColor: '#25D366' }]}>
+            <TouchableOpacity className="w-[22%] items-center mb-6" onPress={handleSystemShare}>
+              <View className="w-14 h-14 rounded-full justify-center items-center mb-2 shadow-sm shadow-black/10" style={{ backgroundColor: '#25D366', elevation: 2 }}>
                 <FontAwesome5 name="whatsapp" size={24} color="#fff" />
               </View>
-              <Text style={styles.optionText}>WhatsApp</Text>
+              <Text className="text-[12px] text-[#333] text-center">WhatsApp</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.option} onPress={handleSystemShare}>
-              <View style={[styles.iconContainer, { backgroundColor: '#0084FF' }]}>
+            <TouchableOpacity className="w-[22%] items-center mb-6" onPress={handleSystemShare}>
+              <View className="w-14 h-14 rounded-full justify-center items-center mb-2 shadow-sm shadow-black/10" style={{ backgroundColor: '#0084FF', elevation: 2 }}>
                 <MaterialCommunityIcons name="facebook-messenger" size={24} color="#fff" />
               </View>
-              <Text style={styles.optionText}>Messenger</Text>
+              <Text className="text-[12px] text-[#333] text-center">Messenger</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.option} onPress={handleCopyLink}>
-              <View style={[styles.iconContainer, { backgroundColor: '#FFD700' }]}>
+            <TouchableOpacity className="w-[22%] items-center mb-6" onPress={handleCopyLink}>
+              <View className="w-14 h-14 rounded-full justify-center items-center mb-2 shadow-sm shadow-black/10" style={{ backgroundColor: '#FFD700', elevation: 2 }}>
                 <Ionicons name="link" size={24} color="#000" />
               </View>
-              <Text style={styles.optionText}>Copy Link</Text>
+              <Text className="text-[12px] text-[#333] text-center">Copy Link</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.option} onPress={handleSystemShare}>
-              <View style={[styles.iconContainer, { backgroundColor: '#666' }]}>
+            <TouchableOpacity className="w-[22%] items-center mb-6" onPress={handleSystemShare}>
+              <View className="w-14 h-14 rounded-full justify-center items-center mb-2 shadow-sm shadow-black/10" style={{ backgroundColor: '#666', elevation: 2 }}>
                 <Ionicons name="share-social" size={24} color="#fff" />
               </View>
-              <Text style={styles.optionText}>More...</Text>
+              <Text className="text-[12px] text-[#333] text-center">More...</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -114,57 +115,3 @@ export const SharePopup: React.FC<SharePopupProps> = ({ visible, onClose, itemId
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
-  },
-  content: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#000',
-  },
-  optionsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  option: {
-    width: (width - 48) / 4 - 12,
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  iconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  optionText: {
-    fontSize: 12,
-    color: '#333',
-    textAlign: 'center',
-  },
-});

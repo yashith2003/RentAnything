@@ -1,3 +1,5 @@
+//RentAnything/components/form/categoryFields/HomeFields.tsx
+
 import React from 'react';
 import { View, Text, TouchableOpacity, Switch } from 'react-native';
 import { LabelledInput } from '@/components/form/LabelledInput';

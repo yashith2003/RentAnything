@@ -1,3 +1,5 @@
+//RentAnything/constants/typography.ts
+
 /**
  * Typography Constants
  * Centralized typography system for consistent text styling across the app.

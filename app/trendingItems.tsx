@@ -15,8 +15,11 @@ import { ActivityIndicator, FlatList, Text, TouchableOpacity, View, RefreshContr
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGetProfileQuery } from '@/api/user.service';
 import { formatPrice } from '@/utils/formatPrice';
+import { useLocationContext } from '@/context/LocationContext';
+import { calculateDistance } from '@/utils/location';
 
 export default function TrendingItemsScreen() {
+  const { userLocation } = useLocationContext();
   const { t } = useTranslation();
   const router = useRouter();
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>();
@@ -118,7 +121,9 @@ export default function TrendingItemsScreen() {
                   owner: item.owner?.individualUser?.fullName || item.owner?.company?.companyName || 'N/A',
                   ownerId: item.owner?.id, // TypeScript now accepts string | number
                   rating: item.averageRating ?? 0,
-                  distance: '5.6 km',
+                  distance: userLocation && item.address?.lat && item.address?.lng 
+                    ? calculateDistance(userLocation.latitude, userLocation.longitude, item.address.lat, item.address.lng)
+                    : '--- km',
                   location: item.address?.address || 'N/A',
                   phone: item.phone || undefined,
                 }} 

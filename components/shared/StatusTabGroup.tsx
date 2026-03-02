@@ -1,3 +1,5 @@
+//RentAnything/components/shared/StatusTabGroup.tsx
+
 import React from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 

@@ -17,7 +17,7 @@ import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGetPublicProfileQuery, useGetProfileQuery } from '@/api/user.service';
 import { useGetOwnerItemsQuery } from '@/api/item.service';
-import { useGetUserReviewsQuery, useSubmitReviewMutation } from '@/api/review.service';
+import { useGetUserReviewsQuery, useSubmitReviewMutation, useGetMyReviewForItemQuery } from '@/api/review.service';
 import { getImageUrl } from '@/utils/image';
 import SuccessPopup from '@/components/AlertPopup/SuccessPopup';
 import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
@@ -39,6 +39,7 @@ export default function OwnerProfileScreen() {
   const { data: currentUser } = useGetProfileQuery();
   const { data: ownerItems, isLoading: isItemsLoading } = useGetOwnerItemsQuery(ownerId, { skip: !ownerId });
   const { data: reviewsData, isLoading: isReviewsLoading, refetch: refetchReviews } = useGetUserReviewsQuery({ userId: ownerId }, { skip: !ownerId });
+  const { data: myReview, refetch: refetchMyReview } = useGetMyReviewForItemQuery(targetItemId, { skip: !targetItemId });
   
   if (isProfileLoading || isItemsLoading || isReviewsLoading) {
     return (
@@ -152,7 +153,9 @@ export default function OwnerProfileScreen() {
                   onPress={() => setIsReviewPopupVisible(true)}
                   className="bg-[#2FA2B9] h-12 rounded-2xl items-center justify-center mb-6"
               >
-                  <Text className="text-white font-bold">Write a review</Text>
+                  <Text className="text-white font-bold">
+                    {myReview ? 'Edit your review' : 'Write a review'}
+                  </Text>
               </TouchableOpacity>
             )}
 
@@ -214,7 +217,9 @@ export default function OwnerProfileScreen() {
 
       <ReviewPopup 
         isVisible={isReviewPopupVisible}
-        title="How would you rate the Owner?"
+        title={myReview ? "Edit your review" : "How would you rate the Owner?"}
+        initialRating={myReview?.rating || 0}
+        initialFeedback={myReview?.comment || ''}
         onClose={() => setIsReviewPopupVisible(false)}
         onSubmit={async (rating, feedback) => {
           if (!targetItemId) {
@@ -229,6 +234,7 @@ export default function OwnerProfileScreen() {
             await submitReview({ itemId: targetItemId, rating, feedback }).unwrap();
             setShowSuccess(true);
             refetchReviews();
+            refetchMyReview();
           } catch (err: any) {
             console.error('Failed to submit review:', err);
             setErrorConfig({

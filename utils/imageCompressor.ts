@@ -1,4 +1,4 @@
-// utils/imageCompressor.ts
+//RentAnything/utils/imageCompressor.ts
 import * as ImageManipulator from 'expo-image-manipulator';
 
 export interface CompressOptions {

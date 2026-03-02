@@ -1,4 +1,4 @@
-//components/ui/icon-symbol.tsx
+//RentAnything/components/ui/icon-symbol.tsx
 
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { SymbolViewProps, SymbolWeight } from 'expo-symbols';

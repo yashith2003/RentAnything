@@ -1,4 +1,4 @@
-// utils/errorMapper.ts
+//RentAnything/utils/errorMapper.ts
 
 export const mapAuthError = (backendMessage: string, t: any): string => {
   const message = backendMessage.toLowerCase();

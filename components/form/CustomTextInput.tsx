@@ -1,4 +1,4 @@
-// components/form/CustomTextInput.tsx
+//RentAnything/components/form/CustomTextInput.tsx
 
 import React from 'react';
 import { TextInput, TextInputProps } from 'react-native';

@@ -13,8 +13,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { getImageUrl } from '@/utils/image';
 import { formatPrice } from '@/utils/formatPrice';
 import ItemCard from '@/components/card/itemCard';
+import { useLocationContext } from '@/context/LocationContext';
+import { calculateDistance } from '@/utils/location';
 
 export default function SavedScreen() {
+  const { userLocation } = useLocationContext();
   const router = useRouter();
   const { savedItems, toggleItem, isLoading } = useSavedItems();
   const [modalVisible, setModalVisible] = useState(false);
@@ -91,7 +94,9 @@ export default function SavedScreen() {
                       owner: ownerName,
                       ownerId: item.owner?.id,
                       rating: item.averageRating?.toFixed(1) || '5.0',
-                      distance: '5.6 km',
+                      distance: userLocation && item.address?.lat && item.address?.lng 
+                        ? calculateDistance(userLocation.latitude, userLocation.longitude, item.address.lat, item.address.lng)
+                        : '--- km',
                       location: item.address?.address || 'N/A',
                       phone: item.phone || item.owner?.phone,
                       deliveryAvailable: item.deliveryAvailable,

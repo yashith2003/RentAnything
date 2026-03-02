@@ -1,4 +1,4 @@
-//constants/spacing.ts
+//RentAnything/constants/spacing.ts
 
 /**
  * Spacing Constants

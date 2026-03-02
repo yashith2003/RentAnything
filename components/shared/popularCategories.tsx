@@ -1,4 +1,4 @@
-// components/shared/popularCategories.tsx
+//RentAnything/components/shared/popularCategories.tsx
 
 import { Image } from 'expo-image';
 import React from 'react';
