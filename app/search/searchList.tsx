@@ -5,8 +5,9 @@ import { PaddingStyles } from '@/constants/spacing';
 import React from 'react';
 import { ScrollView, Text, View, ActivityIndicator } from 'react-native';
 import { useSearchItemsQuery } from '@/api/item.service';
-import { Colors } from '@/constants/theme';
 import { getImageUrl } from '@/utils/image';
+import { formatPrice } from '@/utils/formatPrice';
+import { Colors } from '@/constants/theme';
 
 interface SearchListProps {
   categoryId?: number;
@@ -17,6 +18,11 @@ interface SearchListProps {
 export default function SearchList({ categoryId, searchQuery, filters }: SearchListProps) {
   const [page, setPage] = React.useState(1);
   const limit = 20;
+
+  // Reset page when search or category changes
+  React.useEffect(() => {
+    setPage(1);
+  }, [searchQuery, categoryId]);
 
   const { data: items, isLoading, isFetching } = useSearchItemsQuery({
     q: searchQuery || '',
@@ -63,16 +69,15 @@ export default function SearchList({ categoryId, searchQuery, filters }: SearchL
           const cardItem = {
             id: item.id,
             image: getImageUrl(item.imageUrl),
-            price: `Rs: ${(item.price || item.pricings?.[0]?.price || 0).toLocaleString()}`,
-            extraPrice: '- Per day',
+            price: formatPrice(item.price || item.pricings?.[0]?.price, item.pricings?.[0]?.rateType || (item as any).rateType),
             title: item.title,
             owner: item.owner?.individualUser?.fullName || item.owner?.company?.companyName || 'N/A',
             ownerId: item.owner?.id,
             rating: item.averageRating?.toFixed(1) || '5.0',
             distance: '5.6 km',
             location: item.address?.address || 'N/A',
-            phone: item.phone || undefined,
-            delivery: true
+            phone: item.phone || (item.owner as any)?.phone,
+            deliveryAvailable: item.deliveryAvailable ?? undefined,
           };
           return (
             <View key={item.id} className="w-[48%]">

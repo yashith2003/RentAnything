@@ -12,7 +12,7 @@ const RECENT_LOCATIONS_KEY = 'recent_locations_history';
 interface LocationDropdownProps {
   visible: boolean;
   onClose: () => void;
-  onSelectLocation: (location: string) => void;
+  onSelectLocation: (location: any) => void;
 }
 
 export default function LocationDropdown({
@@ -82,8 +82,7 @@ export default function LocationDropdown({
   };
 
   const handleLocationSelect = (location: any) => {
-    const address = typeof location === 'string' ? location : (location.address || location.mainText);
-    onSelectLocation(address);
+    onSelectLocation(location);
     if (typeof location !== 'string') {
         saveToRecentLocations(location);
     }
@@ -107,7 +106,11 @@ export default function LocationDropdown({
         const formattedAddress = [place.name, place.street, place.city, place.region, place.country]
           .filter(Boolean)
           .join(', ');
-        handleLocationSelect(formattedAddress);
+        handleLocationSelect({
+          address: formattedAddress,
+          lat: location.coords.latitude,
+          lng: location.coords.longitude
+        });
       }
     } catch (error) {
       console.warn('Location error:', error);
@@ -136,7 +139,8 @@ export default function LocationDropdown({
             <Ionicons name="search" size={20} color="#6B7280" />
             <TextInput
               placeholder="Search location..."
-              className="flex-1 ml-3 h-10 text-base text-black"
+              className="flex-1 ml-3 h-12 text-base text-black"
+              style={{ paddingVertical: 0 }}
               value={query}
               onChangeText={handleTextChange}
               autoFocus
@@ -157,7 +161,12 @@ export default function LocationDropdown({
                         suggestions.map((item, index) => (
                             <TouchableOpacity
                                 key={index}
-                                onPress={() => handleLocationSelect(item)}
+                                onPress={() => handleLocationSelect({
+                                  address: item.address,
+                                  lat: item.lat,
+                                  lng: item.lng,
+                                  placeId: item.placeId
+                                })}
                                 className="flex-row items-center px-5 py-4 border-b border-gray-50 active:bg-gray-50"
                             >
                                 <Ionicons name="location-outline" size={20} color="#6B7280" />

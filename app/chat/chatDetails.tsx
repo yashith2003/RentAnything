@@ -19,6 +19,8 @@ import { ChatMessageSchema } from '@/types/schemas';
 import * as DocumentPicker from 'expo-document-picker';
 import { useUploadChatAttachmentsMutation } from '@/api/chat.service';
 import { useDispatch } from 'react-redux';
+import { compressImage } from '@/utils/imageCompressor';
+import { ChatItemMessage } from '@/components/chat/ChatItemMessage';
 
 export default function ChatDetailsScreen() {
   const router = useRouter();
@@ -90,6 +92,7 @@ export default function ChatDetailsScreen() {
         id: m.id.toString(),
         text: m.content,
         type: m.senderId === userId ? 'sent' : 'received',
+        messageType: m.type || 'text',
         time: m.createdAt ? new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
         avatarSource: getAvatarSource(m.sender?.individualUser?.avatarUrl || m.sender?.company?.logoUrl),
         attachments: m.attachments
@@ -145,7 +148,7 @@ export default function ChatDetailsScreen() {
 
         // Initial status check for other user
         if (otherUser?.id) {
-            const status = await socketService.checkStatus(otherUser.id);
+            const status = await socketService.checkStatus(Number(otherUser.id));
             setOtherUserStatus(status === 'online' ? 'Online' : 'Offline');
         }
         
@@ -253,7 +256,8 @@ export default function ChatDetailsScreen() {
         const optimisticMessage: ChatMessage = {
           id: optimisticId,
           content: content,
-          senderId: userId,
+          type: 'text',
+          senderId: Number(userId),
           threadId: threadIdNum,
           createdAt: new Date().toISOString(),
           sender: {
@@ -285,13 +289,23 @@ export default function ChatDetailsScreen() {
           // Failsafe: append threadId to body as well
           formData.append('threadId', threadIdNum.toString());
           
-          originalFiles.forEach((file) => {
+          await Promise.all(originalFiles.map(async (file) => {
+            let uploadUri = file.uri;
+            // Only compress images
+            if (file.mimeType?.startsWith('image/') || file.name?.match(/\.(jpg|jpeg|png|webp)$/i)) {
+              try {
+                uploadUri = await compressImage(file.uri, { maxWidth: 1280, quality: 0.8 });
+              } catch (e) {
+                console.error('[ChatDetails] Compression failed for', file.name, e);
+              }
+            }
+
             formData.append('files', {
-              uri: file.uri,
+              uri: uploadUri,
               name: file.name || `chat_${Date.now()}.jpg`,
               type: file.mimeType || 'image/jpeg',
             } as any);
-          });
+          }));
           
           const result = await uploadAttachments({ formData, threadId: threadIdNum }).unwrap();
           console.log('[ChatDetails] [UPLOAD_RAW_RESULT]:', JSON.stringify(result));
@@ -416,11 +430,18 @@ export default function ChatDetailsScreen() {
                         <View className="items-end">
                             <View className="flex-row items-end justify-end">
                                 <View className="items-end max-w-[85%]">
-                                    {msg.text ? (
+                                    {msg.text && msg.messageType === 'text' ? (
                                         <View className="bg-cyan-50 border border-cyan-100 rounded-2xl rounded-br-none p-4 mb-2">
                                             <Text className="text-sm text-black leading-5 font-Outfit">{msg.text}</Text>
                                         </View>
                                     ) : null}
+
+                                    {msg.messageType === 'item_share' && msg.text.includes('item/') && (
+                                        <ChatItemMessage 
+                                            itemId={parseInt(msg.text.split('item/')[1], 10)} 
+                                            isSender={true} 
+                                        />
+                                    )}
                                     
                                     {msg.attachments && msg.attachments.length > 0 && (
                                         <View className="bg-cyan-50 border border-cyan-100 rounded-2xl rounded-br-none p-2 flex-row flex-wrap justify-end gap-2 mb-2">
@@ -472,11 +493,18 @@ export default function ChatDetailsScreen() {
                                     contentFit="cover"
                                 />
                                 <View className="max-w-[85%]">
-                                    {msg.text ? (
+                                    {msg.text && msg.messageType === 'text' ? (
                                         <View className="bg-gray-50 border border-gray-100 rounded-2xl rounded-bl-none p-4 mb-2">
                                             <Text className="text-sm text-black leading-5 font-Outfit">{msg.text}</Text>
                                         </View>
                                     ) : null}
+
+                                    {msg.messageType === 'item_share' && msg.text.includes('item/') && (
+                                        <ChatItemMessage 
+                                            itemId={parseInt(msg.text.split('item/')[1], 10)} 
+                                            isSender={false} 
+                                        />
+                                    )}
 
                                     {msg.attachments && msg.attachments.length > 0 && (
                                         <View className="flex-row flex-wrap border border-gray-100 bg-gray-50 border border-gray-100 rounded-2xl rounded-bl-none p-2 gap-2 mb-2">

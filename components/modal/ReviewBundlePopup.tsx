@@ -66,7 +66,7 @@ export default function ReviewBundlePopup({
             onPress={onRequestRent}
             className="w-full h-14 bg-[#2FA2B9] rounded-2xl items-center justify-center shadow-lg shadow-black/10"
           >
-            <Text className="text-white font-bold text-base">Request for rent</Text>
+            <Text className="text-white font-bold text-base">Contact</Text>
           </TouchableOpacity>
         </Pressable>
       </Pressable>

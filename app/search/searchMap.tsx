@@ -9,6 +9,7 @@ import { itemApi } from '@/api/item.service';
 import { Region } from 'react-native-maps';
 import { Colors } from '@/constants/theme';
 import * as Location from 'expo-location';
+import { getImageUrl } from '@/utils/image';
 
 interface SearchMapProps {
   categoryId?: number;
@@ -57,8 +58,8 @@ export default function SearchMap({ categoryId, filters }: SearchMapProps) {
         swLng: currentRegion.longitude - currentRegion.longitudeDelta / 2,
       };
 
-      const response = await triggerGetMapItems({ bounds, categoryId, filters }).unwrap();
-      setMarkers(response || []);
+      const response = await triggerGetMapItems({ ...bounds, category: categoryId?.toString(), filters }).unwrap();
+      setMarkers(response as any || []);
     } catch (error) {
       console.error('Failed to fetch map items:', error);
     } finally {
@@ -146,7 +147,7 @@ export default function SearchMap({ categoryId, filters }: SearchMapProps) {
               {/* Image */}
               <View className="w-28 h-24 rounded-2xl overflow-hidden bg-gray-50 mr-4">
                 <Image
-                  source={{ uri: selectedItem.imageUrl || 'https://via.placeholder.com/400x300' }}
+                  source={{ uri: getImageUrl(selectedItem.imageUrl) }}
                   style={{ width: '100%', height: '100%' }}
                   contentFit="cover"
                 />
@@ -157,60 +158,63 @@ export default function SearchMap({ categoryId, filters }: SearchMapProps) {
                 <View>
                   <View className="flex-row items-baseline mb-0.5">
                     <Text className="text-[#2FA2B9] font-extrabold text-sm mr-1">
-                      Rs:{(selectedItem.price || selectedItem.pricings?.[0]?.price)?.split('.')[0]}
+                      Rs:{(selectedItem.price || selectedItem.pricings?.[0]?.price || '0').toString().split('.')[0]}
                     </Text>
                     <Text className="text-gray-400 text-[10px] font-medium">
                       - Per {selectedItem.pricings?.[0]?.rateType || 'day'}
                     </Text>
                   </View>
-                  <Text className="font-bold text-[15px] text-[#0B0C15] mb-1" numberOfLines={1}>{selectedItem.title}</Text>
+                  <Text className="font-bold text-[14px] text-[#0B0C15] mb-0.5" numberOfLines={1}>{selectedItem.title}</Text>
                   
                   <View className="flex-row items-center">
-                    <Text className="text-gray-400 text-[11px]" numberOfLines={1}>
+                    <Text className="text-gray-400 text-[10px]" numberOfLines={1}>
                       Owner: {selectedItem.owner?.individualUser?.fullName || selectedItem.owner?.company?.companyName || 'N/A'}
                     </Text>
-                    <View className="ml-1.5 w-3.5 h-3.5 bg-[#2D8CFF] rounded-full items-center justify-center">
-                      <Ionicons name="checkmark" size={9} color="white" />
+                    <View className="ml-1 w-3 h-3 bg-[#2D8CFF] rounded-full items-center justify-center">
+                      <Ionicons name="checkmark" size={8} color="white" />
                     </View>
                   </View>
                 </View>
 
                 <View className="flex-row items-center justify-between">
                   <View className="flex-row items-center">
-                    <Text className="text-gray-600 text-[11px] font-bold mr-0.5">5.0</Text>
-                    <Ionicons name="star" size={11} color="#FF9500" />
+                    <Text className="text-gray-600 text-[10px] font-bold mr-0.5">{selectedItem.averageRating?.toFixed(1) || '5.0'}</Text>
+                    <Ionicons name="star" size={10} color="#FF9500" />
                   </View>
                   <View className="flex-row items-center">
-                    <Ionicons name="location-outline" size={12} color="#2FA2B9" />
-                    <Text className="text-[#2FA2B9] text-[10px] font-bold ml-1">
+                    <Ionicons name="location-outline" size={11} color="#2FA2B9" />
+                    <Text className="text-[#2FA2B9] text-[9px] font-bold ml-1">
                       5.6 km
                     </Text>
                   </View>
+                </View>
+
+                {/* Delivery Status */}
+                <View className="flex-row items-center mt-0.5">
+                  <Ionicons name={selectedItem.deliveryAvailable ? "bicycle" : "bicycle-outline"} size={12} color="#9ca3af" />
+                  <Text className="text-gray-400 text-[9px] font-medium ml-1">
+                    {selectedItem.deliveryAvailable ? 'Delivery Available' : 'Pickup Only'}
+                  </Text>
                 </View>
               </View>
             </View>
 
             {/* Actions */}
             <View className="flex-row items-center mt-4 gap-x-2">
-              <TouchableOpacity className="flex-1 bg-[#2FA2B9] py-3 rounded-xl items-center justify-center shadow-md shadow-[#2FA2B9]/30">
-                <Text className="text-white text-xs font-bold uppercase tracking-wider">Request for rent</Text>
-              </TouchableOpacity>
               <TouchableOpacity 
-                className="w-10 h-10 rounded-full bg-gray-50 border border-gray-100 items-center justify-center"
                 onPress={() => {
-                  if (selectedItem?.phone) {
-                    Linking.openURL(`tel:${selectedItem.phone}`);
-                  } else if (selectedItem?.owner?.phone) {
-                    Linking.openURL(`tel:${selectedItem.owner.phone}`);
-                  } else {
-                    console.warn('[SearchMap] No phone number available');
+                  if (selectedItem?.phone || selectedItem?.owner?.phone) {
+                    Linking.openURL(`tel:${selectedItem.phone || selectedItem.owner.phone}`);
                   }
                 }}
+                className="flex-1 bg-[#2FA2B9] py-3 rounded-xl items-center flex-row justify-center gap-x-1.5 shadow-md shadow-[#2FA2B9]/30"
               >
-                <Ionicons name="call" size={16} color="#666" />
+                <Ionicons name="call" size={14} color="white" />
+                <Text className="text-white text-xs font-bold uppercase tracking-wider">Contact</Text>
               </TouchableOpacity>
+              
               <TouchableOpacity className="w-10 h-10 rounded-full bg-gray-50 border border-gray-100 items-center justify-center">
-                <Ionicons name="chatbubble-ellipses" size={16} color="#666" />
+                <Ionicons name="chatbubble-ellipses" size={18} color="#666" />
               </TouchableOpacity>
             </View>
 

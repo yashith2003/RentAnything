@@ -17,7 +17,7 @@ import { useEffect } from 'react';
 import { useGetProfileQuery } from '@/api/user.service';
 import { getImageUrl } from '@/utils/image';
 import { FilterParamsSchema } from '@/types/schemas';
- 
+import { formatPrice } from '@/utils/formatPrice';
 
 
 export default function HomeScreen() {
@@ -83,19 +83,21 @@ export default function HomeScreen() {
             />
             <View>
               <Text className="text-xs text-gray-400 font-medium">
-                {role?.toLowerCase() === 'company' ? t('home.companyAccount') : t('home.individualAccount')}
+                {role?.toLowerCase() === 'guest' ? 'Guest Mode' : (role?.toLowerCase() === 'company' ? t('home.companyAccount') : t('home.individualAccount'))}
               </Text>
-              <Text className="text-sm font-bold text-black">{t('home.welcomeBack')}</Text>
+              <Text className="text-sm font-bold text-black">{role?.toLowerCase() === 'guest' ? 'Welcome!' : t('home.welcomeBack')}</Text>
             </View>
           </View>
-          <View className="flex-row items-center gap-x-4">
-            <TouchableOpacity onPress={() => router.push('/header/notifications' as any)}>
-              <Image source={require('@/assets/icons/notifications.svg')} style={{ width: 21, height: 22 }} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/header/saved' as any)}>
-              <Image source={require('@/assets/icons/saved.svg')} style={{ width: 22, height: 22 }} />
-            </TouchableOpacity>
-          </View>
+          {role?.toLowerCase() !== 'guest' && (
+            <View className="flex-row items-center gap-x-4">
+              <TouchableOpacity onPress={() => router.push('/header/notifications' as any)}>
+                <Image source={require('@/assets/icons/notifications.svg')} style={{ width: 21, height: 22 }} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/header/saved' as any)}>
+                <Image source={require('@/assets/icons/saved.svg')} style={{ width: 22, height: 22 }} />
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         {/* Location Selector */}
@@ -168,7 +170,7 @@ export default function HomeScreen() {
                     id: item.id,
                     title: item.title,
                     image: getImageUrl(item.imageUrl),
-                    price: `Rs: ${(item.price || item.pricings?.[0]?.price || 0).toLocaleString()}`,
+                    price: formatPrice(item.price || item.pricings?.[0]?.price, item.pricings?.[0]?.rateType || (item as any).rateType),
                     owner: item.owner?.individualUser?.fullName || item.owner?.company?.companyName || 'N/A',
                     ownerId: item.owner?.id,
                     rating: '5.0',

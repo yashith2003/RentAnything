@@ -59,6 +59,11 @@ const authService = {
     return response.data.data;
   },
 
+  resendOtp: async (phone: string) => {
+    const response = await apiClient.post<{ data: any }>('/auth/resend-otp', { phone });
+    return response.data.data;
+  },
+
   checkEmail: async (email: string) => {
     const response = await apiClient.post<{ data: { available: boolean } }>('/auth/check-email', { email });
     return response.data.data;
@@ -66,6 +71,11 @@ const authService = {
 
   getProfile: async () => {
     const response = await apiClient.get<{ data: any }>('/user/profile');
+    return response.data.data;
+  },
+  
+  loginGuest: async () => {
+    const response = await apiClient.post<{ data: { access_token: string; user: any } }>('/auth/login-guest');
     return response.data.data;
   },
 };

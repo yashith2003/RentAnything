@@ -81,83 +81,65 @@ export default function ProfileScreen() {
     { label: t('profile.listingItems'), value: '25' },
   ];
 
-  const menuItems: MenuItem[] = [
-    {
-      icon: 'person-outline',
-      iconType: 'ionicons',
-      label: t('profile.profileDetails'),
-      onPress: () => router.push('/profile/profileDetails'),
-    },
-    {
-      icon: 'shield-checkmark-outline',
-      iconType: 'ionicons',
-      label: t('profile.kyc'),
-      onPress: () => router.push('/profile/kycPage'),
-    },
-    {
-      icon: 'star-outline',
-      iconType: 'ionicons',
-      label: t('profile.reviews'),
-      onPress: () => router.push('/profile/reviewsPage'),
-    },
-   /* {
-      icon: 'receipt-outline',
-      iconType: 'ionicons',
-      label: t('profile.rentals'),
-      onPress: () => router.push('/profile/rentals' as any),
-    },
-    */
-    {
-      icon: 'list-outline',
-      iconType: 'ionicons',
-      label: t('listing.myListings'),
-      onPress: () => router.push('/(tabs)/add-listing' as any),
-    },
-    /* {
-      icon: 'card-outline',
-      iconType: 'ionicons',
-      label: t('profile.payments'),
-      onPress: () => router.push('/profile/payments' as any),
-    },
-    {
-      icon: 'wallet-outline',
-      iconType: 'ionicons',
-      label: t('profile.earnings'),
-      onPress: () => router.push('/profile/earnings' as any),
-    },
-    {
-      icon: 'trophy',
-      iconType: 'ionicons',
-      label: t('profile.levels'),
-      badge: '🏆',
-      onPress: () => router.push('/profile/levels' as any),
-    }, */
-    {
-      icon: 'help-circle-outline',
-      iconType: 'ionicons',
-      label: t('profile.faqs'),
-      onPress: () => router.push('/profile/faq' as any),
-    },
-    /* {
-      icon: 'alert-circle-outline',
-      iconType: 'ionicons',
-      label: t('profile.incident'),
-      onPress: () => router.push('/profile/incident' as any),
-    }, */
-    {
-      icon: 'language-outline',
-      iconType: 'ionicons',
-      label: t('profile.language'),
-      rightText: currentLanguageLabel,
-      onPress: () => router.push('/profile/languageChange' as any),
-    },
-    {
-      icon: 'log-out-outline',
-      iconType: 'ionicons',
-      label: t('profile.logout'),
-      onPress: handleLogout,
-    },
-  ];
+  const menuItems: MenuItem[] = useMemo(() => {
+    const isGuest = role?.toLowerCase() === 'guest';
+    
+    const allItems: MenuItem[] = [
+      {
+        icon: 'person-outline',
+        iconType: 'ionicons',
+        label: t('profile.profileDetails'),
+        onPress: () => router.push('/profile/profileDetails'),
+      },
+      {
+        icon: 'shield-checkmark-outline',
+        iconType: 'ionicons',
+        label: t('profile.kyc'),
+        onPress: () => router.push('/profile/kycPage'),
+      },
+      {
+        icon: 'star-outline',
+        iconType: 'ionicons',
+        label: t('profile.reviews'),
+        onPress: () => router.push('/profile/reviewsPage'),
+      },
+      {
+        icon: 'list-outline',
+        iconType: 'ionicons',
+        label: t('listing.myListings'),
+        onPress: () => router.push('/(tabs)/add-listing' as any),
+      },
+      {
+        icon: 'help-circle-outline',
+        iconType: 'ionicons',
+        label: t('profile.faqs'),
+        onPress: () => router.push('/profile/faq' as any),
+      },
+      {
+        icon: 'language-outline',
+        iconType: 'ionicons',
+        label: t('profile.language'),
+        rightText: currentLanguageLabel,
+        onPress: () => router.push('/profile/languageChange' as any),
+      },
+      {
+        icon: 'log-out-outline',
+        iconType: 'ionicons',
+        label: t('profile.logout'),
+        onPress: handleLogout,
+      },
+    ];
+
+    if (isGuest) {
+      return allItems.filter(item => 
+        ['profile.faqs', 'profile.language', 'profile.logout'].includes(item.label === t('profile.faqs') ? 'profile.faqs' : item.label === t('profile.language') ? 'profile.language' : item.label === t('profile.logout') ? 'profile.logout' : '')
+      );
+    }
+    
+    return allItems;
+  }, [role, t, router, currentLanguageLabel]);
+
+  const isGuest = role?.toLowerCase() === 'guest';
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
@@ -179,19 +161,18 @@ export default function ProfileScreen() {
 
           {/* Name with Badges */}
           <View className="flex-row items-center gap-1 mb-1">
-            <Text className="text-xl font-bold text-black">{isProfileLoading ? 'Loading...' : userProfile?.name || 'User'}</Text>
-            {/*<Text className="text-lg">✅</Text>
-            <Text className="text-lg">🏆</Text>*/}
+            <Text className="text-xl font-bold text-black">
+              {isGuest ? 'Guest' : (isProfileLoading ? 'Loading...' : userProfile?.name || 'User')}
+            </Text>
           </View>
 
           {/* Email */}
-          <Text className="text-sm text-gray-500 mb-1">
-            {userProfile?.email || ''}
-          </Text>
-            </View>
-
-        {/* Stats Section */}
-        {/* <StatsSection stats={stats} /> */}
+          {!isGuest && (
+            <Text className="text-sm text-gray-500 mb-1">
+              {userProfile?.email || ''}
+            </Text>
+          )}
+        </View>
 
         {/* Menu Items */}
         <View className="px-6 pb-6">

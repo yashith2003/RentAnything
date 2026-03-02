@@ -41,6 +41,7 @@ export default function ListAnItemScreen() {
   const [rentalFee, setRentalFee] = useState('');
   const [securityDeposit, setSecurityDeposit] = useState('');
   const [condition, setCondition] = useState('New (like new)');
+  const [accessibility, setAccessibility] = useState('');
   const [availability, setAvailability] = useState<{ dates: string[], startTime: string, endTime: string }>({
     dates: [],
     startTime: '10:30:00',
@@ -323,6 +324,7 @@ export default function ListAnItemScreen() {
         instructions: instructions,
         securityDeposit: securityDeposit ? parseFloat(securityDeposit) : 0,
         rateType: rentalRate === 'Hour' ? 'hourly' : rentalRate === 'Day' ? 'daily' : rentalRate === 'Weekly' ? 'weekly' : 'monthly',
+        accessibility: accessibility,
         availabilities: availability.dates.map(date => ({
           availableDate: date,
           startTime: availability.startTime,
@@ -605,6 +607,14 @@ export default function ListAnItemScreen() {
           options={['Brand New', 'New (like new)', 'Used (Good)', 'Used (Fair)', 'As a service']} 
           selected={condition} 
           onSelect={setCondition} 
+        />
+
+        <LabelledInput 
+          label="Accessibility" 
+          placeholder="e.g., Ground floor, Wide doors, Ramp access..." 
+          value={accessibility}
+          onChangeText={setAccessibility}
+          multiline
         />
 
         {/* Category-Specific Fields */}

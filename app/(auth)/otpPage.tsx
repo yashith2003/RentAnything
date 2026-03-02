@@ -23,12 +23,23 @@ export default function OTPPage() {
   const { phone } = useLocalSearchParams<{ phone: string }>();
   const [otp, setOtp] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showResendSuccess, setShowResendSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(60);
   const inputRef = useRef<TextInput>(null);
   const { t } = useTranslation();
   const { login } = useUser();
+
+  // Timer logic
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timeLeft]);
 
   // Auto-focus the input when screen mounts
   useEffect(() => {
@@ -68,10 +79,27 @@ export default function OTPPage() {
     router.replace('/(tabs)/home');
   };
 
-  const handleResend = () => {
-    console.log('Resend OTP');
-    setOtp('');
-    inputRef.current?.focus();
+  const handleResend = async () => {
+    if (timeLeft > 0) return;
+    
+    try {
+      console.log('Resending OTP for:', phone);
+      await authService.resendOtp(phone);
+      setOtp('');
+      setTimeLeft(60);
+      setShowResendSuccess(true);
+      inputRef.current?.focus();
+    } catch (error: any) {
+      console.error('Resend OTP failed:', error);
+      setErrorMessage(t('otpPage.resendFailed', 'Failed to resend OTP. Please try again.'));
+      setShowError(true);
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
   const handleInputContent = () => {
@@ -150,25 +178,33 @@ export default function OTPPage() {
             onPress={handleNext} 
           />
 
-          {/* Resend Link */}
           <View className="flex-row justify-center mt-6">
             <Text className="text-sm text-gray-500">
               {t('otpPage.noOtp')}
             </Text>
-            <TouchableOpacity onPress={handleResend}>
+            <TouchableOpacity 
+              onPress={handleResend}
+              disabled={timeLeft > 0}
+            >
               <Text
-                className="text-sm font-bold"
-                style={{ color: '#2FA2B9' }}
+                className="text-sm font-bold ml-1"
+                style={{ color: timeLeft > 0 ? '#9CA3AF' : '#2FA2B9' }}
               >
-                {t('otpPage.resend')}
+                {t('otpPage.resend')} {timeLeft > 0 ? `(${formatTime(timeLeft)})` : ''}
               </Text>
             </TouchableOpacity>
           </View>
         </View>
       </Pressable>
 
-      {/* Success Popup */}
+      {/* Success Popups */}
       <SuccessPopup visible={showSuccess} onNext={handleSuccessNext} />
+      <SuccessPopup 
+        visible={showResendSuccess} 
+        title={t('otpPage.resendSuccessTitle', 'OTP Sent!')}
+        message={t('otpPage.resendSuccessMessage', 'A new verification code has been sent to your phone number.')}
+        onNext={() => setShowResendSuccess(false)} 
+      />
       <ErrorPopup
         visible={showError}
         message={errorMessage}

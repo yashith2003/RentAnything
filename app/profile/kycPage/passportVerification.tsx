@@ -54,7 +54,7 @@ export default function PassportVerification() {
         if (passportDoc?.status === 'REJECTED') {
           router.replace('/profile/kycPage' as any);
         } else {
-          router.replace('/profile/kycPage/addressVerification' as any);
+          router.replace('/profile/kycPage' as any);
         }
       } catch (err) {
         console.error('[PassportVerification] Upload error:', err);
@@ -62,7 +62,7 @@ export default function PassportVerification() {
         setShowError(true);
       }
     } else {
-      router.replace('/profile/kycPage/addressVerification' as any);
+      router.replace('/profile/kycPage' as any);
     }
   };
 
@@ -133,7 +133,7 @@ export default function PassportVerification() {
           if (passportDoc?.status === 'REJECTED') {
             router.replace('/profile/kycPage' as any);
           } else {
-            router.replace('/profile/kycPage/addressVerification' as any);
+            router.replace('/profile/kycPage' as any);
           }
         }}
       />
