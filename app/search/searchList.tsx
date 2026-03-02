@@ -73,7 +73,7 @@ export default function SearchList({ categoryId, searchQuery, filters }: SearchL
             title: item.title,
             owner: item.owner?.individualUser?.fullName || item.owner?.company?.companyName || 'N/A',
             ownerId: item.owner?.id,
-            rating: item.averageRating?.toFixed(1) || '5.0',
+            rating: item.averageRating ?? 0,
             distance: '5.6 km',
             location: item.address?.address || 'N/A',
             phone: item.phone || (item.owner as any)?.phone,

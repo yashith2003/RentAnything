@@ -3,6 +3,7 @@ import { Modal, View, Text, TouchableOpacity, StyleSheet, Dimensions, Share, Pla
 import { Ionicons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 import { useRouter } from 'expo-router';
+import { useUser } from '@/context/userContext';
 
 interface SharePopupProps {
   visible: boolean;
@@ -15,6 +16,8 @@ const { width } = Dimensions.get('window');
 
 export const SharePopup: React.FC<SharePopupProps> = ({ visible, onClose, itemId, itemTitle }) => {
   const router = useRouter();
+  const { role } = useUser();
+  const isGuest = !role || role === 'GUEST' || role === 'guest';
   const universalLink = `https://rentanything.com/item/${itemId}`;
 
   const handleSystemShare = async () => {
@@ -69,12 +72,14 @@ export const SharePopup: React.FC<SharePopupProps> = ({ visible, onClose, itemId
           </View>
 
           <View style={styles.optionsContainer}>
-            <TouchableOpacity style={styles.option} onPress={handleInternalShare}>
-              <View style={[styles.iconContainer, { backgroundColor: Colors.primary }]}>
-                <Ionicons name="chatbubble-ellipses" size={24} color="#fff" />
-              </View>
-              <Text style={styles.optionText}>Rent Anything</Text>
-            </TouchableOpacity>
+            {!isGuest && (
+              <TouchableOpacity style={styles.option} onPress={handleInternalShare}>
+                <View style={[styles.iconContainer, { backgroundColor: Colors.primary }]}>
+                  <Ionicons name="chatbubble-ellipses" size={24} color="#fff" />
+                </View>
+                <Text style={styles.optionText}>Rent Anything</Text>
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity style={styles.option} onPress={handleSystemShare}>
               <View style={[styles.iconContainer, { backgroundColor: '#25D366' }]}>

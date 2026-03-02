@@ -117,7 +117,7 @@ export default function TrendingItemsScreen() {
                   price: formatPrice(item.price || item.pricings?.[0]?.price, item.pricings?.[0]?.rateType || (item as any).rateType),
                   owner: item.owner?.individualUser?.fullName || item.owner?.company?.companyName || 'N/A',
                   ownerId: item.owner?.id, // TypeScript now accepts string | number
-                  rating: '5.0',
+                  rating: item.averageRating ?? 0,
                   distance: '5.6 km',
                   location: item.address?.address || 'N/A',
                   phone: item.phone || undefined,

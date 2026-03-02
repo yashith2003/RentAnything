@@ -143,7 +143,9 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
         </View>
 
         <View className="flex-row items-center mt-1">
-            <Text className="text-gray-500 font-bold text-[10px] mr-1">{item.rating}</Text>
+            <Text className="text-gray-500 font-bold text-[10px] mr-1">
+              {typeof item.rating === 'number' ? item.rating.toFixed(1) : (parseFloat(String(item.rating)) || 0).toFixed(1)}
+            </Text>
             <Ionicons name="star" size={12} color="#FFCC00" />
         </View>
         

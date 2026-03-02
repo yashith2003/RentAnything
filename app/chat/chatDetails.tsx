@@ -431,12 +431,13 @@ export default function ChatDetailsScreen() {
                             <View className="flex-row items-end justify-end">
                                 <View className="items-end max-w-[85%]">
                                     {msg.text && msg.messageType === 'text' ? (
-                                        <View className="bg-cyan-50 border border-cyan-100 rounded-2xl rounded-br-none p-4 mb-2">
+                                        <View style={{ backgroundColor: '#E6F7FA', borderColor: '#2FA2B9' }} className="border rounded-2xl rounded-br-none p-4 mb-2">
                                             <Text className="text-sm text-black leading-5 font-Outfit">{msg.text}</Text>
                                         </View>
                                     ) : null}
 
                                     {msg.messageType === 'item_share' && msg.text.includes('item/') && (
+                                        console.log(`[ChatDetails] Rendering item_share: ${msg.text}`),
                                         <ChatItemMessage 
                                             itemId={parseInt(msg.text.split('item/')[1], 10)} 
                                             isSender={true} 
@@ -444,7 +445,7 @@ export default function ChatDetailsScreen() {
                                     )}
                                     
                                     {msg.attachments && msg.attachments.length > 0 && (
-                                        <View className="bg-cyan-50 border border-cyan-100 rounded-2xl rounded-br-none p-2 flex-row flex-wrap justify-end gap-2 mb-2">
+                                        <View style={{ backgroundColor: '#E6F7FA', borderColor: '#2FA2B9' }} className="border rounded-2xl rounded-br-none p-2 flex-row flex-wrap justify-end gap-2 mb-2">
                                             {msg.attachments.map((url: string, idx: number) => {
                                                 const isImage = url.match(/\.(jpg|jpeg|png|gif|webp)$/i);
                                                 return (
@@ -494,7 +495,7 @@ export default function ChatDetailsScreen() {
                                 />
                                 <View className="max-w-[85%]">
                                     {msg.text && msg.messageType === 'text' ? (
-                                        <View className="bg-gray-50 border border-gray-100 rounded-2xl rounded-bl-none p-4 mb-2">
+                                        <View style={{ backgroundColor: '#E6F7FA', borderColor: '#2FA2B9' }} className="border rounded-2xl rounded-bl-none p-4 mb-2">
                                             <Text className="text-sm text-black leading-5 font-Outfit">{msg.text}</Text>
                                         </View>
                                     ) : null}
@@ -507,7 +508,7 @@ export default function ChatDetailsScreen() {
                                     )}
 
                                     {msg.attachments && msg.attachments.length > 0 && (
-                                        <View className="flex-row flex-wrap border border-gray-100 bg-gray-50 border border-gray-100 rounded-2xl rounded-bl-none p-2 gap-2 mb-2">
+                                        <View style={{ backgroundColor: '#E6F7FA', borderColor: '#2FA2B9' }} className="flex-row flex-wrap border rounded-2xl rounded-bl-none p-2 gap-2 mb-2">
                                             {msg.attachments.map((url: string, idx: number) => {
                                                 const isImage = url.match(/\.(jpg|jpeg|png|gif|webp)$/i);
                                                 return (

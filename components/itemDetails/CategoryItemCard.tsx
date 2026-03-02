@@ -77,7 +77,7 @@ export default function CategoryItemCard({ item }: Props) {
         <View className="flex-row items-center mt-1">
           <Ionicons name="star" size={11} color="#FFD700" />
           <Text className="ml-1 text-xs text-gray-600">
-            {item.averageRating?.toFixed(1) ?? '—'}
+            {(item.averageRating ?? 0).toFixed(1)}
           </Text>
         </View>
 
