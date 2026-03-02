@@ -9,11 +9,13 @@ import LocationMap from '@/components/itemDetails/LocationMap';
 import AvailabilityCalendarView from '@/components/itemDetails/AvailabilityCalendarView';
 import CategoryItemCard from '@/components/itemDetails/CategoryItemCard';
 import ReviewPopup from '@/components/modal/ReviewPopup';
+import { SharePopup } from '@/components/modal/SharePopup';
 import { CategoryDetailRenderer } from '@/components/itemDetails/CategoryDetailRenderer';
 import { CategoryTag } from '@/components/itemDetails/CategoryTag';
 import { useGetItemQuery, useGetItemsQuery, useGetTrendingItemsQuery, useRecordInteractionMutation } from '@/api/item.service';
 import { useGetItemReviewsQuery, useSubmitReviewMutation, useGetMyReviewForItemQuery } from '@/api/review.service';
 import { useGetProfileQuery } from '@/api/user.service';
+import { useUser } from '@/context/userContext';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useItemChat } from '@/hooks/useItemChat';
 import { getImageUrl } from '@/utils/image';
@@ -62,6 +64,8 @@ export default function ItemDetailsScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const { data: profile } = useGetProfileQuery();
+  const { role } = useUser();
+  const isGuest = role?.toLowerCase() === 'guest';
   const [activeTab, setActiveTab] = useState('Description');
   const [isReviewPopupVisible, setIsReviewPopupVisible] = useState(false);
   const [showReviewSuccess, setShowReviewSuccess] = useState(false);
@@ -69,6 +73,7 @@ export default function ItemDetailsScreen() {
     visible: false,
     message: '',
   });
+  const [isShareVisible, setIsShareVisible] = useState(false);
   
   const { isSaved, toggleItem } = useSavedItems();
   const saved = id ? isSaved(Number(id)) : false;
@@ -195,15 +200,20 @@ export default function ItemDetailsScreen() {
         </TouchableOpacity>
         <Text className="text-lg font-bold">Item details</Text>
         <View className="flex-row items-center gap-x-2">
-            <TouchableOpacity className="items-center justify-center w-10 h-10 rounded-full bg-gray-50">
-                <Ionicons name="share-outline" size={22} color="#000" />
-            </TouchableOpacity>
             <TouchableOpacity 
                 className="items-center justify-center w-10 h-10 rounded-full bg-gray-50"
-                onPress={handleSave}
+                onPress={() => setIsShareVisible(true)}
             >
-                <Ionicons name={saved ? "heart" : "heart-outline"} size={22} color={saved ? "#FF0000" : "#000"} />
+                <Ionicons name="share-outline" size={22} color="#000" />
             </TouchableOpacity>
+            {!isGuest && (
+              <TouchableOpacity 
+                  className="items-center justify-center w-10 h-10 rounded-full bg-gray-50"
+                  onPress={handleSave}
+              >
+                  <Ionicons name={saved ? "heart" : "heart-outline"} size={22} color={saved ? "#FF0000" : "#000"} />
+              </TouchableOpacity>
+            )}
         </View>
       </View>
 
@@ -291,10 +301,11 @@ export default function ItemDetailsScreen() {
                 owner={ownerData} 
                 onChat={handleChat} 
                 isChatLoading={isCreatingThread}
-                isChatDisabled={isOwnListing}
+                isChatDisabled={isOwnListing || isGuest}
+                isGuest={isGuest}
             />
 
-            {!isOwnListing && (
+            {!isOwnListing && !isGuest && (
                 <View className="mt-8">
                     <TouchableOpacity 
                         className="flex-row items-center justify-center p-4 bg-gray-50 border border-gray-100 rounded-2xl"
@@ -403,7 +414,8 @@ export default function ItemDetailsScreen() {
         onChat={handleChat}
         onCall={handleCall}
         isChatLoading={isCreatingThread}
-        isChatDisabled={isOwnListing}
+        isChatDisabled={isOwnListing || isGuest}
+        isGuest={isGuest}
       />
 
       {/* Review Popup Modal */}
@@ -456,6 +468,13 @@ export default function ItemDetailsScreen() {
         title={chatError?.title || 'Chat Error'}
         message={chatError?.message || ''}
         onClose={clearChatMessages}
+      />
+
+      <SharePopup 
+        visible={isShareVisible}
+        onClose={() => setIsShareVisible(false)}
+        itemId={Number(id)}
+        itemTitle={item?.title || ''}
       />
     </SafeAreaView>
   );

@@ -11,6 +11,8 @@ import React, { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getImageUrl } from '@/utils/image';
+import { formatPrice } from '@/utils/formatPrice';
+import ItemCard from '@/components/card/itemCard';
 
 export default function SavedScreen() {
   const router = useRouter();
@@ -72,13 +74,32 @@ export default function SavedScreen() {
               <Text className="text-gray-400">No saved items yet.</Text>
             </View>
           ) : (
-            savedItems.map((item) => (
-              <SavedItemCard 
-                  key={item.id} 
-                  item={item} 
-                  onRemove={() => handleRemovePress(item.id)}
-              />
-            ))
+            savedItems.map((item) => {
+              const mainPricing = item.pricings?.[0];
+              const priceDisplay = mainPricing ? `Rs:${String(mainPricing.price).split('.')[0]}` : 'N/A';
+              
+              const ownerName = item.owner?.individualUser?.fullName || item.owner?.company?.companyName || 'N/A';
+
+              return (
+                <View key={item.id} className="w-[48%]">
+                  <ItemCard 
+                    item={{
+                      id: item.id,
+                      image: item.imageUrl,
+                      price: formatPrice(mainPricing?.price, mainPricing?.rateType),
+                      title: item.title,
+                      owner: ownerName,
+                      ownerId: item.owner?.id,
+                      rating: item.averageRating?.toFixed(1) || '5.0',
+                      distance: '5.6 km',
+                      location: item.address?.address || 'N/A',
+                      phone: item.phone || item.owner?.phone,
+                      deliveryAvailable: item.deliveryAvailable,
+                    }}
+                  />
+                </View>
+              );
+            })
           )}
         </View>
       </ScrollView>
@@ -89,118 +110,6 @@ export default function SavedScreen() {
         onKeep={() => setModalVisible(false)}
       />
     </SafeAreaView>
-  );
-}
-
-function SavedItemCard({ item, onRemove }: { item: any, onRemove: () => void }) {
-  const router = useRouter();
-  
-  // Format price from pricings array
-  const mainPricing = item.pricings?.[0];
-  const priceDisplay = mainPricing ? `Rs:${String(mainPricing.price).split('.')[0]}` : 'N/A';
-  const unitDisplay = mainPricing ? `- Per ${mainPricing.rateType}` : '';
-
-  const ownerName = item.owner?.individualUser 
-    ? `${item.owner.individualUser.firstName} ${item.owner.individualUser.lastName}`
-    : 'N/A';
-
-  return (
-    <TouchableOpacity
-      activeOpacity={0.9}
-      onPress={() => router.push(`/item/${item.id}`)}
-      className="w-[48%] bg-white rounded-[24px] mb-4 border border-gray-100 overflow-hidden"
-      style={{
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
-        elevation: 2,
-      }}
-    >
-      {/* Product Image */}
-      <View className="relative">
-        <Image 
-          source={{ uri: getImageUrl(item.imageUrl) }} 
-          style={{ width: '100%', height: 160 }} 
-          contentFit="cover" 
-          placeholder="https://via.placeholder.com/400?text=No+Image"
-        />
-        <TouchableOpacity 
-            className="absolute top-3 right-3 "
-            onPress={onRemove}
-        >
-          <Ionicons name="heart" size={20} color="#FF4D4D" />
-        </TouchableOpacity>
-      </View>
-
-      <View className="p-3">
-        {/* Price */}
-        <View className="flex-row flex-wrap items-baseline">
-          <Text className="text-[#2FA2B9] font-bold text-xs">{priceDisplay}</Text>
-          <Text className="text-gray-400 text-[9px] ml-0.5">{unitDisplay}</Text>
-        </View>
-
-        {/* Title */}
-        <Text className="font-bold text-sm mt-1 text-[#0B0C15]" numberOfLines={1}>
-          {item.title}
-        </Text>
-
-        {/* Owner */}
-        <View className="flex-row items-center mt-1">
-          <Text className="text-gray-400 text-[10px]" numberOfLines={1}>Owner: {ownerName}</Text>
-          <View className="ml-1 w-3 h-3 bg-[#2D8CFF] rounded-full items-center justify-center">
-            <Ionicons name="checkmark" size={8} color="white" />
-          </View>
-        </View>
-
-        {/* Rating & Distance */}
-        <View className="flex-row items-center mt-1">
-            <Text className="text-gray-500 font-bold text-[10px] mr-1">5.0</Text>
-            <Ionicons name="star" size={12} color="#FFCC00" />
-        </View>
-        <View className="flex-row items-center mt-0.5">
-          <Ionicons name="location-outline" size={12} color="#2FA2B9" />
-          <Text className="text-[#2FA2B9] text-[10px] font-medium ml-1">
-            5.6 km - {item.address?.city || 'N/A'}
-          </Text>
-        </View>
-
-        {/* Action Buttons */}
-        <View className="flex-row items-center mt-3 gap-x-1.5">
-          <TouchableOpacity className="flex-1 bg-[#2FA2B9] rounded-xl py-2.5 items-center">
-            <Text className="text-white text-[9px] font-bold">Request for rent</Text>
-          </TouchableOpacity>
-          <View className="flex-row gap-x-1">
-            <TouchableOpacity 
-              className="w-8 h-8 rounded-full border border-gray-100 items-center justify-center"
-              onPress={() => {
-                if (item.phone) {
-                  Linking.openURL(`tel:${item.phone}`);
-                } else if (item.owner?.phone) {
-                  Linking.openURL(`tel:${item.owner.phone}`);
-                } else {
-                  console.warn('[SavedItemCard] No phone number available');
-                }
-              }}
-            >
-                <Ionicons name="call" size={14} color="#666" />
-            </TouchableOpacity>
-            <TouchableOpacity className="w-8 h-8 rounded-full border border-gray-100 items-center justify-center">
-                <Ionicons name="chatbubble-ellipses" size={14} color="#666" />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Delivery Info */}
-        <View className="flex-row items-center mt-2.5">
-          <Ionicons name="bicycle" size={14} color="#9ca3af" />
-          <Text className="text-gray-400 text-[9px] font-medium ml-1.5">
-            {item.deliveryAvailable ? 'Delivery Available' : 'Pickup Only'}
-          </Text>
-        </View>
-      </View>
-
-    </TouchableOpacity>
   );
 }
 

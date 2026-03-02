@@ -3,14 +3,15 @@
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { SelectionItem } from '@/components/form/SelectionItem';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useState } from 'react';
 import { useGetKycStatusQuery } from '@/api/kyc.service';
 import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as SecureStore from 'expo-secure-store';
 
 export default function KYCPage() {
   const router = useRouter();
@@ -46,43 +47,96 @@ export default function KYCPage() {
     },
   ];
 
-  const getNicStatusProps = () => {
-    const frontStatus = (kycStatus?.items as any)?.NIC_FRONT?.status;
-    const backStatus = (kycStatus?.items as any)?.NIC_BACK?.status;
+  const getStep2StatusProps = () => {
+    const items = kycStatus?.items as any;
+    
+    const nicVerified = items?.NIC_FRONT?.status === 'VERIFIED' && items?.NIC_BACK?.status === 'VERIFIED';
+    const licenseVerified = items?.DRIVING_LICENSE?.status === 'VERIFIED';
+    const passportVerified = items?.PASSPORT?.status === 'VERIFIED';
 
-    if (frontStatus === 'VERIFIED' && backStatus === 'VERIFIED') return { rightText: 'Verified', textColor: '#10B981' };
-    if (frontStatus === 'REJECTED' || backStatus === 'REJECTED') return { rightText: 'Redo', textColor: '#EF4444' };
-    if (frontStatus === 'PENDING' || backStatus === 'PENDING') return { rightText: 'Pending', textColor: '#3B82F6' };
-    return { rightText: 'Add', textColor: Colors.primary };
+    const nicPending = items?.NIC_FRONT?.status === 'PENDING' || items?.NIC_BACK?.status === 'PENDING';
+    const licensePending = items?.DRIVING_LICENSE?.status === 'PENDING';
+    const passportPending = items?.PASSPORT?.status === 'PENDING';
+    
+    const defaultRoute = '/profile/kycPage/IdentificationDocuments';
+
+    let redirectRoute = defaultRoute;
+
+    let pendingCount = 0;
+    if (nicPending) pendingCount++;
+    if (licensePending) pendingCount++;
+    if (passportPending) pendingCount++;
+
+    if (pendingCount === 1) {
+       if (licensePending) redirectRoute = '/profile/kycPage/DrivingLicenseVerification';
+       else if (passportPending) redirectRoute = '/profile/kycPage/passportVerification';
+       else if (nicPending) redirectRoute = '/profile/kycPage/NICVerification';
+    }
+
+    if (nicVerified || licenseVerified || passportVerified) {
+      return { rightText: 'Verified', textColor: '#10B981', redirectRoute };
+    }
+
+    if (nicPending || licensePending || passportPending) {
+      return { rightText: 'Pending', textColor: '#3B82F6', redirectRoute };
+    }
+
+    const nicRejected = items?.NIC_FRONT?.status === 'REJECTED' || items?.NIC_BACK?.status === 'REJECTED';
+    const licenseRejected = items?.DRIVING_LICENSE?.status === 'REJECTED';
+    const passportRejected = items?.PASSPORT?.status === 'REJECTED';
+
+    if (nicRejected || licenseRejected || passportRejected) {
+      return { rightText: 'Redo', textColor: '#EF4444', redirectRoute: defaultRoute };
+    }
+
+    return { rightText: 'Add', textColor: Colors.primary, redirectRoute: defaultRoute };
   };
 
-  const nicStatusProps = getNicStatusProps();
+  const step2Status = getStep2StatusProps();
 
   const step2Items = [
     {
       icon: 'card-outline',
-      label: 'National identity card',
-      onPress: () => router.push('/profile/kycPage/NICVerification' as any),
-      rightText: nicStatusProps.rightText,
-      textColor: nicStatusProps.textColor,
-    },
-    {
-      icon: 'car-outline',
-      label: 'Driving license',
-      onPress: () => router.push('/profile/kycPage/DrivingLicenseVerification' as any),
-      rightText: getRightText('DRIVING_LICENSE'),
-      textColor: getStatusColor('DRIVING_LICENSE'),
-    },
-    {
-      icon: 'document-outline',
-      label: 'Passport',
-      onPress: () => router.push('/profile/kycPage/passportVerification' as any),
-      rightText: getRightText('PASSPORT'),
-      textColor: getStatusColor('PASSPORT'),
+      label: 'Identification documents',
+      onPress: () => router.push(step2Status.redirectRoute as any),
+      rightText: step2Status.rightText,
+      textColor: step2Status.textColor,
     },
   ];
 
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+
+  // Check email verification status when the screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      const checkEmailStatus = async () => {
+        try {
+          const status = await SecureStore.getItemAsync('email_verified');
+          setIsEmailVerified(status === 'true');
+        } catch (error) {
+          console.error('Failed to check email verification status:', error);
+        }
+      };
+      
+      checkEmailStatus();
+    }, [])
+  );
+
   const step3Items = [
+    {
+      icon: 'mail-outline',
+      label: 'Email',
+      onPress: () => {
+        if (!isEmailVerified) {
+          router.push('/profile/kycPage/emailVerification' as any);
+        }
+      },
+      rightText: isEmailVerified ? 'Verified' : 'Verify',
+      textColor: isEmailVerified ? '#10B981' : Colors.primary,
+    },
+  ];
+
+  const step4Items = [
     {
       icon: 'location-outline',
       label: 'Proof of address',
@@ -151,9 +205,20 @@ export default function KYCPage() {
         <View className="mb-6">
           <Text className="text-xl font-bold text-black mb-2">Step 3</Text>
           <Text className="text-sm text-gray-500 mb-4 leading-6">
-            Provide proof of your current residential address.
+            Verify your email address for account security.
           </Text>
           {step3Items.map((item) => (
+            <SelectionItem key={item.label} {...item} />
+          ))}
+        </View>
+
+        {/* Step 4 */}
+        <View className="mb-6">
+          <Text className="text-xl font-bold text-black mb-2">Step 4</Text>
+          <Text className="text-sm text-gray-500 mb-4 leading-6">
+            Provide proof of your current residential address.
+          </Text>
+          {step4Items.map((item) => (
             <SelectionItem key={item.label} {...item} />
           ))}
         </View>

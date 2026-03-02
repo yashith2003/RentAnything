@@ -68,7 +68,7 @@ export default function SearchBar({
         className="w-14 h-14 bg-white rounded-2xl items-center justify-center border border-gray-200 shadow-sm shadow-black/5"
         style={{ elevation: 2 }}
       >
-        <Ionicons name="search-outline" size={22} color="#A0A0A0" />
+        <Ionicons name="search-outline" size={22} color="#000" />
       </TouchableOpacity>
       </View>
     </View>

@@ -2,22 +2,17 @@
 import { useState, useEffect } from 'react';
 import { useSearchItemsQuery } from '../api/item.service';
 
-export const useSearch = (categoryId?: number, initialLimit: number = 20) => {
+export const useSearch = (categoryId?: number, initialLimit: number = 20, filters: any = {}) => {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [page, setPage] = useState(1);
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedQuery(query);
-      setPage(1); // Reset page on new search
-    }, 500);
+  // Removed automatic debounce to honor manual trigger (search icon/enter key)
+  // Search will only update when triggerSearch() is called
 
-    return () => clearTimeout(handler);
-  }, [query]);
-
-  const triggerSearch = () => {
-    setDebouncedQuery(query);
+  const triggerSearch = (searchVal?: string) => {
+    const finalQuery = searchVal !== undefined ? searchVal : query;
+    setDebouncedQuery(finalQuery);
     setPage(1);
   };
 
@@ -26,7 +21,8 @@ export const useSearch = (categoryId?: number, initialLimit: number = 20) => {
       q: debouncedQuery, 
       category: categoryId, 
       page, 
-      limit: initialLimit 
+      limit: initialLimit,
+      ...filters
     },
     { skip: debouncedQuery.length === 0 && !categoryId }
   );

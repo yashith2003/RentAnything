@@ -5,13 +5,13 @@ import * as SecureStore from 'expo-secure-store';
 import { setAuthToken, apiSlice } from '../api/apiSlice';
 import { useDispatch } from 'react-redux';
 
-export type UserRole = 'INDIVIDUAL' | 'COMPANY' | 'individual' | 'company' | null;
+export type UserRole = 'INDIVIDUAL' | 'COMPANY' | 'GUEST' | 'individual' | 'company' | 'guest' | null;
 
 interface UserContextType {
   role: UserRole;
   setRole: (role: UserRole) => void;
   token: string | null;
-  login: (token: string, refreshToken: string, role: UserRole) => Promise<void>;
+  login: (token: string, refreshToken: string | null, role: UserRole) => Promise<void>;
   logout: () => Promise<void>;
   isLoading: boolean;
 }
@@ -45,11 +45,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const login = async (accessToken: string, refreshToken: string, userRole: UserRole) => {
+  const login = async (accessToken: string, refreshToken: string | null, userRole: UserRole) => {
     try {
       console.log(`[UserContext] Logging in, setting auth token and resetting state...`);
       await SecureStore.setItemAsync('access_token', accessToken);
-      await SecureStore.setItemAsync('refresh_token', refreshToken);
+      if (refreshToken) {
+        await SecureStore.setItemAsync('refresh_token', refreshToken);
+      }
       if (userRole) {
         await SecureStore.setItemAsync('user_role', userRole);
       }

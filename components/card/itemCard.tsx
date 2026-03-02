@@ -9,6 +9,7 @@ import { Text, TouchableOpacity, View, Linking } from 'react-native';
 import { getImageUrl } from '@/utils/image';
 import { useCreateThreadMutation, useGetUserThreadsQuery } from '@/api/chat.service';
 import { useRecordInteractionMutation } from '@/api/item.service';
+import { useUser } from '@/context/userContext';
 
 interface ItemCardProps {
   item: {
@@ -18,7 +19,7 @@ interface ItemCardProps {
     extraPrice?: string;
     title: string;
     owner: string;
-    ownerId?: number;
+    ownerId?: number | string;
     phone?: string;
     rating: string | number;
     distance: string;
@@ -32,6 +33,8 @@ interface ItemCardProps {
 
 export default function ItemCard({ item, onPress }: ItemCardProps) {
   const router = useRouter();
+  const { role } = useUser();
+  const isGuest = role?.toLowerCase() === 'guest';
   const { isSaved, toggleItem } = useSavedItems();
   const saved = isSaved(Number(item.id));
 
@@ -112,12 +115,14 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
           placeholder="https://via.placeholder.com/400?text=Loading..."
           transition={200}
         />
-        <TouchableOpacity 
-            className="absolute top-3 right-3"
-            onPress={handleSave}
-        >
-          <Ionicons name={saved ? "heart" : "heart-outline"} size={22} color={saved ? "#FF0000" : "#000"} />
-        </TouchableOpacity>
+        {!isGuest && (
+          <TouchableOpacity 
+              className="absolute top-3 right-3"
+              onPress={handleSave}
+          >
+            <Ionicons name={saved ? "heart" : "heart-outline"} size={22} color={saved ? "#FF0000" : "#000"} />
+          </TouchableOpacity>
+        )}
       </View>
 
       <View className="p-3">
@@ -155,15 +160,29 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
             className="flex-1 bg-[#2FA2B9] rounded-xl py-2.5 items-center flex-row justify-center gap-x-1"
           >
             <Ionicons name="call" size={12} color="white" />
-            <Text className="text-white text-[10px] font-bold">Connect</Text>
+            <Text className="text-white text-[10px] font-bold">Contact</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity
-            className="w-9 h-9 rounded-full border border-gray-100 items-center justify-center"
-            onPress={handleChat}
-          >
-            <Ionicons name="chatbubble-ellipses" size={16} color="#666" />
-          </TouchableOpacity>
+          {!isGuest && (
+            <TouchableOpacity
+              className="w-9 h-9 rounded-full border border-gray-100 items-center justify-center"
+              onPress={handleChat}
+            >
+              <Ionicons name="chatbubble-ellipses" size={16} color="#666" />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Delivery Info */}
+        <View className="flex-row items-center mt-2.5">
+          <Ionicons 
+            name={item.deliveryAvailable ? "bicycle" : "bicycle-outline"} 
+            size={14} 
+            color="#9ca3af" 
+          />
+          <Text className="text-gray-400 text-[9px] font-medium ml-1.5">
+            {item.deliveryAvailable ? 'Delivery Available' : 'Pickup Only'}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>

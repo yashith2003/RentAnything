@@ -3,6 +3,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import React from 'react';
 import { ActivityIndicator, DimensionValue, Text, TouchableOpacity, View } from 'react-native';
+import { compressImage } from '@/utils/imageCompressor';
 
 interface UploadBoxProps {
   label?: string;
@@ -38,7 +39,6 @@ export const UploadBox: React.FC<UploadBoxProps> = ({
         mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 0.8,
         cameraType: ImagePicker.CameraType.front,
       });
     } else {
@@ -46,12 +46,12 @@ export const UploadBox: React.FC<UploadBoxProps> = ({
         mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 0.8,
       });
     }
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      onImageSelect?.(result.assets[0].uri);
+      const compressed = await compressImage(result.assets[0].uri);
+      onImageSelect?.(compressed);
     }
   };
 

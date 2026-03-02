@@ -71,7 +71,7 @@ export default function NICVerification() {
       if (nicFront?.status === 'REJECTED' || nicBack?.status === 'REJECTED') {
         router.replace('/profile/kycPage' as any);
       } else {
-        router.replace('/profile/kycPage/DrivingLicenseVerification' as any);
+        router.replace('/profile/kycPage' as any);
       }
     } catch (err) {
       console.error(`[NICVerification] upload error:`, err);
@@ -166,7 +166,7 @@ export default function NICVerification() {
           if (nicFront?.status === 'REJECTED' || nicBack?.status === 'REJECTED') {
             router.replace('/profile/kycPage' as any);
           } else {
-            router.replace('/profile/kycPage/DrivingLicenseVerification' as any);
+            router.replace('/profile/kycPage' as any);
           }
         }}
       />

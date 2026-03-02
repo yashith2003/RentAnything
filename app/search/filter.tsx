@@ -1,66 +1,57 @@
+//RentAnything/app/search/filter.tsx
+
 import { PaddingStyles, Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState, useEffect } from 'react';
 import { ScrollView, Switch, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from 'react-native';
-import Slider from '@react-native-community/slider';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import filterService, { FilterConfig } from '@/api/filter.service';
+import { useGetCategoryFiltersQuery } from '@/api/category.service';
 import DynamicFilterRenderer from '@/components/shared/DynamicFilterRenderer';
-import { Colors } from '@/constants/theme';
+import LocationDropdown from '@/components/form/LocationDropdown';
+import RangeSlider from '@/components/shared/RangeSlider';
+import SingleSlider from '@/components/shared/SingleSlider';
 
 export default function FilterScreen() {
   const router = useRouter();
   const { categoryId, returnTo } = useLocalSearchParams<{ categoryId?: string, returnTo?: string }>();
   
   // Common Filters
-  const [priceRange, setPriceRange] = useState<{ min: number, max: number }>({ min: 0, max: 10000 });
-  const [selectedLocation, setSelectedLocation] = useState('Current Location');
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 50000 });
+  const [ratingRange, setRatingRange] = useState({ min: 0, max: 5 });
+  const [selectedLocation, setSelectedLocation] = useState<{address: string, lat?: number, lng?: number} | null>({ address: 'Select location' });
   const [distance, setDistance] = useState<string | null>('All');
-  const [minRating, setMinRating] = useState<number>(0);
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
   
-  const [dynamicConfigs, setDynamicConfigs] = useState<FilterConfig[]>([]);
+  const [brand, setBrand] = useState('');
+  const [accessibility, setAccessibility] = useState('');
+  const [warrantyOnly, setWarrantyOnly] = useState(false);
+
   const [dynamicValues, setDynamicValues] = useState<Record<string, any>>({});
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    if (categoryId) {
-      fetchDynamicFilters();
-    } else {
-      setDynamicConfigs([]);
-    }
-  }, [categoryId]);
-
-  const fetchDynamicFilters = async () => {
-    setIsLoading(true);
-    try {
-      const configs = await filterService.getFiltersByCategory(Number(categoryId));
-      setDynamicConfigs(configs);
-    } catch (error) {
-      console.error('Failed to load dynamic filters:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  
+  const { data: dynamicConfigs = [], isLoading } = useGetCategoryFiltersQuery(Number(categoryId), { skip: !categoryId });
 
   const handleDynamicChange = (key: string, value: any) => {
     setDynamicValues(prev => ({ ...prev, [key]: value }));
   };
 
   const resetFilters = () => {
-    setPriceRange({ min: 0, max: 10000 });
-    setSelectedLocation('Current Location');
+    setPriceRange({ min: 0, max: 50000 });
+    setRatingRange({ min: 0, max: 5 });
+    setSelectedLocation({ address: 'Select location' });
     setDistance('All');
-    setMinRating(0);
+    setBrand('');
+    setAccessibility('');
+    setWarrantyOnly(false);
     setDynamicValues({});
   };
 
-  const Chip = ({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) => (
+  const Chip = ({ label, selected, onPress, disabled }: { label: string; selected: boolean; onPress: () => void; disabled?: boolean }) => (
     <TouchableOpacity
       onPress={onPress}
       className={`px-${getTailwindSpacing(Spacing.lg)} py-2 rounded-xl mr-3 mb-3 border ${
         selected ? 'bg-[#2FA2B9] border-[#2FA2B9]' : 'bg-white border-gray-100'
-      }`}
+      } ${disabled ? 'opacity-40' : ''}`}
     >
       <Text className={`text-sm font-medium ${selected ? 'text-white' : 'text-gray-500'}`}>
         {label}
@@ -93,36 +84,32 @@ export default function FilterScreen() {
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1 pt-4" style={PaddingStyles.page}>
         {/* COMMON FILTERS FIRST */}
         <Section title="Price Range">
-           <Slider
-            style={{ width: '100%', height: 40 }}
-            minimumValue={0}
-            maximumValue={50000}
+           <RangeSlider
+            min={0}
+            max={50000}
             step={500}
-            value={priceRange.max}
-            onSlidingComplete={(val) => setPriceRange(prev => ({ ...prev, max: val }))}
-            minimumTrackTintColor="#2FA2B9"
-            maximumTrackTintColor="#F0F0F0"
-            thumbTintColor="#2FA2B9"
+            initialMin={priceRange.min}
+            initialMax={priceRange.max}
+            onSlidingComplete={(min, max) => setPriceRange({ min, max })}
           />
-          <View className="flex-row justify-between mt-2">
-             <View className="flex-1 bg-gray-50 rounded-xl p-3 border border-gray-100">
-                <Text className="text-[10px] text-gray-400 mb-1">Minimum</Text>
-                <Text className="font-bold text-sm">Rs: {priceRange.min.toLocaleString()}</Text>
-             </View>
-             <View className="w-4" />
-             <View className="flex-1 bg-gray-50 rounded-xl p-3 border border-gray-100">
-                <Text className="text-[10px] text-gray-400 mb-1">Maximum</Text>
-                <Text className="font-bold text-sm">Rs: {priceRange.max.toLocaleString()}</Text>
-             </View>
-          </View>
         </Section>
 
         <Section title="Location">
           <TouchableOpacity 
-            className="flex-row items-center bg-gray-50 rounded-xl p-4 border border-gray-100"
+            className={`flex-row items-center bg-gray-50 rounded-xl p-4 border ${
+              (distance !== 'All' && !selectedLocation?.lat) ? 'border-red-500 bg-red-50/10' : 'border-gray-100'
+            }`}
+            onPress={() => setShowLocationDropdown(true)}
           >
-            <Ionicons name="location-outline" size={20} color="#2FA2B9" />
-            <Text className="flex-1 ml-3 text-gray-700 font-medium">{selectedLocation}</Text>
+            <Ionicons name="location-outline" size={20} color={(distance !== 'All' && !selectedLocation?.lat) ? '#EF4444' : '#2FA2B9'} />
+            <View className="flex-1 ml-3">
+              <Text className={`text-gray-700 font-medium ${(!selectedLocation?.lat && distance !== 'All') ? 'text-red-500' : ''}`} numberOfLines={2}>
+                {selectedLocation?.address || 'Select location'}
+              </Text>
+              {(distance !== 'All' && !selectedLocation?.lat) && (
+                <Text className="text-red-500 text-[10px] font-bold mt-1">Select your location to calculate distance</Text>
+              )}
+            </View>
             <Ionicons name="chevron-forward" size={16} color="#A0A0A0" />
           </TouchableOpacity>
         </Section>
@@ -134,29 +121,60 @@ export default function FilterScreen() {
                 key={label}
                 label={label}
                 selected={distance === label}
+                disabled={!selectedLocation?.lat && label !== 'All'}
                 onPress={() => setDistance(label)}
               />
             ))}
           </View>
         </Section>
 
-        <Section title="Minimum Rating">
-           <Slider
-            style={{ width: '100%', height: 40 }}
-            minimumValue={0}
-            maximumValue={5}
-            step={0.5}
-            value={minRating}
-            onSlidingComplete={setMinRating}
-            minimumTrackTintColor="#2FA2B9"
-            maximumTrackTintColor="#F0F0F0"
-            thumbTintColor="#2FA2B9"
-          />
-          <View className="flex-row justify-between mt-2 px-1">
-             <Text className="text-xs text-gray-400">0.0</Text>
-             <Text className="text-[#2FA2B9] font-bold text-xs">Rating: {minRating.toFixed(1)} +</Text>
-             <Text className="text-xs text-gray-400">5.0</Text>
-          </View>
+        <Section title="Rating Range">
+           <RangeSlider
+             min={0}
+             max={5}
+             step={0.5}
+             initialMin={ratingRange.min}
+             initialMax={ratingRange.max}
+             onSlidingComplete={(min, max) => setRatingRange({ min, max })}
+             showTicks={true}
+             tickStep={0.5}
+             labelPrefix="Rating: "
+             isRating={true}
+           />
+        </Section>
+
+        <Section title="Brand">
+           <TextInput
+             placeholder="Search by brand..."
+             placeholderTextColor="#9CA3AF"
+             value={brand}
+             onChangeText={setBrand}
+             className="w-full h-12 bg-gray-50 border border-gray-100 rounded-xl px-4 text-gray-900"
+           />
+        </Section>
+
+        <Section title="Rental Access">
+           <TextInput
+             placeholder="e.g. Ground floor, Wide doors..."
+             placeholderTextColor="#9CA3AF"
+             value={accessibility}
+             onChangeText={setAccessibility}
+             className="w-full h-12 bg-gray-50 border border-gray-100 rounded-xl px-4 text-gray-900"
+           />
+        </Section>
+
+        <Section title="Additional Options">
+           <View className="flex-row items-center justify-between py-2">
+             <View className="flex-1">
+               <Text className="text-gray-900 font-medium">Only with Warranty</Text>
+               <Text className="text-xs text-gray-400">Strictly items with valid warranty</Text>
+             </View>
+             <Switch
+               value={warrantyOnly}
+               onValueChange={setWarrantyOnly}
+               trackColor={{ false: '#E5E7EB', true: '#2FA2B9' }}
+             />
+           </View>
         </Section>
 
         <View className="h-[1px] bg-gray-100 mb-6" />
@@ -201,13 +219,22 @@ export default function FilterScreen() {
         </TouchableOpacity>
         <TouchableOpacity 
           onPress={() => {
+              if (distance !== 'All' && !selectedLocation?.lat) {
+                return; // Error shown above, just stop
+              }
               const appliedFilters = { 
                 categoryId: categoryId || '', 
                 priceMin: priceRange.min,
                 priceMax: priceRange.max,
-                distance,
-                minRating,
-                location: selectedLocation,
+                ratingMin: ratingRange.min,
+                ratingMax: ratingRange.max,
+                distance: distance === 'All' ? undefined : distance,
+                location: selectedLocation?.address === 'Select location' ? undefined : selectedLocation?.address,
+                lat: selectedLocation?.lat,
+                lng: selectedLocation?.lng,
+                brand: brand || undefined,
+                accessibility: accessibility || undefined,
+                warrantyOnly: warrantyOnly ? 'true' : undefined,
                 ...dynamicValues 
               };
 
@@ -228,6 +255,12 @@ export default function FilterScreen() {
           <Text className="text-white font-bold">Show Results</Text>
         </TouchableOpacity>
       </View>
+
+      <LocationDropdown
+        visible={showLocationDropdown}
+        onClose={() => setShowLocationDropdown(false)}
+        onSelectLocation={setSelectedLocation}
+      />
     </SafeAreaView>
   );
 }

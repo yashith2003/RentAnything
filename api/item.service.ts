@@ -135,7 +135,7 @@ export const itemApi = apiSlice.injectEndpoints({
       transformResponse: (response: any) => response.data || response,
       providesTags: [{ type: 'Item', id: 'MY_REVIEWS' }],
     }),
-    searchItems: builder.query<Item[], { q: string; category?: number; page?: number; limit?: number }>({
+    searchItems: builder.query<Item[], { q: string; category?: number; page?: number; limit?: number; lat?: number; lng?: number; distance?: string }>({
       query: (params) => ({
         url: '/items/search',
         params,

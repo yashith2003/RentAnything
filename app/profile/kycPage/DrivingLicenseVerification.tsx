@@ -55,7 +55,7 @@ export default function DrivingLicenseVerification() {
         if (licenseDoc?.status === 'REJECTED') {
           router.replace('/profile/kycPage' as any);
         } else {
-          router.replace('/profile/kycPage/passportVerification' as any);
+          router.replace('/profile/kycPage' as any);
         }
       } catch (err) {
         console.error('[DrivingLicenseVerification] Upload error:', err);
@@ -63,7 +63,7 @@ export default function DrivingLicenseVerification() {
         setShowError(true);
       }
     } else {
-      router.replace('/profile/kycPage/passportVerification' as any);
+      router.replace('/profile/kycPage' as any);
     }
   };
 
@@ -134,7 +134,7 @@ export default function DrivingLicenseVerification() {
           if (licenseDoc?.status === 'REJECTED') {
             router.replace('/profile/kycPage' as any);
           } else {
-            router.replace('/profile/kycPage/passportVerification' as any);
+            router.replace('/profile/kycPage' as any);
           }
         }}
       />

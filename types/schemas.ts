@@ -10,8 +10,8 @@ export const AddressSchema = z.object({
 });
 
 export const UserProfileSchema = z.object({
-  id: z.number(),
-  email: z.string().email(),
+  id: z.union([z.number(), z.string()]),
+  email: z.string(),
   phone: z.string().optional().nullable(),
   role: z.string(),
   profileImage: z.string().optional().nullable(),
@@ -19,7 +19,7 @@ export const UserProfileSchema = z.object({
   joinedAt: z.string(),
   updatedAt: z.string().optional().nullable(),
   individualUser: z.object({
-    id: z.number(),
+    id: z.union([z.number(), z.string()]),
     fullName: z.string(),
     avatarUrl: z.string().optional().nullable(),
     nic: z.string().optional().nullable(),
@@ -30,7 +30,7 @@ export const UserProfileSchema = z.object({
     gender: z.string().optional().nullable(),
   }).optional().nullable(),
   company: z.object({
-    id: z.number(),
+    id: z.union([z.number(), z.string()]),
     companyName: z.string(),
     logoUrl: z.string().optional().nullable(),
     registrationNumber: z.string().optional().nullable(),
@@ -43,7 +43,7 @@ export const UserProfileSchema = z.object({
 });
 
 export const UserSchema = z.object({
-  id: z.number(),
+  id: z.union([z.number(), z.string()]),
   profileImage: z.string().optional().nullable(),
   status: z.string().optional().nullable(),
   joinedAt: z.union([z.string(), z.date()]).optional().nullable(),
@@ -141,6 +141,7 @@ export const ItemSchema = z.object({
   address: AddressSchema.optional().nullable(),
   category: CategorySchema.optional().nullable(),
   categoryDetails: CategoryDetailsSchema.optional().nullable(),
+  accessibility: z.string().optional().nullable(),
   deliveryAvailable: z.boolean().optional().nullable(),
   pickupAvailable: z.boolean().optional().nullable(),
   pricings: z.array(z.any()).optional().nullable(),
@@ -157,6 +158,9 @@ export const FilterParamsSchema = z.object({
   minRating: z.coerce.number().optional(),
   location: z.string().optional(),
   returnTo: z.string().optional(),
+  brand: z.string().optional(),
+  accessibility: z.string().optional(),
+  warrantyOnly: z.coerce.boolean().optional(),
 }).catchall(z.any());
 
 export type FilterParams = z.infer<typeof FilterParamsSchema>;
@@ -175,6 +179,7 @@ export const CreateItemSchema = z.object({
   instructions: z.string().optional().nullable(),
   securityDeposit: z.coerce.number().optional().nullable(),
   rateType: z.string().optional().nullable(),
+  accessibility: z.string().optional().nullable(),
   availabilities: z.array(z.any()).optional().nullable(),
 }).passthrough();
 
@@ -208,6 +213,7 @@ export const ChatMessageSchema = z.object({
     if (typeof val === 'string') return val.split(',').filter(Boolean);
     return val;
   }, z.array(z.string()).optional().nullable()),
+  type: z.string().optional().default('text'),
   thread: z.object({
     id: z.number(),
   }).optional().nullable(),

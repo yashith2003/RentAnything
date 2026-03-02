@@ -46,11 +46,8 @@ export default function FaceVerification() {
       try {
         await uploadDocument({ type: 'FACE_SELFIE', file: localImage }).unwrap();
         setShowSuccess(true);
-        if (selfieStatus?.status === 'REJECTED') {
-          router.replace('/profile/kycPage' as any);
-        } else {
-          router.replace('/profile/kycPage/NICVerification' as any);
-        }
+        // Always redirect to main KYC page after successful upload
+        router.replace('/profile/kycPage' as any);
       } catch (err) {
         console.error('[FaceVerification] Upload error:', err);
         setErrorMessage("Failed to upload selfie. Please make sure your face is clearly visible.");
@@ -85,7 +82,8 @@ export default function FaceVerification() {
       height={320}
       imageUri={displayUri}
       isLoading={isUploading}
-      label={isReadOnly ? "Selfie uploaded" : "Tap to take or choose selfie"}
+      label={isReadOnly ? "Selfie uploaded" : "Tap to take a selfie"}
+      allowedTypes=""
       onImageSelect={handleImageSelect}
       containerStyle="rounded-[32px]"
       openCamera={true}
@@ -150,7 +148,7 @@ export default function FaceVerification() {
           if (selfieStatus?.status === 'REJECTED') {
             router.replace('/profile/kycPage' as any);
           } else {
-            router.replace('/profile/kycPage/NICVerification' as any);
+            router.replace('/profile/kycPage' as any);
           }
         }}
       />

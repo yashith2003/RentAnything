@@ -23,13 +23,17 @@ interface LocationInputProps {
   onChange: (location: LocationData | null) => void;
   placeholder?: string;
   error?: string;
+  onDropdownToggle?: (isOpen: boolean) => void;
+  inline?: boolean;
 }
 
 export default function LocationInput({
   value,
   onChange,
   placeholder,
-  error
+  error,
+  onDropdownToggle,
+  inline
 }: LocationInputProps) {
   const { t } = useTranslation();
   const [query, setQuery] = useState(value?.address || '');
@@ -38,6 +42,11 @@ export default function LocationInput({
   const [isLoading, setIsLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [locationError, setLocationError] = useState('');
+
+  const toggleDropdown = (isOpen: boolean) => {
+    setShowDropdown(isOpen);
+    onDropdownToggle?.(isOpen);
+  };
   
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -82,7 +91,7 @@ export default function LocationInput({
     setIsLoading(true);
     try {
       const results = await addressService.search(searchText);
-      setSuggestions(results.slice(0, 5));
+      setSuggestions(results.slice(0, 3));
     } catch (err) {
       console.warn('Failed to fetch address suggestions:', err);
     } finally {
@@ -93,7 +102,7 @@ export default function LocationInput({
   const handleTextChange = (text: string) => {
     setQuery(text);
     onChange(null);
-    setShowDropdown(true);
+    toggleDropdown(true);
     setLocationError('');
     
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -115,7 +124,7 @@ export default function LocationInput({
     
     setQuery(selected.address);
     onChange(selected);
-    setShowDropdown(false);
+    toggleDropdown(false);
     Keyboard.dismiss();
     saveToRecentLocations(selected);
   };
@@ -153,7 +162,7 @@ export default function LocationInput({
         
         setQuery(selected.address);
         onChange(selected);
-        setShowDropdown(false);
+        toggleDropdown(false);
         Keyboard.dismiss();
         saveToRecentLocations(selected);
       } else {
@@ -175,9 +184,16 @@ export default function LocationInput({
           placeholder={placeholder || t('common.location', 'Location')}
           placeholderTextColor="#A1A1A1"
           className="flex-1 ml-2 text-base text-black"
+          style={{ paddingVertical: 0 }}
           value={query}
           onChangeText={handleTextChange}
-          onFocus={() => setShowDropdown(true)}
+          onFocus={() => toggleDropdown(true)}
+          onBlur={() => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+            timeoutRef.current = setTimeout(() => {
+              toggleDropdown(false);
+            }, 200);
+          }}
         />
         <Ionicons name="chevron-down" size={16} color="#6B7280" />
       </View>
@@ -187,7 +203,10 @@ export default function LocationInput({
       ) : <View className="mb-4" />}
       
       {showDropdown && (
-        <View className="absolute top-[62px] left-0 right-0 bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden z-[100]" style={styles.dropdown}>
+        <View 
+            className={`${inline ? 'mt-2' : 'absolute top-[62px] left-0 right-0'} bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden z-[100]`} 
+            style={inline ? [styles.dropdown, { elevation: 5, shadowOpacity: 0.05 }] : styles.dropdown}
+        >
           <ScrollView bounces={false} keyboardShouldPersistTaps="handled">
             {/* Current Location */}
             <TouchableOpacity 
@@ -266,7 +285,7 @@ export default function LocationInput({
           {/* Close button for better UX on mobile */}
           <TouchableOpacity 
             className="items-center py-2 bg-gray-50 border-t border-gray-100"
-            onPress={() => setShowDropdown(false)}
+            onPress={() => toggleDropdown(false)}
           >
             <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
           </TouchableOpacity>

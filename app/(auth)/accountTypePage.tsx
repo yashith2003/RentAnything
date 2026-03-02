@@ -12,10 +12,11 @@ import { PaddingStyles } from '@/constants/spacing';
 import { useUser } from '@/context/userContext';
 
 import { useTranslation } from 'react-i18next';
+import authService from '@/api/auth.service';
 
 export default function AccountTypePage() {
   const router = useRouter();
-  const { setRole } = useUser();
+  const { setRole, login } = useUser();
   const { t } = useTranslation();
 
   const handleSelectType = (type: 'individual' | 'company') => {
@@ -24,6 +25,18 @@ export default function AccountTypePage() {
       router.push('/(auth)/individualSignup');
     } else {
       router.push('/(auth)/companySignup');
+    }
+  };
+
+  const handleGuestLogin = async () => {
+    try {
+      const data = await authService.loginGuest();
+      if (data.access_token) {
+        await login(data.access_token, null, 'guest');
+        router.replace('/(tabs)/home');
+      }
+    } catch (error) {
+      console.error('Guest login failed:', error);
     }
   };
 
@@ -66,11 +79,18 @@ export default function AccountTypePage() {
             }}
           />
 
-          {/* Company Button */}
           <PrimaryButton
             title={t('accountTypePage.company')}
             variant="outlined"
             onPress={() => handleSelectType('company')}
+          />
+
+          {/* Guest Login Button */}
+          <PrimaryButton
+            title="Login as a Guest"
+            variant="outlined"
+            onPress={handleGuestLogin}
+            style={{ marginTop: 8, borderColor: '#ccc' }}
           />
         </View>
 

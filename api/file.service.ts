@@ -2,11 +2,15 @@
 import apiClient from './client';
 import * as SecureStore from 'expo-secure-store';
 import { Config } from '@/constants/config';
+import { compressImage } from '@/utils/imageCompressor';
 
 const fileService = {
   uploadImage: async (uri: string) => {
+    // Compress before upload: resize to max 1600px, JPEG 82%
+    const compressedUri = await compressImage(uri, { maxWidth: 1600 });
+
     const formData = new FormData();
-    const filename = uri.split('/').pop() || 'upload.jpg';
+    const filename = compressedUri.split('/').pop() || 'upload.jpg';
     const match = /\.(\w+)$/.exec(filename);
     const type = match ? `image/${match[1].toLowerCase()}` : 'image/jpeg';
 

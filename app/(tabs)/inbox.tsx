@@ -8,6 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { FlatList, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import RoleGuard from '@/components/auth/RoleGuard';
 
 import { useGetUserThreadsQuery, ChatThread } from '@/api/chat.service';
 import { useGetProfileQuery } from '@/api/user.service';
@@ -103,61 +104,66 @@ export default function InboxScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <StatusBar style="dark" />
+    <RoleGuard 
+      fallbackMessage="Signup to access the inbox" 
+      feature="send and receive messages"
+    >
+      <SafeAreaView className="flex-1 bg-white">
+        <StatusBar style="dark" />
 
-      {/* Header */}
-      <View className={`flex-row items-center justify-between px-${getTailwindSpacing(Spacing.pageHorizontal)} py-${getTailwindSpacing(Spacing.lg)}`}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className="w-10 h-10 rounded-full border border-gray-200 items-center justify-center"
-        >
-          <Ionicons name="chevron-back" size={24} color="#000" />
-        </TouchableOpacity>
+        {/* Header */}
+        <View className={`flex-row items-center justify-between px-${getTailwindSpacing(Spacing.pageHorizontal)} py-${getTailwindSpacing(Spacing.lg)}`}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="w-10 h-10 rounded-full border border-gray-200 items-center justify-center"
+          >
+            <Ionicons name="chevron-back" size={24} color="#000" />
+          </TouchableOpacity>
 
-        <Text className="text-lg font-semibold text-black">Chat</Text>
+          <Text className="text-lg font-semibold text-black">Chat</Text>
 
-        <TouchableOpacity
-          className="w-10 h-10 rounded-full border border-gray-200 items-center justify-center"
-          onPress={() => refetch()}
-        >
-          <Ionicons name="refresh-outline" size={24} color="#000" />
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            className="w-10 h-10 rounded-full border border-gray-200 items-center justify-center"
+            onPress={() => refetch()}
+          >
+            <Ionicons name="refresh-outline" size={24} color="#000" />
+          </TouchableOpacity>
+        </View>
 
-      {/* Search Bar */}
-      <View className={`px-${getTailwindSpacing(Spacing.pageHorizontal)} py-${getTailwindSpacing(Spacing.lg)}`}>
-        <View className={`flex-row items-center bg-transparent border border-gray-200 rounded-2xl h-12 px-${getTailwindSpacing(Spacing.lg)}`}>
-          <Ionicons name="search-outline" size={20} color="#999" style={{ marginRight: 8 }} />
-          <TextInput
-            className="flex-1 text-base text-black h-full"
-            placeholder="Search"
-            placeholderTextColor="#999"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
+        {/* Search Bar */}
+        <View className={`px-${getTailwindSpacing(Spacing.pageHorizontal)} py-${getTailwindSpacing(Spacing.lg)}`}>
+          <View className={`flex-row items-center bg-transparent border border-gray-200 rounded-2xl h-12 px-${getTailwindSpacing(Spacing.lg)}`}>
+            <Ionicons name="search-outline" size={20} color="#999" style={{ marginRight: 8 }} />
+            <TextInput
+              className="flex-1 text-base text-black h-full"
+              placeholder="Search"
+              placeholderTextColor="#999"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </View>
+        </View>
+
+        {/* Chat List */}
+        {isLoading ? (
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator size="large" color="#2FA2B9" />
+          </View>
+        ) : (
+          <FlatList
+            data={threads}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderItem}
+            contentContainerStyle={{ paddingHorizontal: Spacing.pageHorizontal, paddingBottom: Spacing.xxl }}
+            showsVerticalScrollIndicator={false}
+            ListEmptyComponent={
+              <View className="items-center justify-center py-20">
+                <Text className="text-gray-400">No conversations yet</Text>
+              </View>
+            }
           />
-        </View>
-      </View>
-
-      {/* Chat List */}
-      {isLoading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#2FA2B9" />
-        </View>
-      ) : (
-        <FlatList
-          data={threads}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderItem}
-          contentContainerStyle={{ paddingHorizontal: Spacing.pageHorizontal, paddingBottom: Spacing.xxl }}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            <View className="items-center justify-center py-20">
-              <Text className="text-gray-400">No conversations yet</Text>
-            </View>
-          }
-        />
-      )}
-    </SafeAreaView>
+        )}
+      </SafeAreaView>
+    </RoleGuard>
   );
 }

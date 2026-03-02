@@ -12,7 +12,7 @@ import { useLocalSearchParams } from 'expo-router';
 
 interface OwnerAboutProps {
   owner: {
-    id?: number;
+    id?: number | string;
     name: string;
     image?: string;
     memberSince: string;
@@ -25,13 +25,17 @@ interface OwnerAboutProps {
   onChat?: () => void;
   isChatLoading?: boolean;
   isChatDisabled?: boolean;
+  isGuest?: boolean;
 }
 
-export default function OwnerAbout({ owner, onChat, isChatLoading, isChatDisabled }: OwnerAboutProps) {
+export default function OwnerAbout({ owner, onChat, isChatLoading, isChatDisabled, isGuest }: OwnerAboutProps) {
   const router = useRouter();
   const { id: itemId } = useLocalSearchParams();
   const [recordInteraction] = useRecordInteractionMutation();
-  const { data: ownerReviewsData } = useGetUserReviewsQuery({ userId: owner.id! }, { skip: !owner.id });
+  const { data: ownerReviewsData } = useGetUserReviewsQuery(
+    { userId: Number(owner.id) }, 
+    { skip: !owner.id || isNaN(Number(owner.id)) }
+  );
 
   const handleCall = () => {
     if (owner.phone && itemId) {
@@ -78,17 +82,19 @@ export default function OwnerAbout({ owner, onChat, isChatLoading, isChatDisable
           >
             <Ionicons name="call-outline" size={20} color="#6B7280" />
           </TouchableOpacity>
-          <TouchableOpacity
-            className={`w-10 h-10 items-center justify-center rounded-full bg-gray-50 border border-gray-100 ${isChatDisabled ? 'opacity-50' : ''}`}
-            onPress={onChat}
-            disabled={isChatLoading || isChatDisabled}
-          >
-            {isChatLoading ? (
-                <ActivityIndicator size="small" color="#2FA2B9" />
-            ) : (
-                <Ionicons name="chatbubble-ellipses-outline" size={20} color={isChatDisabled ? "#9CA3AF" : "#6B7280"} />
-            )}
-          </TouchableOpacity>
+          {!isGuest && (
+            <TouchableOpacity
+              className={`w-10 h-10 items-center justify-center rounded-full bg-gray-50 border border-gray-100 ${isChatDisabled ? 'opacity-50' : ''}`}
+              onPress={onChat}
+              disabled={isChatLoading || isChatDisabled}
+            >
+              {isChatLoading ? (
+                  <ActivityIndicator size="small" color="#2FA2B9" />
+              ) : (
+                  <Ionicons name="chatbubble-ellipses-outline" size={20} color={isChatDisabled ? "#9CA3AF" : "#6B7280"} />
+              )}
+            </TouchableOpacity>
+          )}
         </View>
       </View>
       <Text className="text-gray-400 text-xs mt-4 leading-5 mb-5">

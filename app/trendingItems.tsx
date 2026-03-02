@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, Text, TouchableOpacity, View, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGetProfileQuery } from '@/api/user.service';
+import { formatPrice } from '@/utils/formatPrice';
 
 export default function TrendingItemsScreen() {
   const { t } = useTranslation();
@@ -113,9 +114,9 @@ export default function TrendingItemsScreen() {
                   id: item.id,
                   title: item.title,
                   image: getImageUrl(item.imageUrl),
-                  price: `Rs: ${(item.price || item.pricings?.[0]?.price || 0).toLocaleString()}`,
+                  price: formatPrice(item.price || item.pricings?.[0]?.price, item.pricings?.[0]?.rateType || (item as any).rateType),
                   owner: item.owner?.individualUser?.fullName || item.owner?.company?.companyName || 'N/A',
-                  ownerId: item.owner?.id,
+                  ownerId: item.owner?.id, // TypeScript now accepts string | number
                   rating: '5.0',
                   distance: '5.6 km',
                   location: item.address?.address || 'N/A',

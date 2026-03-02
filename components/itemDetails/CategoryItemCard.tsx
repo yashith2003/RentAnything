@@ -7,10 +7,11 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { getImageUrl } from '@/utils/image';
 import { Item } from '@/types/schemas';
-
+import { formatPrice } from '@/utils/formatPrice';
 import { useItemChat } from '@/hooks/useItemChat';
 import { useRecordInteractionMutation } from '@/api/item.service';
 import { Linking } from 'react-native';
+import { useUser } from '@/context/userContext';
 
 const itemImagesFallback = [
   'https://via.placeholder.com/300x200?text=No+Image',
@@ -22,6 +23,8 @@ interface Props {
 
 export default function CategoryItemCard({ item }: Props) {
   const router = useRouter();
+  const { role } = useUser();
+  const isGuest = role?.toLowerCase() === 'guest';
   const { handleChat, isCreatingThread, isOwnListing } = useItemChat(item);
   const [recordInteraction] = useRecordInteractionMutation();
 
@@ -38,7 +41,7 @@ export default function CategoryItemCard({ item }: Props) {
     'Owner';
 
   const pricing = item.pricings?.[0];
-  const price = pricing ? `Rs: ${pricing.price} / ${pricing.rateType}` : 'Price N/A';
+  const price = formatPrice(pricing?.price, pricing?.rateType);
 
   return (
     <TouchableOpacity
@@ -80,13 +83,15 @@ export default function CategoryItemCard({ item }: Props) {
 
         {/* Buttons */}
         <View className="flex-row gap-x-2 mt-3">
-          <TouchableOpacity
-            onPress={handleChat}
-            disabled={isCreatingThread || isOwnListing}
-            className={`w-10 h-10 border border-gray-100 rounded-xl items-center justify-center bg-gray-50 ${isOwnListing ? 'opacity-50' : ''}`}
-          >
-            <Ionicons name="chatbubble-ellipses-outline" size={20} color="#666" />
-          </TouchableOpacity>
+          {!isGuest && (
+            <TouchableOpacity
+              onPress={handleChat}
+              disabled={isCreatingThread || isOwnListing}
+              className={`w-10 h-10 border border-gray-100 rounded-xl items-center justify-center bg-gray-50 ${isOwnListing ? 'opacity-50' : ''}`}
+            >
+              <Ionicons name="chatbubble-ellipses-outline" size={20} color="#666" />
+            </TouchableOpacity>
+          )}
           
           <TouchableOpacity
             onPress={handleCall}

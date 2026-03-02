@@ -10,12 +10,25 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next'; // Assuming translation is used elsewhere or good to have
-import { ScrollView, Text, TextInput, View, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { ScrollView, Text, TextInput, View, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { compressImage } from '@/utils/imageCompressor';
 import SuccessPopup from '@/components/AlertPopup/SuccessPopup';
 import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
 import { getImageUrl } from '@/utils/image';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as SecureStore from 'expo-secure-store';
+import { z } from 'zod';
+import LocationInput, { LocationData } from '@/components/form/LocationInput';
+
+const ProfileUpdateSchema = z.object({
+  name: z.string().min(2, 'Name is too short').max(50),
+  email: z.string().email('Invalid email address'),
+  phone: z.string().min(10, 'Phone number is too short').max(15),
+  address: z.string().min(5, 'Address is too short').optional(),
+  description: z.string().max(500).optional(),
+  location: z.string().optional(),
+});
 
 export default function ProfileDetailsScreen() {
   const router = useRouter();
@@ -37,6 +50,7 @@ export default function ProfileDetailsScreen() {
   const [errorConfig, setErrorConfig] = useState<{ visible: boolean; title?: string; message?: string }>({
     visible: false,
   });
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   
   const { data: profile, isLoading, error } = useGetProfileQuery();
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
@@ -51,13 +65,14 @@ export default function ProfileDetailsScreen() {
       const mappedData = {
         name: isCompany ? (details as any)?.companyName || '' : (details as any)?.fullName || '',
         email: profile.email || '',
-        address: (details as any)?.address || '',
+        address: (details as any)?.address || '', // Keep existing address
         phone: profile.phone || '', 
         description: (details as any)?.description || '',
         location: (details as any)?.location || '', 
         profileImage: isCompany ? (details as any)?.logoUrl || '' : (details as any)?.avatarUrl || '',
         joinedAt: profile.joinedAt || '',
       };
+      // If address is missing, ensure it shows as empty for the user to fill
       setUserData(mappedData);
       setOriginalData(mappedData);
     }
@@ -73,32 +88,48 @@ export default function ProfileDetailsScreen() {
 
   const handleSave = async () => {
     try {
+      setFieldErrors({});
+      // Validate with Zod
+      const validatedData = ProfileUpdateSchema.parse(userData);
+
       const isCompany = profile?.role === 'company';
       
       const payload: any = {
-        email: userData.email,
-        phone: userData.phone,
+        email: validatedData.email,
+        phone: validatedData.phone,
       };
 
       if (isCompany) {
-        payload.companyName = userData.name;
+        payload.companyName = validatedData.name;
         payload.logoUrl = userData.profileImage;
-        payload.address = userData.address;
-        payload.description = userData.description;
-        payload.location = userData.location;
+        payload.address = validatedData.address;
+        payload.description = validatedData.description;
+        payload.location = validatedData.location;
       } else {
-        payload.fullName = userData.name;
+        payload.fullName = validatedData.name;
         payload.avatarUrl = userData.profileImage;
-        payload.address = userData.address;
-        payload.description = userData.description;
-        payload.location = userData.location;
+        payload.address = validatedData.address;
+        payload.description = validatedData.description;
+        payload.location = validatedData.location;
       }
 
       await updateProfile(payload).unwrap();
       
+      if (validatedData.email !== originalData.email) {
+        await SecureStore.deleteItemAsync('email_verified');
+      }
+
       setShowSuccess(true);
       setIsEditing(false);
     } catch (err) {
+      if (err instanceof z.ZodError) {
+        const errors: Record<string, string> = {};
+        err.issues.forEach((issue) => {
+          if (issue.path[0]) errors[issue.path[0] as string] = issue.message;
+        });
+        setFieldErrors(errors);
+        return;
+      }
       console.error('Failed to update profile:', err);
       setErrorConfig({
         visible: true,
@@ -122,11 +153,11 @@ export default function ProfileDetailsScreen() {
         mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [1, 1],
-        quality: 0.5,
       });
 
       if (!result.canceled) {
-        uploadImage(result.assets[0].uri);
+        const compressed = await compressImage(result.assets[0].uri, { maxWidth: 800 });
+        uploadImage(compressed);
       }
     } catch (error) {
         console.error('Error picking image:', error);
@@ -187,7 +218,18 @@ export default function ProfileDetailsScreen() {
         title="Profile Details" 
         rightIcon="ellipsis-horizontal" 
       />
-      <ScrollView className={`flex-1 px-${getTailwindSpacing(Spacing.pageHorizontal)}`} showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <ScrollView 
+            className={`flex-1 px-${getTailwindSpacing(Spacing.pageHorizontal)}`} 
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ 
+                paddingBottom: 20 
+            }}
+        >
         {isLoading ? (
             <View className="flex-1 justify-center items-center py-20">
                 <ActivityIndicator size="large" color="#2FA2B9" />
@@ -225,16 +267,13 @@ export default function ProfileDetailsScreen() {
             {userData.name}
           </Text>
 
-          {/* Email */}
-          <Text className="text-sm text-gray-500 mb-1">
-            {userData.email}
-          </Text>
+              
 
 
         </View>
 
         {/* Form Fields */}
-        <View className="pb-6">
+        <View>
           {/* Name Field */}
           <View className="mb-4">
             <Text className="text-base font-semibold text-black mb-2">Name</Text>
@@ -242,12 +281,13 @@ export default function ProfileDetailsScreen() {
               value={userData.name}
               onChangeText={(text) => setUserData({ ...userData, name: text })}
               editable={isEditing}
-              className={`bg-white px-${getTailwindSpacing(Spacing.lg)} py-${getTailwindSpacing(Spacing.lg)} text-base text-black border border-gray-200 rounded-2xl`}
+              className={`bg-white px-${getTailwindSpacing(Spacing.lg)} py-${getTailwindSpacing(Spacing.lg)} text-base text-black border ${fieldErrors.name ? 'border-red-500' : 'border-gray-200'} rounded-2xl`}
               style={{
                 color: isEditing ? '#000' : '#666',
               }}
               placeholderTextColor="#999"
             />
+            {fieldErrors.name && <Text className="text-red-500 text-xs mt-1 ml-2">{fieldErrors.name}</Text>}
           </View>
 
           {/* Email Field */}
@@ -258,12 +298,13 @@ export default function ProfileDetailsScreen() {
               onChangeText={(text) => setUserData({ ...userData, email: text })}
               editable={isEditing}
               keyboardType="email-address"
-              className={`bg-white px-${getTailwindSpacing(Spacing.lg)} py-${getTailwindSpacing(Spacing.lg)} text-base text-black border border-gray-200 rounded-2xl`}
+              className={`bg-white px-${getTailwindSpacing(Spacing.lg)} py-${getTailwindSpacing(Spacing.lg)} text-base text-black border ${fieldErrors.email ? 'border-red-500' : 'border-gray-200'} rounded-2xl`}
               style={{
                 color: isEditing ? '#000' : '#666',
               }}
               placeholderTextColor="#999"
             />
+            {fieldErrors.email && <Text className="text-red-500 text-xs mt-1 ml-2">{fieldErrors.email}</Text>}
           </View>
 
           {/* Address Field */}
@@ -273,12 +314,14 @@ export default function ProfileDetailsScreen() {
               value={userData.address}
               onChangeText={(text) => setUserData({ ...userData, address: text })}
               editable={isEditing}
-              className={`bg-white px-${getTailwindSpacing(Spacing.lg)} py-${getTailwindSpacing(Spacing.lg)} text-base text-black border border-gray-200 rounded-2xl`}
+              className={`bg-white px-${getTailwindSpacing(Spacing.lg)} py-${getTailwindSpacing(Spacing.lg)} text-base text-black border ${fieldErrors.address ? 'border-red-500' : 'border-gray-200'} rounded-2xl`}
               style={{
                 color: isEditing ? '#000' : '#666',
               }}
               placeholderTextColor="#999"
+              placeholder="Enter your address"
             />
+            {fieldErrors.address && <Text className="text-red-500 text-xs mt-1 ml-2">{fieldErrors.address}</Text>}
           </View>
 
           {/* Phone Number Field */}
@@ -291,12 +334,13 @@ export default function ProfileDetailsScreen() {
               onChangeText={(text) => setUserData({ ...userData, phone: text })}
               editable={isEditing}
               keyboardType="phone-pad"
-              className={`bg-white px-${getTailwindSpacing(Spacing.lg)} py-${getTailwindSpacing(Spacing.lg)} text-base text-black border border-gray-200 rounded-2xl`}
+              className={`bg-white px-${getTailwindSpacing(Spacing.lg)} py-${getTailwindSpacing(Spacing.lg)} text-base text-black border ${fieldErrors.phone ? 'border-red-500' : 'border-gray-200'} rounded-2xl`}
               style={{
                 color: isEditing ? '#000' : '#666',
               }}
               placeholderTextColor="#999"
             />
+            {fieldErrors.phone && <Text className="text-red-500 text-xs mt-1 ml-2">{fieldErrors.phone}</Text>}
           </View>
 
           {/* Description Field */}
@@ -313,13 +357,14 @@ export default function ProfileDetailsScreen() {
               multiline
               numberOfLines={4}
               textAlignVertical="top"
-              className={`bg-white px-${getTailwindSpacing(Spacing.lg)} py-${getTailwindSpacing(Spacing.lg)} text-base text-black border border-gray-200 rounded-2xl`}
+              className={`bg-white px-${getTailwindSpacing(Spacing.lg)} py-${getTailwindSpacing(Spacing.lg)} text-base text-black border ${fieldErrors.description ? 'border-red-500' : 'border-gray-200'} rounded-2xl`}
               style={{
                 minHeight: 100,
                 color: isEditing ? '#000' : '#666',
               }}
               placeholderTextColor="#999"
             />
+            {fieldErrors.description && <Text className="text-red-500 text-xs mt-1 ml-2">{fieldErrors.description}</Text>}
           </View>
 
           {/* Location Field */}
@@ -327,21 +372,25 @@ export default function ProfileDetailsScreen() {
             <Text className="text-base font-semibold text-black mb-2">
               Location
             </Text>
-            <View className={`flex-row items-center bg-white px-${getTailwindSpacing(Spacing.lg)} py-${getTailwindSpacing(Spacing.lg)} border border-gray-200 rounded-2xl`}>
-              <Ionicons name="location-outline" size={20} color="#666" />
-              <TextInput
-                value={userData.location}
-                onChangeText={(text) =>
-                  setUserData({ ...userData, location: text })
-                }
-                editable={isEditing}
-                className="flex-1 ml-2 text-base"
-                style={{
-                  color: isEditing ? '#000' : '#666',
-                }}
-                placeholderTextColor="#999"
+            {isEditing ? (
+              <LocationInput
+                value={userData.location ? { address: userData.location, lat: 0, lng: 0 } : null}
+                onChange={(loc) => setUserData({ ...userData, location: loc?.address || '' })}
+                inline={true}
+                placeholder="Search or use current location"
+                error={fieldErrors.location}
               />
-            </View>
+            ) : (
+              <View className={`flex-row items-center bg-white px-${getTailwindSpacing(Spacing.lg)} py-${getTailwindSpacing(Spacing.lg)} border ${fieldErrors.location ? 'border-red-500' : 'border-gray-200'} rounded-2xl`}>
+                <Ionicons name="location-outline" size={20} color="#666" />
+                <Text 
+                  className="flex-1 ml-2 text-base text-gray-500"
+                  numberOfLines={1}
+                >
+                  {userData.location || "No location set"}
+                </Text>
+              </View>
+            )}
           </View>
           {/* Edit Button (View mode only) */}
           {!isEditing && (
@@ -354,7 +403,7 @@ export default function ProfileDetailsScreen() {
           )}
           {/* Buttons (Edit mode only) */}
           {isEditing && (
-            <View className="flex-row gap-x-4 mb-6">
+            <View className="flex-row gap-x-4 mb-2">
               <PrimaryButton 
                 title="Cancel" 
                 variant="outlined" 
@@ -373,6 +422,7 @@ export default function ProfileDetailsScreen() {
         </>
         )}
       </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Popups */}
       <SuccessPopup 

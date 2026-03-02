@@ -46,9 +46,16 @@ export const chatApi = apiSlice.injectEndpoints({
         body: formData,
       }),
       transformResponse: validateResponse(z.object({
-        urls: z.array(z.string()),
         originalNames: z.array(z.string())
       })),
+    }),
+    bulkShareItem: builder.mutation<ChatMessage[], { threadIds: number[]; itemId: number }>({
+      query: (body) => ({
+        url: 'chat/bulk-share',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Chat'],
     }),
   }),
 });
@@ -60,6 +67,7 @@ export const {
   useGetThreadDetailsQuery,
   useMarkThreadAsReadMutation,
   useUploadChatAttachmentsMutation,
+  useBulkShareItemMutation,
 } = chatApi;
 
 export default chatApi;

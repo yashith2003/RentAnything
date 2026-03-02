@@ -23,10 +23,14 @@ export default function SearchScreen() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>(paramCatId ? Number(paramCatId) : undefined);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   
-  const { query, setQuery, debouncedQuery, triggerSearch, results } = useSearch(selectedCategoryId);
+  const { query, setQuery, debouncedQuery, triggerSearch, results } = useSearch(selectedCategoryId, 20, filtersAsParams);
 
   useEffect(() => {
-    if (paramQuery) setQuery(paramQuery as string);
+    if (paramQuery) {
+      const qValue = paramQuery as string;
+      setQuery(qValue);
+      triggerSearch(qValue);
+    }
   }, [paramQuery]);
 
   // Build active filters array from params
@@ -41,10 +45,19 @@ export default function SearchScreen() {
   if (filtersAsParams.distance) {
     activeFilters.push({ key: 'distance', label: filtersAsParams.distance as string, value: filtersAsParams.distance });
   }
+  if (filtersAsParams.brand) {
+    activeFilters.push({ key: 'brand', label: `Brand: ${filtersAsParams.brand}`, value: filtersAsParams.brand });
+  }
+  if (filtersAsParams.accessibility) {
+    activeFilters.push({ key: 'accessibility', label: `Access: ${filtersAsParams.accessibility}`, value: filtersAsParams.accessibility });
+  }
+  if (filtersAsParams.warrantyOnly === 'true') {
+    activeFilters.push({ key: 'warrantyOnly', label: 'With Warranty', value: true });
+  }
   
   // Add dynamic category-specific filters
   Object.keys(filtersAsParams).forEach(key => {
-    if (!['access', 'condition', 'distance'].includes(key)) {
+    if (!['access', 'condition', 'distance', 'brand', 'accessibility', 'warrantyOnly', 'priceMin', 'priceMax', 'ratingMin', 'ratingMax', 'lat', 'lng', 'location'].includes(key)) {
       activeFilters.push({ key, label: `${key}: ${filtersAsParams[key]}`, value: filtersAsParams[key] });
     }
   });
@@ -106,7 +119,15 @@ export default function SearchScreen() {
             <PopularCategories 
               showTitle={false} 
               selectedCategoryId={selectedCategoryId} 
-              onSelectCategory={(cat) => setSelectedCategoryId(cat.id)} 
+              onSelectCategory={(cat) => {
+                if (selectedCategoryId === cat.id) {
+                  setSelectedCategoryId(undefined);
+                  router.setParams({ categoryId: '' });
+                } else {
+                  setSelectedCategoryId(cat.id);
+                  router.setParams({ categoryId: cat.id.toString() });
+                }
+              }} 
             />
           </View>
 

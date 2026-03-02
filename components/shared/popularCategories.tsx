@@ -1,9 +1,9 @@
 // components/shared/popularCategories.tsx
 
 import { Image } from 'expo-image';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
-import categoryService, { Category } from '@/api/category.service';
+import { useGetCategoriesQuery, Category } from '@/api/category.service';
 import { Colors } from '@/constants/theme';
 
 const categoryIcons: { [key: string]: any } = {
@@ -25,25 +25,9 @@ export default function PopularCategories({
   onSelectCategory,
   showTitle = true 
 }: PopularCategoriesProps) {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: categories = [], isLoading } = useGetCategoriesQuery();
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
-    try {
-      const data = await categoryService.getAll();
-      setCategories(data.filter(c => !c.parentCategory)); // Only top-level
-    } catch (error) {
-      console.error('Failed to fetch categories:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <View className="mb-6 h-24 items-center justify-center">
         <ActivityIndicator size="small" color={Colors.primary} />
@@ -51,11 +35,14 @@ export default function PopularCategories({
     );
   }
 
+  // Only top-level categories
+  const topLevelCategories = categories.filter(c => !c.parentCategory);
+
   return (
     <View className="mb-6">
       {showTitle && <Text className="text-xl font-bold mb-4">Popular Categories</Text>}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-4 px-4">
-        {categories.map((cat) => {
+        {topLevelCategories.map((cat) => {
           const isSelected = selectedCategoryId === cat.id;
           const icon = categoryIcons[cat.name] || require('@/assets/images/Electronics.png'); // Fallback
           
