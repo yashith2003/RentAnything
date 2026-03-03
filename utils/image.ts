@@ -1,4 +1,4 @@
-
+//RentAnything/utils/image.ts
 import { Config } from '@/constants/config';
 
 /**

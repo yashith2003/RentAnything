@@ -1,3 +1,5 @@
+//RentAnything/components/form/SelectionItem.tsx
+
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';

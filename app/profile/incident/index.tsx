@@ -1,3 +1,5 @@
+//RentAnything/app/profile/incident/index.tsx
+
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { TabSwitcher } from '@/components/shared/TabSwitcher';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';

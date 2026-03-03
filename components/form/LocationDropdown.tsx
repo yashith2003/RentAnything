@@ -1,4 +1,4 @@
-// components/LocationDropdown.tsx
+//RentAnything/components/form/LocationDropdown.tsx
 
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState, useEffect, useRef } from 'react';
@@ -6,6 +6,7 @@ import { Modal, Pressable, Text, TouchableOpacity, View, TextInput, ActivityIndi
 import * as SecureStore from 'expo-secure-store';
 import * as Location from 'expo-location';
 import addressService, { Address } from '@/api/address.service';
+import { formatExpoAddress } from '@/utils/location';
 
 const RECENT_LOCATIONS_KEY = 'recent_locations_history';
 
@@ -103,9 +104,7 @@ export default function LocationDropdown({
       
       if (reverseResult && reverseResult.length > 0) {
         const place = reverseResult[0];
-        const formattedAddress = [place.name, place.street, place.city, place.region, place.country]
-          .filter(Boolean)
-          .join(', ');
+        const formattedAddress = formatExpoAddress(place);
         handleLocationSelect({
           address: formattedAddress,
           lat: location.coords.latitude,

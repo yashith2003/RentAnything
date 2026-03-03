@@ -1,3 +1,5 @@
+//RentAnything/components/AlertPopup/NoConnectionPopup.tsx
+
 import React from 'react';
 import { Modal, Text, View, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';

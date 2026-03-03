@@ -1,3 +1,5 @@
+//RentAnything/app/rentalsPage/myRentals.tsx
+
 import SearchBar from '@/components/form/searchbar';
 import CancelRentalPopup from '@/components/modal/CancelRentalPopup';
 import ConditionConfirmationPopup from '@/components/modal/ConditionConfirmationPopup';

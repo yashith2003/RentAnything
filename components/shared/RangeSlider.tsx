@@ -1,5 +1,7 @@
+//RentAnything/components/shared/RangeSlider.tsx
+
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, LayoutChangeEvent, TextInput } from 'react-native';
+import { View, Text, LayoutChangeEvent, TextInput } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, useDerivedValue, runOnJS, useAnimatedProps } from 'react-native-reanimated';
 
@@ -97,7 +99,6 @@ export default function RangeSlider({
       if (newVal >= min && newVal <= maxVal.value - step) {
         if (minVal.value !== newVal) {
           minVal.value = newVal;
-          // Notification only on change if needed, but we keep it focused on local
         }
       }
     })
@@ -144,7 +145,6 @@ export default function RangeSlider({
   };
 
   const handleMinInputChange = (text: string) => {
-    // Keep raw text for input display
     const rawValue = text.replace(/Rs: /g, '').replace(/,/g, '');
     setMinInput(rawValue);
     
@@ -173,32 +173,38 @@ export default function RangeSlider({
   const finalizeMaxInput = () => {
     setMaxInput(null);
     if (onValueChange) onValueChange(minVal.value, maxVal.value);
-    if (onSlidingComplete) onSlidingComplete(minVal.value, maxVal.value);
+    if (onSlidingComplete) onSlidingComplete(maxVal.value, maxVal.value);
   };
 
   return (
     <View className="w-full">
-      <GestureHandlerRootView style={styles.container}>
-        <View style={styles.sliderTrack} onLayout={onLayout}>
-          <View style={styles.inactiveLine} />
-          <Animated.View style={[styles.activeLine, lineStyle]} />
+      <GestureHandlerRootView className="w-full h-10 justify-center">
+        <View className="h-1 w-full relative justify-center" onLayout={onLayout}>
+          <View className="h-1 bg-[#F0F0F0] rounded-full w-full absolute" />
+          <Animated.View className="h-1 bg-[#2FA2B9] rounded-full absolute" style={lineStyle} />
           
           {showTicks && width > 0 && (
-            <View style={styles.ticksContainer}>
+            <View className="absolute w-full h-[10px] flex-row items-center">
               {Array.from({ length: Math.floor((max - min) / tickStep) + 1 }).map((_, i) => {
                 const tickVal = min + i * tickStep;
                 const left = getX(tickVal);
-                return <View key={i} style={[styles.tick, { left: left + THUMB_SIZE / 2 }]} />;
+                return <View key={i} className="absolute w-[2px] h-[6px] bg-[#E0E0E0] rounded-full" style={{ left: left + THUMB_SIZE / 2 }} />;
               })}
             </View>
           )}
 
           <GestureDetector gesture={minGesture}>
-            <Animated.View style={[styles.thumb, minThumbStyle]} />
+            <Animated.View 
+              className="w-5 h-5 bg-[#2FA2B9] rounded-full absolute border-2 border-white shadow-sm shadow-black/10 z-10" 
+              style={[minThumbStyle, { elevation: 3 }]} 
+            />
           </GestureDetector>
           
           <GestureDetector gesture={maxGesture}>
-            <Animated.View style={[styles.thumb, maxThumbStyle]} />
+            <Animated.View 
+              className="w-5 h-5 bg-[#2FA2B9] rounded-full absolute border-2 border-white shadow-sm shadow-black/10 z-10" 
+              style={[maxThumbStyle, { elevation: 3 }]} 
+            />
           </GestureDetector>
         </View>
       </GestureHandlerRootView>
@@ -235,59 +241,3 @@ export default function RangeSlider({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    height: 40,
-    justifyContent: 'center',
-  },
-  sliderTrack: {
-    height: 4,
-    width: '100%',
-    position: 'relative',
-    justifyContent: 'center',
-  },
-  inactiveLine: {
-    height: 4,
-    backgroundColor: '#F0F0F0',
-    borderRadius: 2,
-    width: '100%',
-    position: 'absolute',
-  },
-  activeLine: {
-    height: 4,
-    backgroundColor: '#2FA2B9',
-    borderRadius: 2,
-    position: 'absolute',
-  },
-  thumb: {
-    height: THUMB_SIZE,
-    width: THUMB_SIZE,
-    backgroundColor: '#2FA2B9',
-    borderRadius: THUMB_SIZE / 2,
-    position: 'absolute',
-    borderWidth: 2,
-    borderColor: '#FFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 3,
-    zIndex: 10,
-  },
-  ticksContainer: {
-    position: 'absolute',
-    width: '100%',
-    height: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  tick: {
-    position: 'absolute',
-    width: 2,
-    height: 6,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 1,
-  },
-});

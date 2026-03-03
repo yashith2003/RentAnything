@@ -1,4 +1,4 @@
-//app/profile/listingDetails.tsx
+//RentAnything/app/item/listingDetails.tsx
 
 import { PaddingStyles } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';

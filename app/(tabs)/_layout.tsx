@@ -1,4 +1,4 @@
-//app/(tabs)/_layout.tsx
+//RentAnything/app/(tabs)/_layout.tsx
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Image } from 'expo-image';

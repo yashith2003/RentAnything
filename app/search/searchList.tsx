@@ -1,4 +1,4 @@
-// app/search/searchList.tsx
+//RentAnything/app/search/searchList.tsx
 
 import ItemCard from '@/components/card/itemCard';
 import { PaddingStyles } from '@/constants/spacing';
@@ -8,6 +8,8 @@ import { useSearchItemsQuery } from '@/api/item.service';
 import { getImageUrl } from '@/utils/image';
 import { formatPrice } from '@/utils/formatPrice';
 import { Colors } from '@/constants/theme';
+import { useLocationContext } from '@/context/LocationContext';
+import { calculateDistance } from '@/utils/location';
 
 interface SearchListProps {
   categoryId?: number;
@@ -16,6 +18,7 @@ interface SearchListProps {
 }
 
 export default function SearchList({ categoryId, searchQuery, filters }: SearchListProps) {
+  const { userLocation } = useLocationContext();
   const [page, setPage] = React.useState(1);
   const limit = 20;
 
@@ -74,7 +77,9 @@ export default function SearchList({ categoryId, searchQuery, filters }: SearchL
             owner: item.owner?.individualUser?.fullName || item.owner?.company?.companyName || 'N/A',
             ownerId: item.owner?.id,
             rating: item.averageRating ?? 0,
-            distance: '5.6 km',
+            distance: userLocation && item.address?.lat && item.address?.lng 
+              ? calculateDistance(userLocation.latitude, userLocation.longitude, item.address.lat, item.address.lng)
+              : '--- km',
             location: item.address?.address || 'N/A',
             phone: item.phone || (item.owner as any)?.phone,
             deliveryAvailable: item.deliveryAvailable ?? undefined,

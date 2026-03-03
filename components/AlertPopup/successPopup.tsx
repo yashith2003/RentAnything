@@ -1,4 +1,4 @@
-// components/successPopup.tsx
+//RentAnything/components/AlertPopup/SuccessPopup.tsx
 
 import PrimaryButton from '@/components/ui/PrimaryButton';
 import React from 'react';

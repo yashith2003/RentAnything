@@ -1,3 +1,4 @@
+//RentAnything/utils/phoneUtils.ts
 /**
  * Sanitizes a phone number by removing all characters except '+' and digits.
  * Example: "+94 (77) 123-4567" -> "+94771234567"

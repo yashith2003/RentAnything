@@ -1,4 +1,4 @@
-//
+//RentAnything/app/profile/kycPage/IdentificationDocuments.tsx
 
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { SelectionItem } from '@/components/form/SelectionItem';

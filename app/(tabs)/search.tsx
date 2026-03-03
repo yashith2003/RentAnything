@@ -1,4 +1,4 @@
-//app/(tabs)/search.tsx
+//RentAnything/app/(tabs)/search.tsx
 
 import SearchBar from '@/components/form/searchbar';
 import PopularCategories from '@/components/shared/popularCategories';

@@ -1,3 +1,5 @@
+//RentAnything/app/item/reviews/[id].tsx
+
 import ReviewCard from '@/components/card/ReviewCard';
 import { PaddingStyles } from '@/constants/spacing';
 import { useGetItemReviewsQuery } from '@/api/review.service';

@@ -57,6 +57,14 @@ export const chatApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Chat'],
     }),
+    deleteThreads: builder.mutation<void, { threadIds: number[] }>({
+      query: (body) => ({
+        url: 'chat/threads/delete',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Chat'],
+    }),
   }),
 });
 
@@ -68,6 +76,7 @@ export const {
   useMarkThreadAsReadMutation,
   useUploadChatAttachmentsMutation,
   useBulkShareItemMutation,
+  useDeleteThreadsMutation,
 } = chatApi;
 
 export default chatApi;

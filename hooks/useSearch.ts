@@ -1,4 +1,4 @@
-// hooks/useSearch.ts
+//RentAnything/hooks/useSearch.ts
 import { useState, useEffect } from 'react';
 import { useSearchItemsQuery } from '../api/item.service';
 

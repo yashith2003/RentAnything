@@ -1,4 +1,4 @@
-//hooks/use-theme-color.ts
+//RentAnything/hooks/use-theme-color.ts
 
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';

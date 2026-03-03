@@ -1,10 +1,9 @@
-// components/shared/map.tsx
+//RentAnything/components/shared/map.tsx
 
 import React from 'react';
-import { Text, View, ViewStyle, Platform, StyleSheet } from 'react-native';
-import MapView, { Marker, Region, PROVIDER_GOOGLE } from 'react-native-maps';
+import { Text, View, Platform, StyleSheet } from 'react-native';
+import { Marker, Region, PROVIDER_GOOGLE } from 'react-native-maps';
 import ClusteredMapView from 'react-native-map-clustering';
-import { Colors } from '@/constants/theme';
 
 const greenStyle = [
   {
@@ -84,7 +83,7 @@ interface MapProps {
   onMarkerPress?: (marker: MapMarker) => void;
   onRegionChangeComplete?: (region: Region) => void;
   region?: Region;
-  style?: ViewStyle;
+  style?: any;
   selectedMarkerId?: number;
   mapRef?: React.RefObject<any>;
 }
@@ -109,8 +108,11 @@ export default function Map({
         onPress={onPress}
         tracksViewChanges={false}
       >
-        <View style={styles.clusterPill}>
-          <Text style={styles.clusterText}>{pointCount}</Text>
+        <View 
+          className="bg-white px-2.5 py-1.5 rounded-full border border-[#2FA2B9] shadow-sm min-w-[35px] items-center justify-center shadow-black/15"
+          style={{ elevation: 3 }}
+        >
+          <Text className="text-[#2FA2B9] font-bold text-xs">{pointCount}</Text>
         </View>
       </Marker>
     );
@@ -125,12 +127,15 @@ export default function Map({
         onPress={() => onMarkerPress?.(marker)}
         tracksViewChanges={false}
       >
-        <View style={[
-          styles.priceMarker, 
-          isSelected && styles.activeMarker,
-          isSelected && { transform: [{ scale: 1.1 }] }
-        ]}>
-          <Text style={[styles.priceText, isSelected && styles.activeText]}>
+        <View 
+          className={`px-2 py-1 rounded-full border shadow-sm ${
+            isSelected 
+              ? 'bg-[#2FA2B9] border-white scale-110 shadow-black/30' 
+              : 'bg-white border-[#2FA2B9] shadow-black/15'
+          }`}
+          style={{ elevation: isSelected ? 5 : 3 }}
+        >
+          <Text className={`font-bold text-[11px] ${isSelected ? 'text-white' : 'text-[#0B0C15]'}`}>
             {typeof marker.price === 'number' ? `Rs: ${marker.price.toLocaleString()}` : marker.price}
           </Text>
         </View>
@@ -163,54 +168,3 @@ export default function Map({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  priceMarker: {
-    backgroundColor: 'white',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 20,
-    borderWidth: 1, // Thinner border
-    borderColor: '#2FA2B9',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 }, // Softer shadow
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  priceText: {
-    color: '#0B0C15',
-    fontWeight: '700',
-    fontSize: 11, // Slightly larger font
-  },
-  activeMarker: {
-    backgroundColor: '#2FA2B9',
-    borderColor: 'white',
-    elevation: 5,
-    shadowOpacity: 0.3,
-  },
-  activeText: {
-    color: 'white',
-  },
-  clusterPill: {
-    backgroundColor: 'white',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#2FA2B9',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
-    minWidth: 35,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  clusterText: {
-    color: '#2FA2B9',
-    fontWeight: 'bold',
-    fontSize: 12,
-  }
-});

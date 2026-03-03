@@ -1,11 +1,12 @@
+//RentAnything/components/chat/ChatItemMessage.tsx
+
 import React, { useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '@/constants/theme';
 import { useRouter } from 'expo-router';
-import { formatPrice } from '@/utils/formatPrice';
 import { useGetItemQuery } from '@/api/item.service';
+import { getImageUrl } from '@/utils/image';
 
 interface ChatItemMessageProps {
   itemId: number;
@@ -17,26 +18,25 @@ export const ChatItemMessage: React.FC<ChatItemMessageProps> = ({ itemId, isSend
   const { data: item, isLoading, error } = useGetItemQuery(itemId);
 
   useEffect(() => {
-    console.log(`[ChatItemMessage DEBUG] itemId: ${itemId}, isLoading: ${isLoading}, hasItem: ${!!item}`);
-    if (error) console.error(`[ChatItemMessage DEBUG] Error fetching item ${itemId}:`, error);
-    if (item) {
-        console.log(`[ChatItemMessage DEBUG] Data:`, JSON.stringify(item, null, 2));
-    }
-  }, [itemId, item, isLoading, error]);
+    if (error) console.error(`[ChatItemMessage] Error fetching item ${itemId}:`, error);
+  }, [itemId, error]);
+
+  const containerBaseClass = "w-[250px] h-[90px] rounded-2xl my-1 bg-[#E6F7FA] justify-center";
+  const alignmentClass = isSender ? "self-end rounded-br-[4px]" : "self-start rounded-bl-[4px]";
 
   if (isLoading) {
     return (
-      <View style={[styles.container, isSender ? styles.sender : styles.receiver, styles.loading]}>
+      <View className={`${containerBaseClass} ${alignmentClass} items-center border-[0.5px] border-[#36bcd7ff]`}>
         <ActivityIndicator size="small" color="#2FA2B9" />
-        <Text style={styles.loadingText}>Loading...</Text>
+        <Text className="text-[#2FA2B9] text-xs font-bold mt-1">Loading...</Text>
       </View>
     );
   }
 
   if (!item) {
     return (
-        <View style={[styles.container, isSender ? styles.sender : styles.receiver, styles.loading]}>
-            <Text style={styles.loadingText}>Item Not Found (${itemId})</Text>
+        <View className={`${containerBaseClass} ${alignmentClass} items-center border-[0.5px] border-[#36bcd7ff]`}>
+            <Text className="text-[#2FA2B9] text-xs font-bold mt-1">Item Not Found ({itemId})</Text>
         </View>
     );
   }
@@ -44,24 +44,24 @@ export const ChatItemMessage: React.FC<ChatItemMessageProps> = ({ itemId, isSend
   return (
     <TouchableOpacity 
       activeOpacity={0.9}
-      style={[styles.container, isSender ? styles.sender : styles.receiver]}
+      className={`${containerBaseClass} ${alignmentClass} border-[1.5px] border-[#2FA2B9] shadow-sm z-50`}
       onPress={() => router.push(`/item/${itemId}`)}
     >
-      <View style={styles.content}>
-        <View style={styles.imageContainer}>
+      <View className="flex-row px-[10px] items-center w-full h-full">
+        <View className="w-[70px] h-[70px] bg-white rounded-xl border border-[#BEE7EF] justify-center items-center">
           <Image
-            source={{ uri: item?.imageUrl || 'https://via.placeholder.com/150' }}
-            style={styles.image}
+            source={{ uri: getImageUrl(item?.imageUrl) }}
+            style={{ width: 64, height: 64, borderRadius: 10 }}
             contentFit="cover"
           />
         </View>
-        <View style={styles.info}>
-          <Text style={styles.title} numberOfLines={1}>{item?.title || 'No Title'}</Text>
-          <Text style={styles.owner} numberOfLines={1}>By: {item?.owner?.individualUser?.fullName || item?.owner?.company?.companyName || 'Unknown'}</Text>
-          <Text style={styles.price}>Rs: {item?.price || item?.pricings?.[0]?.price || '0'}/{item?.pricings?.[0]?.rateType || 'day'}</Text>
-          <View style={styles.locationContainer}>
+        <View className="pl-3 flex-1 h-[70px] justify-evenly">
+          <Text className="text-[15px] font-bold text-black" numberOfLines={1}>{item?.title || 'No Title'}</Text>
+          <Text className="text-[11px] text-[#444]" numberOfLines={1}>By: {item?.owner?.individualUser?.fullName || item?.owner?.company?.companyName || 'Unknown'}</Text>
+          <Text className="text-[13px] text-[#333] font-bold">Rs: {item?.price || item?.pricings?.[0]?.price || '0'}/{item?.pricings?.[0]?.rateType || 'day'}</Text>
+          <View className="flex-row items-center">
             <Ionicons name="location-sharp" size={14} color="#2FA2B9" />
-            <Text style={styles.location} numberOfLines={1}>
+            <Text className="text-[10px] text-[#2FA2B9] font-semibold ml-[3px]" numberOfLines={1}>
                {item?.address?.address?.split(',')[0] || 'Malabe'}
             </Text>
           </View>
@@ -70,94 +70,3 @@ export const ChatItemMessage: React.FC<ChatItemMessageProps> = ({ itemId, isSend
     </TouchableOpacity>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    width: 250,
-    height: 90,
-    borderRadius: 16,
-    marginVertical: 4,
-    backgroundColor: '#E6F7FA',
-    borderWidth: 1.5,
-    borderColor: '#2FA2B9',
-    justifyContent: 'center',
-    elevation: 2,
-    zIndex: 100,
-  },
-  sender: {
-    alignSelf: 'flex-end',
-    borderBottomRightRadius: 4,
-  },
-  receiver: {
-    alignSelf: 'flex-start',
-    borderBottomLeftRadius: 4,
-  },
-  loading: {
-    width: 250,
-    height: 90,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#E6F7FA',
-    borderRadius: 16,
-    borderWidth: 0.5,
-    borderColor: '#36bcd7ff',
-  },
-  loadingText: {
-    color: '#2FA2B9',
-    fontSize: 12,
-    fontWeight: 'bold',
-    marginTop: 4,
-  },
-  content: {
-    flexDirection: 'row',
-    paddingHorizontal: 10,
-    alignItems: 'center',
-    width: '100%',
-    height: '100%',
-  },
-  imageContainer: {
-    width: 70,
-    height: 70,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1, // Keep inner containers subtle
-    borderColor: '#BEE7EF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  image: {
-    width: 64,
-    height: 64,
-    borderRadius: 10,
-  },
-  info: {
-    paddingLeft: 12,
-    flex: 1,
-    height: 70,
-    justifyContent: 'space-evenly',
-  },
-  title: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#000',
-  },
-  owner: {
-    fontSize: 11,
-    color: '#444',
-  },
-  price: {
-    fontSize: 13,
-    color: '#333',
-    fontWeight: '700',
-  },
-  locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  location: {
-    fontSize: 10,
-    color: '#2FA2B9',
-    fontWeight: '600',
-    marginLeft: 3,
-  },
-});

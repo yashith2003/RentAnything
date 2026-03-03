@@ -1,3 +1,5 @@
+//RentAnything/components/form/AvailabilityCalendar.tsx
+
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { Text, Pressable, View, TextInput, ScrollView, NativeSyntheticEvent, NativeScrollEvent, Animated, Dimensions } from 'react-native';

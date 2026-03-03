@@ -1,1 +1,1 @@
-//hooks/useAuth.ts
+//RentAnything/hooks/useAuth.ts

@@ -1,3 +1,5 @@
+//RentAnything/components/card/MyListingCard.tsx
+
 import { Colors } from '@/constants/theme';
 import { Image } from 'expo-image';
 import React from 'react';

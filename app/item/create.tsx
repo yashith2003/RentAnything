@@ -1,4 +1,4 @@
-//app/item/[id].tsx
+//RentAnything/app/item/create.tsx
 
 import { View, Text } from 'react-native';
 

@@ -1,4 +1,4 @@
-// app/profile/myListings/item.tsx
+//RentAnything/app/profile/myListings/item.tsx
 
 import { InfoCard } from '@/components/card/InfoCard';
 import { InfoRow } from '@/components/shared/InfoRow';

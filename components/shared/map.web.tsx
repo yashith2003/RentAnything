@@ -1,4 +1,4 @@
-// components/shared/map.web.tsx
+//RentAnything/components/shared/map.web.tsx
 // Web stub — react-native-maps is native only; render a placeholder on web.
 
 import React from 'react';

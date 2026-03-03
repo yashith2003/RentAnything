@@ -1,4 +1,4 @@
-// api/client.ts
+//RentAnything/api/client.ts
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { Config } from '@/constants/config';

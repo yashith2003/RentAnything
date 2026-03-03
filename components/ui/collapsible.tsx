@@ -1,4 +1,4 @@
-// components/ui/collapsible.tsx
+//RentAnything/components/ui/collapsible.tsx
 
 import React, { PropsWithChildren, useState } from 'react';
 import { TouchableOpacity } from 'react-native';

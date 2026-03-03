@@ -1,4 +1,4 @@
-// api/item.service.ts
+//RentAnything/api/item.service.ts
 import { apiSlice, validateResponse } from './apiSlice';
 import { ItemSchema, Item } from '../types/schemas';
 import { z } from 'zod';
