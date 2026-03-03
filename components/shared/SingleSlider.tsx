@@ -1,5 +1,7 @@
+//RentAnything/components/shared/SingleSlider.tsx
+
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, LayoutChangeEvent, TextInput } from 'react-native';
+import { View, Text, LayoutChangeEvent, TextInput } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, useDerivedValue, runOnJS, useAnimatedProps } from 'react-native-reanimated';
 
@@ -94,13 +96,16 @@ export default function SingleSlider({
 
   return (
     <View className="w-full">
-      <GestureHandlerRootView style={styles.container}>
-        <View style={styles.sliderTrack} onLayout={onLayout}>
-          <View style={styles.inactiveLine} />
-          <Animated.View style={[styles.activeLine, lineStyle]} />
+      <GestureHandlerRootView className="w-full h-10 justify-center">
+        <View className="h-1 w-full relative justify-center" onLayout={onLayout}>
+          <View className="h-1 bg-[#F0F0F0] rounded-full w-full absolute" />
+          <Animated.View className="h-1 bg-[#2FA2B9] rounded-full absolute" style={lineStyle} />
           
           <GestureDetector gesture={gesture}>
-            <Animated.View style={[styles.thumb, thumbStyle]} />
+            <Animated.View 
+              className="w-5 h-5 bg-[#2FA2B9] rounded-full absolute border-2 border-white shadow-sm shadow-black/10 z-10" 
+              style={[thumbStyle, { elevation: 3 }]} 
+            />
           </GestureDetector>
         </View>
       </GestureHandlerRootView>
@@ -118,44 +123,3 @@ export default function SingleSlider({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    height: 40,
-    justifyContent: 'center',
-  },
-  sliderTrack: {
-    height: 4,
-    width: '100%',
-    position: 'relative',
-    justifyContent: 'center',
-  },
-  inactiveLine: {
-    height: 4,
-    backgroundColor: '#F0F0F0',
-    borderRadius: 2,
-    width: '100%',
-    position: 'absolute',
-  },
-  activeLine: {
-    height: 4,
-    backgroundColor: '#2FA2B9',
-    borderRadius: 2,
-    position: 'absolute',
-  },
-  thumb: {
-    height: THUMB_SIZE,
-    width: THUMB_SIZE,
-    backgroundColor: '#2FA2B9',
-    borderRadius: THUMB_SIZE / 2,
-    position: 'absolute',
-    borderWidth: 2,
-    borderColor: '#FFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 3,
-  },
-});

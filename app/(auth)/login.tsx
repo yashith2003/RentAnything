@@ -1,4 +1,4 @@
-// app/(auth)/login.tsx
+//RentAnything/app/(auth)/login.tsx
 
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';

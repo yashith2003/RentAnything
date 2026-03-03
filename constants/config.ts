@@ -1,4 +1,4 @@
-// constants/config.ts
+//RentAnything/constants/config.ts
 import Constants from 'expo-constants';
 
 // For local development with a physical device, use your machine's local IP address

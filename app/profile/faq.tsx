@@ -1,3 +1,5 @@
+//RentAnything/app/profile/faq.tsx
+
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';

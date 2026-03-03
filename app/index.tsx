@@ -1,4 +1,4 @@
-//app/index.tsx
+//RentAnything/app/index.tsx
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -10,6 +10,9 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/typography';
+
+import authService from '@/api/auth.service';
+import { useUser } from '@/context/userContext';
 
 const { width, height } = Dimensions.get('screen');
 
@@ -40,6 +43,7 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const flatListRef = useRef<FlatList>(null);
   const { t } = useTranslation();
+  const { login } = useUser();
 
   const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
     if (viewableItems.length > 0) {
@@ -47,11 +51,23 @@ export default function OnboardingScreen() {
     }
   }).current;
 
-  const handleNext = () => {
-    if (currentIndex < onboardingData.length - 1) {
-      flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
-    } else {
-      router.replace('/(auth)/languagePage');
+  const handleGetStarted = () => {
+    router.replace('/(auth)/languagePage');
+  };
+
+  const handleLogin = () => {
+    router.push('/(auth)/login');
+  };
+
+  const handleGuestLogin = async () => {
+    try {
+      const data = await authService.loginGuest();
+      if (data.access_token) {
+        await login(data.access_token, null, 'guest');
+        router.replace('/(tabs)/home');
+      }
+    } catch (error) {
+      console.error('Guest login failed:', error);
     }
   };
 
@@ -82,7 +98,7 @@ export default function OnboardingScreen() {
             
             <SafeAreaView className={`flex-1 px-${getTailwindSpacing(Spacing.pageHorizontal)} justify-start pt-16`}>
               <Text 
-                style={[Typography.h1, { color: Colors.background, marginTop: 40 }]}
+                style={[Typography.h1, { color: Colors.background, marginTop: 40, fontWeight: '700' }]}
               >
                 {item.title}
               </Text>
@@ -97,7 +113,7 @@ export default function OnboardingScreen() {
       />
 
       {/* Pagination & Button Footer */}
-      <View className={`absolute left-0 right-0 items-center px-${getTailwindSpacing(Spacing.pageHorizontal)}`} style={{ bottom: 91 }}>
+      <View className={`absolute left-0 right-0 items-center px-${getTailwindSpacing(Spacing.pageHorizontal)}`} style={{ bottom: insets.bottom + 20 }}>
         {/* Dots */}
         <View className="flex-row gap-x-5 mb-8">
           {onboardingData.map((_, index) => (
@@ -113,17 +129,39 @@ export default function OnboardingScreen() {
           ))}
         </View>
 
-        {/* Get Started Button */}
-        <TouchableOpacity
-          onPress={handleNext}
-          style={{ backgroundColor: Colors.primary }}
-          className="w-full py-4 rounded-2xl items-center shadow-lg"
-          activeOpacity={0.8}
-        >
-          <Text style={[Typography.button, { color: Colors.background }]}>
-            {currentIndex === onboardingData.length - 1 ? t('onboarding.getStarted') : t('onboarding.next')}
-          </Text>
-        </TouchableOpacity>
+        {/* Buttons Section */}
+        <View className="w-full gap-y-4">
+          <TouchableOpacity
+            onPress={handleGetStarted}
+            style={{ backgroundColor: Colors.primary }}
+            className="w-full py-4 rounded-full items-center shadow-lg"
+            activeOpacity={0.8}
+          >
+            <Text style={[Typography.button, { color: Colors.background, fontWeight: '700' }]}>
+              {t('onboarding.getStarted')}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={handleLogin}
+            style={{ borderColor: Colors.background, borderWidth: 1.5 }}
+            className="w-full py-4 rounded-full items-center"
+            activeOpacity={0.8}
+          >
+            <Text style={[Typography.button, { color: Colors.background, fontWeight: '700' }]}>
+              {t('common.login')}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={handleGuestLogin}
+            className="items-center py-2"
+          >
+            <Text style={[Typography.bodyMedium, { color: 'rgba(255,255,255,0.9)', fontWeight: '500' }]}>
+              {t('common.browseAsGuest', 'Browse as a Guest')}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );

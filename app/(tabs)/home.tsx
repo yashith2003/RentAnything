@@ -20,6 +20,8 @@ import { useGetProfileQuery } from '@/api/user.service';
 import { getImageUrl } from '@/utils/image';
 import { FilterParamsSchema } from '@/types/schemas';
 import { formatPrice } from '@/utils/formatPrice';
+import { useLocationContext } from '@/context/LocationContext';
+import { calculateDistance } from '@/utils/location';
 
 
 export default function HomeScreen() {
@@ -31,6 +33,7 @@ export default function HomeScreen() {
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState('DEFAULT');
 
+  const { userLocation } = useLocationContext();
   const [searchQuery, setSearchQuery] = useState('');
 
   // Memoize filters to avoid unnecessary re-queries
@@ -68,8 +71,12 @@ export default function HomeScreen() {
 
   const displayLocation = selectedLocation === 'DEFAULT' ? t('home.enterLocation') : selectedLocation;
 
-  const handleLocationSelect = (location: string) => {
-    setSelectedLocation(location);
+  const handleLocationSelect = (location: any) => {
+    if (typeof location === 'string') {
+      setSelectedLocation(location);
+    } else if (location && location.address) {
+      setSelectedLocation(location.address);
+    }
   };
 
   return (
@@ -190,7 +197,9 @@ export default function HomeScreen() {
                     owner: item.owner?.individualUser?.fullName || item.owner?.company?.companyName || 'N/A',
                     ownerId: item.owner?.id,
                     rating: item.averageRating ?? 0,
-                    distance: '5.6 km',
+                    distance: userLocation && item.address?.lat && item.address?.lng 
+                      ? calculateDistance(userLocation.latitude, userLocation.longitude, item.address.lat, item.address.lng)
+                      : '--- km',
                     location: item.address?.address || 'N/A',
                     phone: item.phone || undefined,
                   }} 

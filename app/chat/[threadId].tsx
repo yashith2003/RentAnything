@@ -1,4 +1,4 @@
-//app/chat/[threasId].tsx
+//RentAnything/app/chat/[threasId].tsx
 
 import { View, Text } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';

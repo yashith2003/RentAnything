@@ -1,3 +1,4 @@
+//RentAnything/components/shared/ActionListItem.tsx
 import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/typography';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,6 +14,7 @@ interface ActionListItemProps {
   showChevron?: boolean;
   destructive?: boolean;
   rightText?: string;
+  rightTextColor?: string;
 }
 
 export default function ActionListItem({
@@ -23,6 +25,7 @@ export default function ActionListItem({
   showChevron = true,
   destructive = false,
   rightText,
+  rightTextColor,
 }: ActionListItemProps) {
   return (
     <TouchableOpacity
@@ -48,7 +51,7 @@ export default function ActionListItem({
       </View>
       <View className="flex-row items-center gap-x-2">
         {rightText && (
-          <Text style={[Typography.bodySmall, { color: Colors.textMuted }]}>{rightText}</Text>
+          <Text style={[Typography.bodySmall, { color: Colors.buttonPrimary || Colors.textMuted }]}>{rightText}</Text>
         )}
         {showChevron && (
           <Ionicons name="chevron-forward" size={18} color={Colors.border} />

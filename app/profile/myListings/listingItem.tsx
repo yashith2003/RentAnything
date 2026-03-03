@@ -1,3 +1,5 @@
+//RentAnything/app/profile/myListings/listingItem.tsx
+
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import RatingStars from '@/components/ui/ratingStars';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';

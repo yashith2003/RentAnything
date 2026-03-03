@@ -1,9 +1,12 @@
-// app/profile/myListings/editItem.tsx
+//RentAnything/app/profile/myListings/editItem.tsx
 
 import { filterPhoneInput } from '@/utils/phoneUtils';
 import { LabelledInput } from '@/components/form/LabelledInput';
 import { ChipGroup } from '@/components/form/ChipGroup';
 import { UploadBox } from '@/components/form/UploadBox';
+import { MultipleImageUpload } from '@/components/form/MultipleImageUpload';
+import { AvailabilityCalendar } from '@/components/form/AvailabilityCalendar';
+import fileService from '@/api/file.service';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import SuccessPopup from '@/components/AlertPopup/SuccessPopup';
 import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
@@ -11,6 +14,7 @@ import { Colors } from '@/constants/theme';
 import { useGetItemQuery, useUpdateItemMutation } from '@/api/item.service';
 import { getImageUrl } from '@/utils/image';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { Config } from '@/constants/config';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from 'react';
 import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
@@ -32,6 +36,12 @@ export default function EditItemScreen() {
   const [rentalFee, setRentalFee] = useState('');
   const [securityDeposit, setSecurityDeposit] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | undefined>();
+  const [subImages, setSubImages] = useState<string[]>([]);
+  const [availability, setAvailability] = useState<{ dates: { date: string, isAvailable: boolean }[], startTime: string, endTime: string }>({
+    dates: [],
+    startTime: '10:30:00',
+    endTime: '17:30:00'
+  });
 
   // Popup state
   const [showSuccess, setShowSuccess] = useState(false);
@@ -50,11 +60,52 @@ export default function EditItemScreen() {
       setRentalFee(item.price?.toString() || '');
       setSecurityDeposit(item.securityDeposit?.toString() || '');
       setSelectedImage(item.imageUrl ? getImageUrl(item.imageUrl) : undefined);
+      setSubImages(item.subImages && Array.isArray(item.subImages) ? item.subImages.map(img => getImageUrl(img)) : []);
+      
+      if (item.availabilities && item.availabilities.length > 0) {
+        setAvailability({
+          dates: item.availabilities.map((a: any) => ({
+            date: a.availableDate.slice(0, 10),
+            isAvailable: a.isAvailable
+          })),
+          startTime: item.availabilities[0].startTime || '10:30:00',
+          endTime: item.availabilities[0].endTime || '17:30:00'
+        });
+      }
     }
   }, [item]);
 
+  const uploadIfNeeded = async (uri?: string) => {
+    if (!uri) return undefined;
+    if (uri.startsWith('file://') || uri.startsWith('content://') || (!uri.startsWith('http') && !uri.startsWith('/'))) {
+      try {
+        const uploadResult = await fileService.uploadImage(uri);
+        return uploadResult.url;
+      } catch (uploadError) {
+        console.error('Failed to upload image', uri, uploadError);
+        throw new Error('Failed to upload image. Please try again.');
+      }
+    }
+    
+    // If it's an absolute URL starting with our BASE_URL, strip it
+    if (uri.startsWith(Config.BASE_URL)) {
+      return uri.replace(`${Config.BASE_URL}/`, '');
+    }
+
+    return uri; // Return relative paths like 'uploads/items/...' as is when unchanged
+  };
+
   const handleSave = async () => {
     try {
+      const uploadedImageUrl = await uploadIfNeeded(selectedImage);
+      
+      const uploadedSubImages = await Promise.all(
+        subImages.map(async (uri) => {
+          const uploadedUri = await uploadIfNeeded(uri);
+          return uploadedUri;
+        })
+      );
+
       await updateItem({
         id: Number(id),
         data: {
@@ -66,6 +117,14 @@ export default function EditItemScreen() {
           condition,
           price: rentalFee ? parseFloat(rentalFee) : undefined,
           securityDeposit: securityDeposit ? parseFloat(securityDeposit) : undefined,
+          imageUrl: uploadedImageUrl,
+          subImages: uploadedSubImages.filter(Boolean) as string[],
+          availabilities: availability.dates.map(d => ({
+            availableDate: d.date,
+            startTime: availability.startTime,
+            endTime: availability.endTime,
+            isAvailable: d.isAvailable
+          })),
         },
       }).unwrap();
 
@@ -103,6 +162,11 @@ export default function EditItemScreen() {
             onImageSelect={setSelectedImage}
           />
         </View>
+
+        <MultipleImageUpload 
+          images={subImages} 
+          onImagesChange={setSubImages} 
+        />
 
         <LabelledInput
           label="Item Name"
@@ -165,6 +229,17 @@ export default function EditItemScreen() {
           selected={condition}
           onSelect={setCondition}
         />
+
+        {/* Availability */}
+        <View className="mb-6 mt-6">
+          <Text className="text-sm font-bold text-black mb-3">Availability</Text>
+          <AvailabilityCalendar 
+              initialDates={availability.dates}
+              onAvailabilityChange={(data) => {
+                setAvailability(data);
+              }} 
+          />
+        </View>
 
         {/* Save Button */}
         <TouchableOpacity

@@ -135,5 +135,7 @@ export default {
     search: "සොයන්න",
     next: "ඊළඟට",
     save: "සුරකින්න",
+    login: "පුරන්න (Login)",
+    browseAsGuest: "අමුත්තෙකු ලෙස පිරික්සන්න (Browse as a Guest)",
   },
 };

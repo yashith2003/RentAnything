@@ -22,6 +22,7 @@ interface MenuItem {
   color?: string;
   badge?: string;
   rightText?: string;
+  rightTextColor?: string;
 }
 
 import { Colors } from '@/constants/theme';
@@ -121,6 +122,7 @@ export default function ProfileScreen() {
         iconType: 'ionicons',
         label: t('profile.language'),
         rightText: currentLanguageLabel,
+        rightTextColor: Colors.primary,
         onPress: () => router.push('/profile/languageChange' as any),
       },
       {
@@ -184,14 +186,15 @@ export default function ProfileScreen() {
           {menuItems.map((item, index) => (
             <View 
               key={index} 
-              className="mb-2 rounded-[20px] px-2 border"
-              style={{ backgroundColor: Colors.surface, borderColor: Colors.border }}
+              className="mb-2 rounded-[15px] px-2 border"
+              style={{ backgroundColor: Colors.background, borderColor: Colors.border }}
             >
                 <ActionListItem 
                     label={item.label}
                     icon={item.icon}
                     onPress={item.onPress}
                     rightText={item.rightText}
+                    rightTextColor={item.rightTextColor}
                 />
             </View>
           ))}

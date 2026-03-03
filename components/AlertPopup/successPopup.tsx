@@ -1,3 +1,5 @@
+//RentAnything/components/AlertPopup/SuccessPopup.tsx
+
 import PrimaryButton from '@/components/ui/PrimaryButton';
 import React from 'react';
 import { Modal, Text, View } from 'react-native';

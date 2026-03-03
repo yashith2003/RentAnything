@@ -135,5 +135,7 @@ export default {
     search: "தேடல்",
     next: "அடுத்தது",
     save: "சேமி",
+    login: "உள்நுழைக",
+    browseAsGuest: "விருந்தினராக உலாவுக (Browse as a Guest)",
   },
 };

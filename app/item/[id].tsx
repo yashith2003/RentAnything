@@ -196,7 +196,16 @@ export default function ItemDetailsScreen() {
     description: item.owner?.individualUser?.description || item.owner?.company?.description || undefined
   };
 
-  const itemImages = item.imageUrl ? [getImageUrl(item.imageUrl)] : itemImagesFallback;
+  const itemImages = React.useMemo(() => {
+    let images: string[] = [];
+    if (item?.imageUrl) {
+      images.push(getImageUrl(item.imageUrl));
+    }
+    if (item?.subImages && item.subImages.length > 0) {
+      images = images.concat(item.subImages.map(img => getImageUrl(img)));
+    }
+    return images.length > 0 ? images : itemImagesFallback;
+  }, [item]);
 
   return (
     <SafeAreaView 
@@ -235,7 +244,7 @@ export default function ItemDetailsScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 150 }}>
             {/* Images Component */}
-            <ImageSlider images={item?.imageUrl ? [getImageUrl(item.imageUrl)] : itemImagesFallback} />
+            <ImageSlider images={itemImages} />
             
             <View style={PaddingStyles.page} className="mt-6">
             <View className="flex-row items-center mb-4 gap-x-4">

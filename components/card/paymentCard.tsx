@@ -1,4 +1,4 @@
-// components/paymentCard.tsx
+//RentAnything/components/paymentCard.tsx
 
 import RatingStars from '@/components/ui/ratingStars';
 import { Ionicons } from '@expo/vector-icons';

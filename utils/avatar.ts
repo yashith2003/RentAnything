@@ -1,3 +1,5 @@
+//RentAnything/utils/avatar.ts
+
 import { getImageUrl } from '@/utils/image';
 
 export function getAvatarSource(profileImage?: string | null) {

@@ -1,3 +1,5 @@
+//RentAnything/components/card/InfoCard.tsx
+
 import React from 'react';
 import { Text, View } from 'react-native';
 

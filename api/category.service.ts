@@ -37,11 +37,13 @@ export const categoryApi = apiSlice.injectEndpoints({
 
 export const { useGetCategoriesQuery, useGetCategoryFiltersQuery } = categoryApi;
 
+import { Config } from '@/constants/config';
+
 // Keeping legacy export for minimal breakage during transition, though it's now just a wrapper
 const categoryService = {
   getAll: async () => {
     // This is a temporary bridge, components should move to useGetCategoriesQuery
-    const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/categories`).then(res => res.json());
+    const response = await fetch(`${Config.API_URL}/categories`).then(res => res.json());
     return response.data;
   },
 };

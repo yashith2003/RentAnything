@@ -1,7 +1,9 @@
-// app/profile/myListings/item.tsx
+//RentAnything/app/profile/myListings/item.tsx
 
 import { InfoCard } from '@/components/card/InfoCard';
 import { InfoRow } from '@/components/shared/InfoRow';
+import ImageSlider from '@/components/itemDetails/ImageSlider';
+import AvailabilityCalendarView from '@/components/itemDetails/AvailabilityCalendarView';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
@@ -18,6 +20,13 @@ import { getImageUrl } from '@/utils/image';
 
 const { width } = Dimensions.get('window');
 
+const itemImagesFallback = [
+  'https://images.unsplash.com/photo-1617788138017-80ad42243c5d?q=80&w=800&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1560958089-b8a1929cea89?q=80&w=400&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1541443131876-44b03de101c5?q=80&w=400&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=400&auto=format&fit=crop',
+];
+
 export default function ItemDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
@@ -25,6 +34,17 @@ export default function ItemDetailScreen() {
     skip: !id,
   });
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const itemImages = React.useMemo(() => {
+    let images: string[] = [];
+    if (item?.imageUrl) {
+      images.push(getImageUrl(item.imageUrl));
+    }
+    if (item?.subImages && item.subImages.length > 0) {
+      images = images.concat(item.subImages.map(img => getImageUrl(img)));
+    }
+    return images.length > 0 ? images : itemImagesFallback;
+  }, [item]);
 
   if (loading) {
     return (
@@ -74,17 +94,10 @@ export default function ItemDetailScreen() {
 
       <ScrollView className={`flex-1 px-${getTailwindSpacing(Spacing.pageHorizontal)}`} showsVerticalScrollIndicator={false}>
         
-        {/* Item Image */}
-        <View className="items-center justify-center py-6 mb-4 relative">
-             <Image
-              source={{ uri: getImageUrl(item.imageUrl) || 'https://via.placeholder.com/600x400' }}
-              style={{ width: '100%', aspectRatio: 1.5 }}
-              contentFit="contain"
-            />
-             <View className={`absolute bottom-0 right-0 px-3 py-1 rounded-full ${item.status === 'available' ? 'bg-green-50' : 'bg-gray-50'}`}>
-                  <Text className={`${item.status === 'available' ? 'text-green-600' : 'text-gray-600'} text-xs font-semibold capitalize`}>
-                    {item.status || 'Inactive'}
-                  </Text>
+        {/* Item Image Slider */}
+        <View className="py-2 mb-2 relative">
+             <ImageSlider images={itemImages} />
+             <View className={`absolute bottom-0 right-10 px-3 py-0.5 rounded-full `}>
              </View>
         </View>
 
@@ -148,6 +161,9 @@ export default function ItemDetailScreen() {
             })}
           </View>
         )}
+
+        {/* Availability */}
+        <AvailabilityCalendarView itemId={Number(id)} />
 
         {/* Edit Button */}
          <TouchableOpacity

@@ -1,3 +1,5 @@
+//RentAnything/app/rentalsPage/extendRental.tsx
+
 import IncidentReportPopup from '@/components/modal/IncidentReportPopup';
 import { PaddingStyles } from '@/constants/spacing';
 import { Ionicons } from '@expo/vector-icons';

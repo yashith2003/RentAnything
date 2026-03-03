@@ -1,4 +1,4 @@
-// api/availability.service.ts
+//RentAnything/api/availability.service.ts
 
 import { apiSlice } from './apiSlice';
 import { z } from 'zod';

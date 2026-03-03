@@ -1,11 +1,15 @@
+//RentAnything/components/form/LocationInput.tsx
+
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView } from 'react-native';
+import { ActivityIndicator, Keyboard, Text, TextInput, TouchableOpacity, View, ScrollView } from 'react-native';
 
 import addressService, { Address } from '@/api/address.service';
+import { formatExpoAddress, getCurrentLocationWithFallback } from '@/utils/location';
+import LocationRefineModal from './LocationRefineModal';
 
 const RECENT_LOCATIONS_KEY = 'recent_locations_history';
 
@@ -41,6 +45,7 @@ export default function LocationInput({
   const [recentLocations, setRecentLocations] = useState<LocationData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showRefineModal, setShowRefineModal] = useState(false);
   const [locationError, setLocationError] = useState('');
 
   const toggleDropdown = (isOpen: boolean) => {
@@ -134,30 +139,21 @@ export default function LocationInput({
     setLocationError('');
     
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setLocationError(t('common.enableLocationAccess', 'Enable location access to use this feature'));
-        return;
-      }
-
-      const location = await Location.getCurrentPositionAsync({});
-      const reverseResult = await Location.reverseGeocodeAsync({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude
-      });
+      const location = await getCurrentLocationWithFallback();
+      const { latitude, longitude } = location.coords;
+      
+      const reverseResult = await Location.reverseGeocodeAsync({ latitude, longitude });
       
       if (reverseResult && reverseResult.length > 0) {
         const place = reverseResult[0];
-        const formattedAddress = [place.name, place.street, place.city, place.region, place.country]
-          .filter(Boolean)
-          .join(', ');
+        const formattedAddress = formatExpoAddress(place);
         
         const selected: LocationData = {
           address: formattedAddress,
-          lat: location.coords.latitude,
-          lng: location.coords.longitude,
-          mainText: (place.name || place.street || place.city) ?? undefined,
-          secondaryText: [place.city, place.region, place.country].filter(Boolean).join(', ') || undefined
+          lat: latitude,
+          lng: longitude,
+          mainText: place.name || place.street || place.city || undefined,
+          secondaryText: [place.city, place.district || place.subregion].filter(Boolean).join(', ') || undefined
         };
         
         setQuery(selected.address);
@@ -165,16 +161,34 @@ export default function LocationInput({
         toggleDropdown(false);
         Keyboard.dismiss();
         saveToRecentLocations(selected);
+
+        // Open refinement modal
+        setShowRefineModal(true);
       } else {
          setLocationError(t('common.noLocationFound', 'Could not determine address'));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.warn('Location error:', error);
-      setLocationError(t('common.locationError', 'Failed to get current location'));
+      setLocationError(error.message || t('common.locationError', 'Failed to get current location'));
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleRefineSelect = (data: { address: string; lat: number; lng: number }) => {
+    const selected: LocationData = {
+      address: data.address,
+      lat: data.lat,
+      lng: data.lng,
+      mainText: data.address.split(',')[0],
+      secondaryText: data.address.split(',').slice(1).join(',').trim() || undefined
+    };
+    setQuery(selected.address);
+    onChange(selected);
+    saveToRecentLocations(selected);
+  };
+
+  const dropdownClass = "bg-white rounded-3xl shadow-2xl shadow-black/15 border border-gray-100 overflow-hidden z-[100] max-h-[450px]";
 
   return (
     <View className="relative w-full z-50">
@@ -183,15 +197,17 @@ export default function LocationInput({
         <TextInput
           placeholder={placeholder || t('common.location', 'Location')}
           placeholderTextColor="#A1A1A1"
-          className="flex-1 ml-2 text-base text-black"
-          style={{ paddingVertical: 0 }}
+          className="flex-1 ml-2 text-base text-black p-0"
           value={query}
           onChangeText={handleTextChange}
           onFocus={() => toggleDropdown(true)}
           onBlur={() => {
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
             timeoutRef.current = setTimeout(() => {
-              toggleDropdown(false);
+              // Only close if not currently loading location
+              if (!isLoading) {
+                toggleDropdown(false);
+              }
             }, 200);
           }}
         />
@@ -204,8 +220,8 @@ export default function LocationInput({
       
       {showDropdown && (
         <View 
-            className={`${inline ? 'mt-2' : 'absolute top-[62px] left-0 right-0'} bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden z-[100]`} 
-            style={inline ? [styles.dropdown, { elevation: 5, shadowOpacity: 0.05 }] : styles.dropdown}
+            className={`${inline ? 'mt-2' : 'absolute top-[62px] left-0 right-0'} ${dropdownClass}`}
+            style={inline ? { elevation: 5 } : { elevation: 20 }}
         >
           <ScrollView bounces={false} keyboardShouldPersistTaps="handled">
             {/* Current Location */}
@@ -291,17 +307,12 @@ export default function LocationInput({
           </TouchableOpacity>
         </View>
       )}
+      <LocationRefineModal
+        visible={showRefineModal}
+        onClose={() => setShowRefineModal(false)}
+        onSelect={handleRefineSelect}
+        initialLocation={value?.lat ? { lat: value.lat, lng: value.lng, address: query } : undefined}
+      />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  dropdown: {
-    maxHeight: 450,
-    elevation: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.15,
-    shadowRadius: 15,
-  }
-});

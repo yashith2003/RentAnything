@@ -1,3 +1,5 @@
+//RentAnything/components/form/categoryFields/FashionFields.tsx
+
 import React from 'react';
 import { View } from 'react-native';
 import { LabelledInput } from '@/components/form/LabelledInput';

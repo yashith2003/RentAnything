@@ -1,3 +1,5 @@
+//RentAnything/components/form/CategoryFieldRenderer.tsx
+
 import React from 'react';
 import { View } from 'react-native';
 import { VehicleFields } from './categoryFields/VehicleFields';

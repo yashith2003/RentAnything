@@ -136,6 +136,7 @@ export const ItemSchema = z.object({
   instructions: z.string().optional().nullable(),
   securityDeposit: z.union([z.number(), z.string()]).optional().nullable(),
   imageUrl: z.string().optional().nullable(), // Removed .url() as it might be a relative path
+  subImages: z.array(z.string()).max(5, "Maximum 5 sub-images allowed").optional().nullable(),
   price: z.union([z.number(), z.string()]).optional().nullable(),
   owner: UserSchema.optional().nullable(),
   address: AddressSchema.optional().nullable(),
@@ -174,6 +175,7 @@ export const CreateItemSchema = z.object({
   price: z.coerce.number().min(0, "Rental fee cannot be negative"),
 
   imageUrl: z.string().optional().nullable(),
+  subImages: z.array(z.string()).max(5, "Maximum 5 sub-images allowed").optional().nullable(),
   condition: z.string().optional().nullable(),
   rentalTerms: z.string().optional().nullable(),
   instructions: z.string().optional().nullable(),

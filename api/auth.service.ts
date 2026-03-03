@@ -1,4 +1,4 @@
-// api/auth.service.ts
+//RentAnything/api/auth.service.ts
 import apiClient from './client';
 
 export interface RegisterIndividualDto {

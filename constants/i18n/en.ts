@@ -142,5 +142,7 @@ export default {
     locationError: "Failed to get current location",
     noResultsFound: "No results found",
     fillAllFields: "Please fill in all fields and select a valid location from suggestions",
+    login: "Login",
+    browseAsGuest: "Browse as a Guest",
   },
 };

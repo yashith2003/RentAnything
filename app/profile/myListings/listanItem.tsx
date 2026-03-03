@@ -11,6 +11,7 @@ import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { UploadBox } from '@/components/form/UploadBox';
 import { AvailabilityCalendar } from '@/components/form/AvailabilityCalendar';
 import { CategoryFieldRenderer } from '@/components/form/CategoryFieldRenderer';
+import { MultipleImageUpload } from '@/components/form/MultipleImageUpload';
 import SuccessPopup from '@/components/AlertPopup/SuccessPopup';
 import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,6 +23,9 @@ import { ScrollView, Switch, Text, TextInput, TouchableOpacity, View, ActivityIn
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
+import { formatExpoAddress, isWithinSriLanka, getCurrentLocationWithFallback } from '@/utils/location';
+import LocationRefineModal from '@/components/form/LocationRefineModal';
+import { Config } from '@/constants/config';
 
 export default function ListAnItemScreen() {
   const router = useRouter();
@@ -33,7 +37,8 @@ export default function ListAnItemScreen() {
   const [itemName, setItemName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | undefined>();
-  const [location, setLocation] = useState('Union St, Chicago 2002 Usa');
+  const [subImages, setSubImages] = useState<string[]>([]);
+  const [location, setLocation] = useState('Select Item Location');
   const [itemDescription, setItemDescription] = useState('');
   const [rentalTerms, setRentalTerms] = useState('');
   const [instructions, setInstructions] = useState('');
@@ -42,7 +47,7 @@ export default function ListAnItemScreen() {
   const [securityDeposit, setSecurityDeposit] = useState('');
   const [condition, setCondition] = useState('New (like new)');
   const [accessibility, setAccessibility] = useState('');
-  const [availability, setAvailability] = useState<{ dates: string[], startTime: string, endTime: string }>({
+  const [availability, setAvailability] = useState<{ dates: { date: string, isAvailable: boolean }[], startTime: string, endTime: string }>({
     dates: [],
     startTime: '10:30:00',
     endTime: '17:30:00'
@@ -60,6 +65,7 @@ export default function ListAnItemScreen() {
 
   // UI State
   const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [showRefineModal, setShowRefineModal] = useState(false);
   const [newLocationInput, setNewLocationInput] = useState('');
   const [recentLocations, setRecentLocations] = useState<Address[]>([]);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
@@ -135,77 +141,41 @@ export default function ListAnItemScreen() {
   const handleUseCurrentLocation = async () => {
     setIsLoadingLocation(true);
     try {
-      // 1. Request location permissions
-      const { status } = await Location.requestForegroundPermissionsAsync();
+      const location = await getCurrentLocationWithFallback();
+      const { latitude, longitude } = location.coords;
       
-      if (status !== 'granted') {
-        setErrorMessage('Location permission denied. Please enable location access in your device settings.');
-        setShowError(true);
-        setIsLoadingLocation(false);
-        return;
-      }
-
-      // 2. Get current position
-      const position = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
-
-      const { latitude, longitude } = position.coords;
-
-      // 3. Reverse geocode to get human-readable address
-      const geocodedAddress = await Location.reverseGeocodeAsync({
-        latitude,
-        longitude,
-      });
-
-      if (geocodedAddress && geocodedAddress.length > 0) {
-        const addr = geocodedAddress[0];
-        
-        // Format address string
-        const addressParts = [
-          addr.name,
-          addr.street,
-          addr.city,
-          addr.region,
-          addr.postalCode,
-          addr.country,
-        ].filter(Boolean);
-        
-        const formattedAddress = addressParts.join(', ');
-
-        // 4. Update state with address and coordinates
+      const reverseResult = await Location.reverseGeocodeAsync({ latitude, longitude });
+      if (reverseResult && reverseResult.length > 0) {
+        const addrStr = formatExpoAddress(reverseResult[0]);
         const locationData: Partial<Address> = {
-          address: formattedAddress,
+          address: addrStr,
           lat: latitude,
           lng: longitude
         };
-        setLocation(formattedAddress);
+        setLocation(addrStr);
         setSelectedAddress(locationData);
         setShowLocationPicker(false);
-        loadRecentLocations();
-      } else {
-        setErrorMessage('Unable to determine address from your location. Please enter manually.');
-        setShowError(true);
+        
+        // Open refinement modal for precision
+        setShowRefineModal(true);
       }
     } catch (error: any) {
       console.warn('Location error:', error);
-      
-      const errorMessage = error.message || '';
-      
-      if (error.code === 'E_LOCATION_SERVICES_DISABLED' || errorMessage.includes('location services are enabled')) {
-        setErrorMessage('Location services are disabled. Please enable them in your device settings.');
-      } else if (error.code === 'E_LOCATION_UNAVAILABLE' || errorMessage.includes('Current location is unavailable')) {
-        setErrorMessage('Unable to get your location. If using an emulator, please set a mock location. On a physical device, ensure GPS is enabled and you are not indoors.');
-      } else if (errorMessage.includes('permission')) {
-        setErrorMessage('Location permission denied. Please enable location access in your device settings.');
-      } else {
-        setErrorMessage('Failed to get your location. Please try again or enter your address manually.');
-      }
-      
+      setErrorMessage(error.message || 'Failed to get location');
       setShowError(true);
+      // Ensure we don't stay in loading state on error
     } finally {
       setIsLoadingLocation(false);
     }
+  };
+
+  const handleRefineSelect = (data: { address: string; lat: number; lng: number }) => {
+    setLocation(data.address);
+    setSelectedAddress({
+      address: data.address,
+      lat: data.lat,
+      lng: data.lng
+    });
   };
 
   const handleCategoryFieldChange = (field: string, value: any) => {
@@ -281,8 +251,9 @@ export default function ListAnItemScreen() {
 
   const uploadIfNeeded = async (uri?: string) => {
     if (!uri) return undefined;
+    
     // Check if it's a local URI (not starting with http)
-    if (uri.startsWith('file://') || uri.startsWith('content://') || !uri.startsWith('http')) {
+    if (uri.startsWith('file://') || uri.startsWith('content://') || (!uri.startsWith('http') && !uri.startsWith('/'))) {
       try {
         const uploadResult = await fileService.uploadImage(uri);
         return uploadResult.url;
@@ -291,6 +262,12 @@ export default function ListAnItemScreen() {
         throw new Error('Failed to upload image. Please try again.');
       }
     }
+
+    // If it's already an absolute URL starting with our BASE_URL, strip it
+    if (uri.startsWith(Config.BASE_URL)) {
+      return uri.replace(`${Config.BASE_URL}/`, '');
+    }
+
     return uri;
   };
 
@@ -325,12 +302,13 @@ export default function ListAnItemScreen() {
         securityDeposit: securityDeposit ? parseFloat(securityDeposit) : 0,
         rateType: rentalRate === 'Hour' ? 'hourly' : rentalRate === 'Day' ? 'daily' : rentalRate === 'Weekly' ? 'weekly' : 'monthly',
         accessibility: accessibility,
-        availabilities: availability.dates.map(date => ({
-          availableDate: date,
+        availabilities: availability.dates.map(d => ({
+          availableDate: d.date,
           startTime: availability.startTime,
           endTime: availability.endTime,
-          isAvailable: true
+          isAvailable: d.isAvailable
         })),
+        subImages: subImages, // Passed for Zod validation
         ...buildCategoryDetails(),
       };
 
@@ -350,6 +328,7 @@ export default function ListAnItemScreen() {
         if (fieldErrors.description) fieldErrors.itemDescription = fieldErrors.description;
         if (fieldErrors.phone) fieldErrors.phoneNumber = fieldErrors.phone;
         if (fieldErrors.price) fieldErrors.rentalFee = fieldErrors.price;
+        if (fieldErrors.subImages) fieldErrors.subImages = fieldErrors.subImages;
 
         setErrors(fieldErrors);
         setErrorMessage('Please fix the errors in the form');
@@ -358,11 +337,22 @@ export default function ListAnItemScreen() {
         return;
       }
 
-      // 4. Upload Documents & Image
+      // 4. Upload Documents & Images
       const uploadedImageUrl = await uploadIfNeeded(selectedImage);
       
+      const uploadedSubImages = await Promise.all(
+        subImages.map(async (uri) => {
+          const uploadedUri = await uploadIfNeeded(uri);
+          return uploadedUri;
+        })
+      );
+      
       // Update category details with uploaded document URLs
-      const finalPayload: any = { ...validation.data, imageUrl: uploadedImageUrl };
+      const finalPayload: any = { 
+        ...validation.data, 
+        imageUrl: uploadedImageUrl,
+        subImages: uploadedSubImages.filter(Boolean) as string[]
+      };
       
       // Ensure null values are converted to undefined for backend compatibility if needed
       if (finalPayload.condition === null) finalPayload.condition = undefined;
@@ -488,6 +478,13 @@ export default function ListAnItemScreen() {
         </View>
       )}
 
+      <LocationRefineModal
+        visible={showRefineModal}
+        onClose={() => setShowRefineModal(false)}
+        onSelect={handleRefineSelect}
+        initialLocation={selectedAddress?.lat ? { lat: selectedAddress.lat, lng: selectedAddress.lng!, address: location } : undefined}
+      />
+
       <ScreenHeader title="List an item" />
 
       <ScrollView className="flex-1 px-6 pt-4" showsVerticalScrollIndicator={false}>
@@ -516,13 +513,20 @@ export default function ListAnItemScreen() {
 
         {/* Image Upload */}
         <View className="mb-6">
-          <Text className="text-sm font-bold text-black mb-2">Image</Text>
+          <Text className="text-sm font-bold text-black mb-2">Main Image</Text>
           <UploadBox 
             height={160} 
             imageUri={selectedImage}
             onImageSelect={setSelectedImage}
+            label="Click here to upload main Image"
           />
         </View>
+
+        <MultipleImageUpload 
+          images={subImages} 
+          onImagesChange={setSubImages} 
+          error={errors.subImages}
+        />
 
         {/* Location */}
         <View className="mb-6">

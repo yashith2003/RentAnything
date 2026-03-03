@@ -1,4 +1,4 @@
-// app/search/searchMap.tsx
+//RentAnything/app/search/searchMap.tsx
 
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';

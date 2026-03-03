@@ -1,3 +1,5 @@
+//RentAnything/components/auth/RoleGuard.tsx
+
 import React, { ReactNode } from 'react';
 import { useUser } from '@/context/userContext';
 import GuestFallback from './GuestFallback';

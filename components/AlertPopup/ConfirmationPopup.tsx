@@ -1,3 +1,5 @@
+// components/modal/ConfirmationPopup.tsx
+
 import PrimaryButton from '@/components/ui/PrimaryButton';
 import React from 'react';
 import { Modal, Text, View, TouchableOpacity } from 'react-native';

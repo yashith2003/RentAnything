@@ -1,4 +1,4 @@
-//constants/theme.ts
+//RentAnything/constants/theme.ts
 
 
 export const Colors = {

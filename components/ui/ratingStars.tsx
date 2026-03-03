@@ -1,4 +1,4 @@
-// components/ratingStars.tsx
+//RentAnything/components/ui/ratingStars.tsx
 
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';

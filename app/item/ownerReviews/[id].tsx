@@ -1,3 +1,5 @@
+//RentAnything/app/item/ownerReviews/[id].tsx
+
 import ReviewCard from '@/components/card/ReviewCard';
 import { PaddingStyles } from '@/constants/spacing';
 import { useGetUserReviewsQuery } from '@/api/review.service';
@@ -19,7 +21,7 @@ export default function OwnerReviewsScreen() {
   );
 
   const filteredReviews = data?.reviews?.filter(
-    (review) => review.comment.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (review) => (review.comment || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
                 (review.name || '').toLowerCase().includes(searchQuery.toLowerCase())
   ) || [];
 

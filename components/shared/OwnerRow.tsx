@@ -1,3 +1,5 @@
+//RentAnything/components/shared/OwnerRow.tsx
+
 import RatingStars from '@/components/ui/ratingStars';
 import VerifiedBadge from '@/components/ui/VerifiedBadge';
 import { Image } from 'expo-image';

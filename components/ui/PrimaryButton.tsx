@@ -1,4 +1,4 @@
-// components/ui/PrimaryButton.tsx
+//RentAnything/components/ui/PrimaryButton.tsx
 
 import React from 'react';
 import { Text, TouchableOpacity, TouchableOpacityProps, ActivityIndicator } from 'react-native';

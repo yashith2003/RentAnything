@@ -46,12 +46,21 @@ export const chatApi = apiSlice.injectEndpoints({
         body: formData,
       }),
       transformResponse: validateResponse(z.object({
+        urls: z.array(z.string()),
         originalNames: z.array(z.string())
       })),
     }),
     bulkShareItem: builder.mutation<ChatMessage[], { threadIds: number[]; itemId: number }>({
       query: (body) => ({
         url: 'chat/bulk-share',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Chat'],
+    }),
+    deleteThreads: builder.mutation<void, { threadIds: number[] }>({
+      query: (body) => ({
+        url: 'chat/threads/delete',
         method: 'POST',
         body,
       }),
@@ -68,6 +77,7 @@ export const {
   useMarkThreadAsReadMutation,
   useUploadChatAttachmentsMutation,
   useBulkShareItemMutation,
+  useDeleteThreadsMutation,
 } = chatApi;
 
 export default chatApi;

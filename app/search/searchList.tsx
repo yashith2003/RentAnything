@@ -1,4 +1,4 @@
-// app/search/searchList.tsx
+//RentAnything/app/search/searchList.tsx
 
 import ItemCard from '@/components/card/itemCard';
 import { PaddingStyles } from '@/constants/spacing';
@@ -9,6 +9,8 @@ import { getImageUrl } from '@/utils/image';
 import { formatPrice } from '@/utils/formatPrice';
 import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/typography';
+import { useLocationContext } from '@/context/LocationContext';
+import { calculateDistance } from '@/utils/location';
 
 interface SearchListProps {
   categoryId?: number;
@@ -17,6 +19,7 @@ interface SearchListProps {
 }
 
 export default function SearchList({ categoryId, searchQuery, filters }: SearchListProps) {
+  const { userLocation } = useLocationContext();
   const [page, setPage] = React.useState(1);
   const limit = 20;
 
@@ -61,7 +64,7 @@ export default function SearchList({ categoryId, searchQuery, filters }: SearchL
     >
       {/* Products Count */}
       <View className="mb-4" style={PaddingStyles.page}>
-        <Text style={[Typography.h3, { color: Colors.textPrimary }]}>
+        <Text style={[Typography.bodyMedium, { color: Colors.textSecondary }]}>
           {items?.length || 0} {items?.length === 1 ? 'product' : 'products'} found
         </Text>
       </View>
@@ -77,7 +80,9 @@ export default function SearchList({ categoryId, searchQuery, filters }: SearchL
             owner: item.owner?.individualUser?.fullName || item.owner?.company?.companyName || 'N/A',
             ownerId: item.owner?.id,
             rating: item.averageRating ?? 0,
-            distance: '5.6 km',
+            distance: userLocation && item.address?.lat && item.address?.lng 
+              ? calculateDistance(userLocation.latitude, userLocation.longitude, item.address.lat, item.address.lng)
+              : '--- km',
             location: item.address?.address || 'N/A',
             phone: item.phone || (item.owner as any)?.phone,
             deliveryAvailable: item.deliveryAvailable ?? undefined,

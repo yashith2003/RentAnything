@@ -1,4 +1,4 @@
-//components/haptic-tab.tsx
+//RentAnything/components/ui/haptic-tab.tsx
 
 import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
 import { PlatformPressable } from '@react-navigation/elements';

@@ -1,4 +1,4 @@
-//app/chat/chatDetails.tsx
+//RentAnything/app/chat/chatDetails.tsx
 
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';

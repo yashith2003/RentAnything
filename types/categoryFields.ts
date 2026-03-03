@@ -1,4 +1,4 @@
-//types/categoryFields.ts
+//RentAnything/types/categoryFields.ts
 
 export interface FieldConfig {
   name: string;

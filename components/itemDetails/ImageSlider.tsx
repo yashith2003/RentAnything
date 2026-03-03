@@ -10,10 +10,20 @@ interface ImageSliderProps {
 
 export default function ImageSlider({ images }: ImageSliderProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const scrollViewRef = React.useRef<ScrollView>(null);
+
+  const scrollToImage = (index: number) => {
+    setActiveImageIndex(index);
+    scrollViewRef.current?.scrollTo({
+      x: index * width,
+      animated: true,
+    });
+  };
 
   return (
     <View>
       <ScrollView 
+        ref={scrollViewRef}
         horizontal 
         pagingEnabled 
         showsHorizontalScrollIndicator={false}
@@ -47,7 +57,7 @@ export default function ImageSlider({ images }: ImageSliderProps) {
         {images.map((img, index) => (
           <TouchableOpacity 
             key={index} 
-            onPress={() => setActiveImageIndex(index)}
+            onPress={() => scrollToImage(index)}
             className={`rounded-xl border-2 ${activeImageIndex === index ? 'border-[#2FA2B9]' : 'border-transparent'}`}
           >
             <Image 

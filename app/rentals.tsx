@@ -1,4 +1,4 @@
-//app/rentals.tsx
+//RentAnything/app/rentals.tsx
 
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';

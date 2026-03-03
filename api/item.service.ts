@@ -1,4 +1,4 @@
-// api/item.service.ts
+//RentAnything/api/item.service.ts
 import { apiSlice, validateResponse } from './apiSlice';
 import { ItemSchema, Item } from '../types/schemas';
 import { z } from 'zod';
@@ -21,6 +21,7 @@ export interface CreateItemDto {
   instructions?: string;
   securityDeposit?: number;
   imageUrl?: string;
+  subImages?: string[];
   rateType?: string;
   price?: number;
   availabilities?: CreateAvailabilityDto[];
