@@ -8,6 +8,7 @@ import { useSearchItemsQuery } from '@/api/item.service';
 import { getImageUrl } from '@/utils/image';
 import { formatPrice } from '@/utils/formatPrice';
 import { Colors } from '@/constants/theme';
+import { Typography } from '@/constants/typography';
 import { useLocationContext } from '@/context/LocationContext';
 import { calculateDistance } from '@/utils/location';
 
@@ -63,7 +64,9 @@ export default function SearchList({ categoryId, searchQuery, filters }: SearchL
     >
       {/* Products Count */}
       <View className="mb-4" style={PaddingStyles.page}>
-        <Text className="text-xl font-bold text-black">{items?.length || 0} {items?.length === 1 ? 'product' : 'products'} found</Text>
+        <Text style={[Typography.bodyMedium, { color: Colors.textSecondary }]}>
+          {items?.length || 0} {items?.length === 1 ? 'product' : 'products'} found
+        </Text>
       </View>
 
       {/* Products Grid */}
@@ -92,7 +95,7 @@ export default function SearchList({ categoryId, searchQuery, filters }: SearchL
         })}
         {(!items || items.length === 0) && !isLoading && (
           <View className="w-full items-center py-10">
-            <Text className="text-gray-400">No products found</Text>
+            <Text style={[Typography.bodyMedium, { color: Colors.textMuted }]}>No products found</Text>
           </View>
         )}
         {isFetching && page > 1 && (

@@ -93,8 +93,12 @@ export default function AvailabilityCalendarView({ itemId }: Props) {
       {/* Legend */}
       <View className="flex-row gap-x-4 mb-4">
         <View className="flex-row items-center gap-x-1">
-          <View className="w-3 h-3 rounded-full" style={{ backgroundColor: '#FF3B30' }} />
+          <View className="w-3 h-3 rounded-full bg-[#2FA2B9]" />
           <Text className="text-xs text-gray-500">Available</Text>
+        </View>
+        <View className="flex-row items-center gap-x-1">
+          <View className="w-3 h-3 rounded-full bg-[#FF3B30]" />
+          <Text className="text-xs text-gray-500">Unavailable</Text>
         </View>
         {selectedDates.size > 0 && (
           <View className="flex-row items-center gap-x-1">
@@ -170,35 +174,34 @@ export default function AvailabilityCalendarView({ itemId }: Props) {
             const isAvailable = record?.isAvailable === true;
             const isUnavailable = record?.isAvailable === false;
 
+            let bgColor = "transparent";
+            let textColor = "text-gray-700";
+
+            if (isSelected) {
+              bgColor = "bg-gray-800";
+              textColor = "text-white";
+            } else if (isAvailable) {
+              bgColor = "bg-[#2FA2B9]/10";
+              textColor = "text-[#2FA2B9]";
+            } else if (isUnavailable) {
+              bgColor = "bg-[#FF3B30]/10";
+              textColor = "text-[#FF3B30]";
+            }
+
             return (
               <TouchableOpacity
                 key={dateStr}
                 onPress={() => toggleDate(dateStr)}
-                className={[
-                  'w-8 h-8 rounded-full items-center justify-center m-[2px]',
-                  isSelected ? 'bg-gray-800' : '',
-                  !isSelected && isUnavailable ? 'bg-red-100' : '',
-                ].join(' ')}
-                style={!isSelected && isAvailable ? { backgroundColor: '#FF3B301A' } : undefined}
+                className={`w-8 h-8 rounded-full items-center justify-center m-[2px] ${bgColor}`}
               >
-                <Text
-                  className={[
-                    'text-[11px] font-medium',
-                    isSelected ? 'text-white' :
-                    isUnavailable ? 'text-red-500' : 'text-gray-700',
-                  ].join(' ')}
-                  style={!isSelected && isAvailable ? { color: '#FF3B30' } : undefined}
-                >
+                <Text className={`text-[11px] font-bold ${textColor}`}>
                   {day}
                 </Text>
-                {/* Dot indicator for availability */}
+                {/* Dot indicator */}
                 {(isAvailable || isUnavailable) && !isSelected && (
                   <View
-                  className={[
-                    'absolute bottom-0.5 w-1 h-1 rounded-full',
-                    isUnavailable ? 'bg-red-500' : '',
-                  ].join(' ')}
-                  style={isAvailable ? { backgroundColor: '#FF3B30' } : undefined}
+                    style={{ backgroundColor: isAvailable ? '#2FA2B9' : '#FF3B30' }}
+                    className="absolute bottom-1 w-1 h-1 rounded-full"
                   />
                 )}
               </TouchableOpacity>

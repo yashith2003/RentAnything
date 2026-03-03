@@ -10,6 +10,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import SuccessPopup from '@/components/AlertPopup/SuccessPopup';
 import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
 import PrimaryButton from '@/components/ui/PrimaryButton';
+import { Colors } from '@/constants/theme';
+import { Spacing } from '@/constants/spacing';
+import { Typography, FontSize } from '@/constants/typography';
 
 import { useTranslation } from 'react-i18next';
 import authService from '@/api/auth.service';
@@ -113,7 +116,10 @@ export default function OTPPage() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView 
+      style={{ backgroundColor: Colors.background }} 
+      className="flex-1"
+    >
       <StatusBar style="dark" />
 
       {/* Hidden Input for Keyboard Control */}
@@ -126,7 +132,10 @@ export default function OTPPage() {
         style={{ position: 'absolute', width: 1, height: 1, opacity: 0 }}
       />
 
-      <Pressable className="flex-1 px-6 pt-4" onPress={Keyboard.dismiss}>
+      <Pressable 
+        className={`flex-1 pt-4 px-${Spacing.pageHorizontal / 4}`} 
+        onPress={Keyboard.dismiss}
+      >
         {/* Logo Section */}
         <View className="items-start">
           <Image
@@ -138,10 +147,14 @@ export default function OTPPage() {
 
         {/* Header Section */}
         <View className="mt-16 items-center">
-          <Text className="text-[28px] font-bold text-black text-center">
+          <Text 
+            style={[Typography.h2, { color: Colors.textPrimary, textAlign: 'center' }]}
+          >
             {t('otpPage.title')}
           </Text>
-          <Text className="text-sm text-gray-500 mt-3 text-center">
+          <Text 
+            style={[Typography.bodyMedium, { color: Colors.textSecondary, marginTop: 12, textAlign: 'center' }]}
+          >
             {t('otpPage.subtitle', { phone: phone || 'your phone' })}
           </Text>
         </View>
@@ -155,16 +168,20 @@ export default function OTPPage() {
             <Fragment key={index}>
               <View
                 className={`w-12 h-16 bg-white border rounded-2xl justify-center items-center ${
-                    index === otp.length ? 'border-[#2FA2B9] border-2' : 'border-gray-200'
+                    index === otp.length ? 'border-2' : ''
                 }`}
+                style={{
+                  borderColor: index === otp.length ? Colors.primary : Colors.border,
+                  backgroundColor: Colors.background,
+                }}
               >
-                <Text className="text-2xl font-semibold text-black">
+                <Text style={[Typography.h2, { color: Colors.textPrimary }]}>
                   {digit}
                 </Text>
               </View>
               {index === 2 && (
                 <View className="justify-center items-center h-16">
-                  <Text className="text-2xl font-semibold text-gray-400">-</Text>
+                  <Text style={[Typography.h2, { color: Colors.textMuted }]}>-</Text>
                 </View>
               )}
             </Fragment>
@@ -179,7 +196,7 @@ export default function OTPPage() {
           />
 
           <View className="flex-row justify-center mt-6">
-            <Text className="text-sm text-gray-500">
+            <Text style={[Typography.bodySmall, { color: Colors.textMuted }]}>
               {t('otpPage.noOtp')}
             </Text>
             <TouchableOpacity 
@@ -187,8 +204,7 @@ export default function OTPPage() {
               disabled={timeLeft > 0}
             >
               <Text
-                className="text-sm font-bold ml-1"
-                style={{ color: timeLeft > 0 ? '#9CA3AF' : '#2FA2B9' }}
+                style={[Typography.bodySmall, { fontWeight: '700', marginLeft: 4, color: timeLeft > 0 ? Colors.buttonDisabled : Colors.primary }]}
               >
                 {t('otpPage.resend')} {timeLeft > 0 ? `(${formatTime(timeLeft)})` : ''}
               </Text>

@@ -21,6 +21,7 @@ export interface CreateItemDto {
   instructions?: string;
   securityDeposit?: number;
   imageUrl?: string;
+  subImages?: string[];
   rateType?: string;
   price?: number;
   availabilities?: CreateAvailabilityDto[];

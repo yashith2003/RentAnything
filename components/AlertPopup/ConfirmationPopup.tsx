@@ -1,9 +1,11 @@
-//RentAnything/components/AlertPopup/ConfirmationPopup.tsx
+// components/modal/ConfirmationPopup.tsx
 
 import PrimaryButton from '@/components/ui/PrimaryButton';
 import React from 'react';
 import { Modal, Text, View, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { Colors } from '@/constants/theme';
+import { Typography } from '@/constants/typography';
 
 interface ConfirmationPopupProps {
   visible: boolean;
@@ -34,19 +36,25 @@ export default function ConfirmationPopup({
       statusBarTranslucent
     >
       <View className="flex-1 justify-center items-center bg-black/50 px-6">
-        <View className="bg-white rounded-3xl p-8 w-full max-w-sm items-center">
+        <View 
+          className="rounded-3xl p-8 w-full max-w-sm items-center"
+          style={{ backgroundColor: Colors.background }}
+        >
           {/* Icon/Emoji */}
-          <View className="w-16 h-16 bg-blue-50 rounded-full justify-center items-center mb-4">
+          <View 
+            className="w-16 h-16 rounded-full justify-center items-center mb-4"
+            style={{ backgroundColor: Colors.primary + '10' }} // Ultra light primary bg
+          >
              <Text className="text-3xl">❓</Text>
           </View>
 
           {/* Title */}
-          <Text className="text-xl font-bold text-black mb-3 text-center">
+          <Text style={[Typography.h3, { color: Colors.textPrimary, marginBottom: 12, textAlign: 'center' }]}>
             {title}
           </Text>
 
           {/* Message */}
-          <Text className="text-sm text-gray-500 text-center leading-6 mb-8">
+          <Text style={[Typography.bodySmall, { color: Colors.textSecondary, textAlign: 'center', lineHeight: 22, marginBottom: 32 }]}>
             {message}
           </Text>
 
@@ -61,7 +69,7 @@ export default function ConfirmationPopup({
               onPress={onCancel}
               className="w-full py-4 items-center"
             >
-              <Text className="text-gray-400 font-semibold">
+              <Text style={[Typography.bodySmall, { color: Colors.textMuted, fontWeight: '600' }]}>
                 {cancelLabel || t('common.cancel', 'Cancel')}
               </Text>
             </TouchableOpacity>

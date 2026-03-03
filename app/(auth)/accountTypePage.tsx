@@ -8,15 +8,16 @@ import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import PrimaryButton from '@/components/ui/PrimaryButton';
-import { PaddingStyles } from '@/constants/spacing';
+import { PaddingStyles, Spacing } from '@/constants/spacing';
+import { Colors } from '@/constants/theme';
+import { Typography } from '@/constants/typography';
 import { useUser } from '@/context/userContext';
 
 import { useTranslation } from 'react-i18next';
-import authService from '@/api/auth.service';
 
 export default function AccountTypePage() {
   const router = useRouter();
-  const { setRole, login } = useUser();
+  const { setRole } = useUser();
   const { t } = useTranslation();
 
   const handleSelectType = (type: 'individual' | 'company') => {
@@ -28,20 +29,11 @@ export default function AccountTypePage() {
     }
   };
 
-  const handleGuestLogin = async () => {
-    try {
-      const data = await authService.loginGuest();
-      if (data.access_token) {
-        await login(data.access_token, null, 'guest');
-        router.replace('/(tabs)/home');
-      }
-    } catch (error) {
-      console.error('Guest login failed:', error);
-    }
-  };
-
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView 
+      style={{ backgroundColor: Colors.background }} 
+      className="flex-1"
+    >
       <StatusBar style="dark" />
       
       <View className="flex-1 pt-4 pb-10" style={PaddingStyles.page}>
@@ -56,10 +48,12 @@ export default function AccountTypePage() {
 
         {/* Content Section */}
         <View className="mt-16 items-center">
-          <Text className="text-[32px] font-bold text-black text-center">
+          <Text style={[Typography.h1, { color: Colors.textPrimary, textAlign: 'center' }]}>
             {t('accountTypePage.title')}
           </Text>
-          <Text className="text-gray-500 text-center text-base mt-3 px-2 leading-6">
+          <Text 
+            style={[Typography.bodyLarge, { color: Colors.textSecondary, textAlign: 'center', marginTop: 12, paddingHorizontal: 8 }]}
+          >
             {t('accountTypePage.subtitle')}
           </Text>
         </View>
@@ -83,14 +77,6 @@ export default function AccountTypePage() {
             title={t('accountTypePage.company')}
             variant="outlined"
             onPress={() => handleSelectType('company')}
-          />
-
-          {/* Guest Login Button */}
-          <PrimaryButton
-            title="Login as a Guest"
-            variant="outlined"
-            onPress={handleGuestLogin}
-            style={{ marginTop: 8, borderColor: '#ccc' }}
           />
         </View>
 

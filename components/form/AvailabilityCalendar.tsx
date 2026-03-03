@@ -8,10 +8,11 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface AvailabilityCalendarProps {
   onAvailabilityChange?: (availability: {
-    dates: string[];
+    dates: { date: string; isAvailable: boolean }[];
     startTime: string;
     endTime: string;
   }) => void;
+  initialDates?: { date: string, isAvailable: boolean }[];
 }
 
 const formatTimeToBackend = (timeStr: string, period: string) => {
@@ -73,26 +74,44 @@ const PeriodPicker = ({
 
 export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
   onAvailabilityChange,
+  initialDates = []
 }) => {
   const [startTime, setStartTime] = useState('10 : 30');
   const [startPeriod, setStartPeriod] = useState('am');
   const [endTime, setEndTime] = useState('05 : 30');
   const [endPeriod, setEndPeriod] = useState('pm');
   const [activeTab, setActiveTab] = useState<'start' | 'end'>('start');
+  const [selectionMode, setSelectionMode] = useState<'available' | 'unavailable'>('available');
   
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
   const [viewDate, setViewDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
-  const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
+  
+  // Use a Map here to store date -> isAvailable
+  const [selectedDates, setSelectedDates] = useState<Map<string, boolean>>(new Map());
+
+  // Initialize from initialDates if provided
+  useEffect(() => {
+    if (initialDates && initialDates.length > 0) {
+      const newMap = new Map();
+      initialDates.forEach(d => newMap.set(d.date, d.isAvailable));
+      setSelectedDates(newMap);
+    }
+  }, []); // Only on mount
 
   const startInputRef = useRef<TextInput>(null);
   const endInputRef = useRef<TextInput>(null);
   const slideAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    const datesArray = Array.from(selectedDates.entries()).map(([date, isAvailable]) => ({
+      date,
+      isAvailable,
+    }));
+    
     onAvailabilityChange?.({
-      dates: Array.from(selectedDates),
+      dates: datesArray,
       startTime: formatTimeToBackend(startTime, startPeriod),
       endTime: formatTimeToBackend(endTime, endPeriod),
     });
@@ -115,11 +134,20 @@ export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
     if (date < today) return;
     
     const dateStr = formatDate(date);
-    const newSelected = new Set(selectedDates);
+    const newSelected = new Map(selectedDates);
+    
     if (newSelected.has(dateStr)) {
-      newSelected.delete(dateStr);
+      const currentStatus = newSelected.get(dateStr);
+      // If clicking a date that's already in the same mode, remove it
+      if ((selectionMode === 'available' && currentStatus === true) || 
+          (selectionMode === 'unavailable' && currentStatus === false)) {
+        newSelected.delete(dateStr);
+      } else {
+        // Switch the status
+        newSelected.set(dateStr, selectionMode === 'available');
+      }
     } else {
-      newSelected.add(dateStr);
+      newSelected.set(dateStr, selectionMode === 'available');
     }
     setSelectedDates(newSelected);
   };
@@ -127,7 +155,6 @@ export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
   const changeMonth = (offset: number) => {
     const direction = offset > 0 ? 1 : -1;
     
-    // Animate out
     Animated.timing(slideAnim, {
       toValue: -direction * 50,
       duration: 150,
@@ -135,8 +162,6 @@ export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
     }).start(() => {
       const newDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + offset, 1);
       setViewDate(newDate);
-      
-      // Reset position and animate in
       slideAnim.setValue(direction * 50);
       Animated.spring(slideAnim, {
         toValue: 0,
@@ -157,30 +182,24 @@ export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
   const { gridDays, monthYearLabel } = useMemo(() => {
     const year = viewDate.getFullYear();
     const month = viewDate.getMonth();
-    
     const label = viewDate.toLocaleString('default', { month: 'long', year: 'numeric' });
-    
     const firstDayOfMonth = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    
     const prevMonthLastDate = new Date(year, month, 0).getDate();
     const prevMonthDays = Array.from({ length: firstDayOfMonth }, (_, i) => {
       const day = prevMonthLastDate - firstDayOfMonth + i + 1;
       return { day, type: 'prev' as const, date: new Date(year, month - 1, day) };
     });
-
     const currentMonthDays = Array.from({ length: daysInMonth }, (_, i) => {
       const day = i + 1;
       return { day, type: 'current' as const, date: new Date(year, month, day) };
     });
-
     const totalDaysSoFar = prevMonthDays.length + currentMonthDays.length;
-    const remainingSlots = 42 - totalDaysSoFar; // Standard 6-row grid
+    const remainingSlots = 42 - totalDaysSoFar;
     const nextMonthDays = Array.from({ length: remainingSlots }, (_, i) => {
       const day = i + 1;
       return { day, type: 'next' as const, date: new Date(year, month + 1, day) };
     });
-
     return {
       gridDays: [...prevMonthDays, ...currentMonthDays, ...nextMonthDays],
       monthYearLabel: label
@@ -191,7 +210,33 @@ export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
 
   return (
     <View className="bg-white rounded-3xl border border-gray-100 p-5 shadow-sm">
-      {/* Time Selection Header */}
+      {/* Availability Selection Mode */}
+      <View className="mb-6">
+        <Text className="text-sm font-bold text-gray-800 mb-3">Availability Type</Text>
+        <View className="flex-row gap-4">
+          <Pressable 
+            onPress={() => setSelectionMode('available')}
+            className="flex-row items-center gap-2"
+          >
+            <View className={`w-5 h-5 rounded-full border-2 items-center justify-center ${selectionMode === 'available' ? 'border-[#2FA2B9]' : 'border-gray-300'}`}>
+              {selectionMode === 'available' && <View className="w-2.5 h-2.5 rounded-full bg-[#2FA2B9]" />}
+            </View>
+            <Text className={`text-sm ${selectionMode === 'available' ? 'text-gray-900 font-bold' : 'text-gray-500'}`}>Available Days</Text>
+          </Pressable>
+
+          <Pressable 
+            onPress={() => setSelectionMode('unavailable')}
+            className="flex-row items-center gap-2"
+          >
+            <View className={`w-5 h-5 rounded-full border-2 items-center justify-center ${selectionMode === 'unavailable' ? 'border-[#FF3B30]' : 'border-gray-300'}`}>
+              {selectionMode === 'unavailable' && <View className="w-2.5 h-2.5 rounded-full bg-[#FF3B30]" />}
+            </View>
+            <Text className={`text-sm ${selectionMode === 'unavailable' ? 'text-gray-900 font-bold' : 'text-gray-500'}`}>Unavailable Days</Text>
+          </Pressable>
+        </View>
+      </View>
+
+      {/* Time Selection Section */}
       <View className="mb-5">
         <View className="flex-row justify-between items-center mb-3">
           <Text className="text-sm font-bold text-gray-400">Time</Text>
@@ -281,8 +326,10 @@ export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
         style={{ opacity: slideAnim.interpolate({ inputRange: [-50, 0, 50], outputRange: [0, 1, 0] }) }}
       >
         {gridDays.map((item, idx) => {
-          const isSelected = selectedDates.has(formatDate(item.date));
-          const isToday = formatDate(item.date) === formatDate(today);
+          const dateStr = formatDate(item.date);
+          const isSelected = selectedDates.has(dateStr);
+          const isAvailable = selectedDates.get(dateStr) === true;
+          const isToday = dateStr === formatDate(today);
           const isPast = item.date < today;
           const isCurrentMonth = item.type === 'current';
           
@@ -290,7 +337,7 @@ export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
           let textStyle = "text-gray-700";
           
           if (isSelected) {
-            highlightStyle = "bg-[#2FA2B9] rounded-full";
+            highlightStyle = isAvailable ? "bg-[#2FA2B9] rounded-full" : "bg-[#FF3B30] rounded-full";
             textStyle = "text-white";
           } else if (isToday) {
             highlightStyle = "border-2 border-[#2FA2B9] rounded-full";
@@ -307,7 +354,7 @@ export const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
             <Pressable 
               key={`${item.type}-${idx}`} 
               onPress={() => toggleDate(item.date)}
-              disabled={isPast && !isSelected} // Allow deselecting if it was somehow selected
+              disabled={isPast && !isSelected}
               className="w-[14%] aspect-square items-center justify-center mb-1"
             >
               <View className={`w-9 h-9 items-center justify-center ${highlightStyle}`}>

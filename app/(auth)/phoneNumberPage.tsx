@@ -18,7 +18,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomTextInput from '@/components/form/CustomTextInput';
 import PrimaryButton from '@/components/ui/PrimaryButton';
 import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
+import { Colors } from '@/constants/theme';
 import { Spacing } from '@/constants/spacing';
+import { Typography } from '@/constants/typography';
 
 
 import { useTranslation } from 'react-i18next';
@@ -118,10 +120,10 @@ export default function PhoneNumberPage() {
 
           {/* Header Section */}
           <View style={{ marginTop: 40, alignItems: 'center', paddingHorizontal: Spacing.lg }}>
-            <Text style={{ fontSize: 32, fontWeight: '700', color: '#000', marginBottom: 15 }}>
+            <Text style={[Typography.h1, { color: Colors.textPrimary, marginBottom: 15 }]}>
               {t('phoneNumberPage.title')}
             </Text>
-            <Text style={{ fontSize: 16, color: '#8E8E93', textAlign: 'center', lineHeight: 22, fontWeight: '500' }}>
+            <Text style={[Typography.bodyLarge, { color: Colors.textMuted, textAlign: 'center', fontWeight: '500' }]}>
               {t('phoneNumberPage.subtitle')}
             </Text>
           </View>
@@ -145,9 +147,9 @@ export default function PhoneNumberPage() {
 
             {/* Footer Text */}
             <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 30 }}>
-              <Text style={{ fontSize: 14, color: '#6B7280' }}>{t('phoneNumberPage.alreadyAccount')}</Text>
+              <Text style={[Typography.bodySmall, { color: '#6B7280' }]}>{t('phoneNumberPage.alreadyAccount')}</Text>
               <TouchableOpacity onPress={handleLoginPress}>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: '#2FA2B9' }}>{t('phoneNumberPage.login')}</Text>
+                <Text style={[Typography.bodySmall, { fontWeight: '600', color: Colors.primary }]}>{t('phoneNumberPage.login')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -165,6 +167,6 @@ export default function PhoneNumberPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.background,
   }
 });

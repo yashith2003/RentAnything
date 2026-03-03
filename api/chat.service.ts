@@ -46,6 +46,7 @@ export const chatApi = apiSlice.injectEndpoints({
         body: formData,
       }),
       transformResponse: validateResponse(z.object({
+        urls: z.array(z.string()),
         originalNames: z.array(z.string())
       })),
     }),

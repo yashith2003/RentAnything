@@ -1,7 +1,9 @@
 //RentAnything/components/ui/PrimaryButton.tsx
 
 import React from 'react';
-import { Text, TouchableOpacity, TouchableOpacityProps, ActivityIndicator, View } from 'react-native';
+import { Text, TouchableOpacity, TouchableOpacityProps, ActivityIndicator } from 'react-native';
+import { Colors } from '@/constants/theme';
+import { Typography } from '@/constants/typography';
 
 interface PrimaryButtonProps extends TouchableOpacityProps {
   title: string;
@@ -24,16 +26,32 @@ export default function PrimaryButton({
       disabled={isLoading || props.disabled}
       className={`h-[58px] rounded-full justify-center items-center w-full ${
         isFilled 
-          ? 'bg-[#2FA2B9] shadow-sm shadow-black/10' 
-          : 'bg-transparent border-[1.5px] border-[#2FA2B9]'
+          ? '' 
+          : 'bg-transparent border-[1.5px]'
       } ${isLoading || props.disabled ? 'opacity-70' : ''}`}
-      style={[{ elevation: isFilled && !isLoading ? 3 : 0 }, style]}
+      style={[
+        { 
+          elevation: isFilled && !isLoading ? 3 : 0,
+          backgroundColor: isFilled ? Colors.buttonPrimary : 'transparent',
+          borderColor: Colors.buttonPrimary,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+        }, 
+        style
+      ]}
       {...props}
     >
       {isLoading ? (
-        <ActivityIndicator color={isFilled ? 'white' : '#2FA2B9'} />
+        <ActivityIndicator color={isFilled ? Colors.background : Colors.buttonPrimary} />
       ) : (
-        <Text className={`text-lg font-bold ${isFilled ? 'text-white' : 'text-[#2FA2B9]'}`}>
+        <Text 
+          style={[
+            Typography.button,
+            { color: isFilled ? Colors.background : Colors.buttonPrimary }
+          ]}
+        >
           {title}
         </Text>
       )}

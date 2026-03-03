@@ -9,6 +9,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import PrimaryButton from '@/components/ui/PrimaryButton';
 import { PaddingStyles } from '@/constants/spacing';
+import { Colors } from '@/constants/theme';
+import { Typography } from '@/constants/typography';
 
 
 import { useTranslation } from 'react-i18next';
@@ -30,7 +32,10 @@ export default function LanguagePage() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView 
+      style={{ backgroundColor: Colors.background }} 
+      className="flex-1"
+    >
       <StatusBar style="dark" />
       
       <View className="flex-1 pt-4 pb-10" style={PaddingStyles.page}>
@@ -45,8 +50,14 @@ export default function LanguagePage() {
 
         {/* Welcome Section */}
         <View className="mt-16 items-center">
-            <Text className="text-[32px] font-bold text-black text-center">{t('languagePage.welcome')}</Text>
-            <Text className="text-base text-gray-500 text-center mt-3 px-2 leading-6">
+            <Text 
+                style={[Typography.h1, { color: Colors.textPrimary, textAlign: 'center' }]}
+            >
+                {t('languagePage.welcome')}
+            </Text>
+            <Text 
+                style={[Typography.bodyLarge, { color: Colors.textSecondary, textAlign: 'center', marginTop: 12, paddingHorizontal: 8 }]}
+            >
                 {t('languagePage.select_lang')}
             </Text>
         </View>
@@ -66,15 +77,15 @@ export default function LanguagePage() {
                             justifyContent: 'center',
                             alignItems: 'center',
                             borderWidth: 1.5,
-                            borderColor: isSelected ? '#2FA2B9' : '#F3F4F6',
-                            backgroundColor: isSelected ? '#FFFFFF' : '#F9FAFB',
+                            borderColor: isSelected ? Colors.primary : Colors.border,
+                            backgroundColor: isSelected ? Colors.background : Colors.surface,
                         }}
                     >
                         <Text 
-                            className={`text-lg font-semibold ${
-                                isSelected ? 'text-[#2FA2B9]' : 'text-gray-400'
-                            }`}
-                            style={isSelected ? { color: '#2FA2B9' } : {}}
+                            style={[
+                                Typography.bodyLarge, 
+                                { fontWeight: '600', color: isSelected ? Colors.primary : Colors.textMuted }
+                            ]}
                         >
                             {lang.label}
                         </Text>

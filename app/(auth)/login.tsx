@@ -10,8 +10,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomTextInput from '@/components/form/CustomTextInput';
 import PrimaryButton from '@/components/ui/PrimaryButton';
 import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
-import { PaddingStyles } from '@/constants/spacing';
+import { PaddingStyles, Spacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
+import { Typography } from '@/constants/typography';
 
 import { useTranslation } from 'react-i18next';
 import authService from '@/api/auth.service';
@@ -61,7 +62,10 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView 
+      style={{ backgroundColor: Colors.background }} 
+      className="flex-1"
+    >
       <StatusBar style="dark" />
       
       <View className="flex-1 pt-4 pb-10" style={PaddingStyles.page}>
@@ -76,8 +80,12 @@ export default function LoginScreen() {
 
         {/* Header Section */}
         <View className="mt-16 items-center">
-          <Text className="text-[32px] font-bold text-black text-center">{t('login.title')}</Text>
-          <Text className="text-base text-gray-500 mt-3 px-4 leading-6 text-center">
+          <Text style={[Typography.h1, { color: Colors.textPrimary, textAlign: 'center' }]}>
+            {t('login.title')}
+          </Text>
+          <Text 
+            style={[Typography.bodyLarge, { color: Colors.textSecondary, marginTop: 12, textAlign: 'center', paddingHorizontal: 16 }]}
+          >
             {t('login.subtitle')}
           </Text>
         </View>
@@ -102,11 +110,10 @@ export default function LoginScreen() {
 
           {/* Footer Text */}
           <View className="flex-row justify-center mt-6">
-            <Text className="text-sm text-gray-500">{t('login.noAccount')}</Text>
+            <Text style={[Typography.bodySmall, { color: Colors.textMuted }]}>{t('login.noAccount')}</Text>
             <TouchableOpacity onPress={handleSignUpPress}>
               <Text 
-                className="text-sm font-bold"
-                style={{ color: Colors.primary }}
+                style={[Typography.bodySmall, { fontWeight: '700', marginLeft: 4, color: Colors.primary }]}
               >
                 {t('login.signup')}
               </Text>

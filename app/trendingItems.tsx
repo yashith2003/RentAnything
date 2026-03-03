@@ -15,8 +15,12 @@ import { ActivityIndicator, FlatList, Text, TouchableOpacity, View, RefreshContr
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGetProfileQuery } from '@/api/user.service';
 import { formatPrice } from '@/utils/formatPrice';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { Colors } from '@/constants/theme';
+import { Typography } from '@/constants/typography';
 import { useLocationContext } from '@/context/LocationContext';
 import { calculateDistance } from '@/utils/location';
+
 
 export default function TrendingItemsScreen() {
   const { userLocation } = useLocationContext();
@@ -87,25 +91,24 @@ export default function TrendingItemsScreen() {
   }}
 />
       </View>
-      <Text className="mt-6 text-xl font-bold">{t('home.trending')}</Text>
+      <Text style={[Typography.h3, { color: Colors.textPrimary, marginTop: 24 }]}>{t('home.trending')}</Text>
     </View>
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+    <SafeAreaView 
+      style={{ backgroundColor: Colors.background }} 
+      className="flex-1" 
+      edges={['top']}
+    >
       <StatusBar style="dark" />
       
       {/* Header */}
-      <View className={`flex-row items-center justify-between py-4 px-${getTailwindSpacing(Spacing.pageHorizontal)}`}>
-        <TouchableOpacity 
-          onPress={() => router.back()}
-          className="items-center justify-center w-10 h-10 rounded-full bg-gray-50"
-        >
-          <Ionicons name="chevron-back" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text className="text-lg font-bold">Trending Items</Text>
-        <View className="w-10" />
-      </View>
+      <ScreenHeader 
+        title="Trending Items"
+        showBack={true}
+        onBackPress={() => router.back()}
+      />
 
       <FlatList
         data={items}
@@ -137,10 +140,10 @@ export default function TrendingItemsScreen() {
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
         refreshControl={
-          <RefreshControl refreshing={isLoading && page === 1} onRefresh={handleRefresh} colors={["#2FA2B9"]} />
+          <RefreshControl refreshing={isLoading && page === 1} onRefresh={handleRefresh} colors={[Colors.primary]} />
         }
-        ListFooterComponent={isFetching && page > 1 ? <ActivityIndicator color="#2FA2B9" className="py-4" /> : null}
-        ListEmptyComponent={!isLoading ? <Text className="text-gray-400 text-center py-10">No items found</Text> : null}
+        ListFooterComponent={isFetching && page > 1 ? <ActivityIndicator color={Colors.primary} className="py-4" /> : null}
+        ListEmptyComponent={!isLoading ? <Text style={[Typography.bodyMedium, { color: Colors.textMuted, textAlign: 'center', paddingVertical: 40 }]}>No items found</Text> : null}
       />
     </SafeAreaView>
   );

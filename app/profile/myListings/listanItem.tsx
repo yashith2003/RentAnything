@@ -11,6 +11,7 @@ import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { UploadBox } from '@/components/form/UploadBox';
 import { AvailabilityCalendar } from '@/components/form/AvailabilityCalendar';
 import { CategoryFieldRenderer } from '@/components/form/CategoryFieldRenderer';
+import { MultipleImageUpload } from '@/components/form/MultipleImageUpload';
 import SuccessPopup from '@/components/AlertPopup/SuccessPopup';
 import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,6 +25,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { formatExpoAddress, isWithinSriLanka, getCurrentLocationWithFallback } from '@/utils/location';
 import LocationRefineModal from '@/components/form/LocationRefineModal';
+import { Config } from '@/constants/config';
 
 export default function ListAnItemScreen() {
   const router = useRouter();
@@ -35,7 +37,8 @@ export default function ListAnItemScreen() {
   const [itemName, setItemName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | undefined>();
-  const [location, setLocation] = useState('Union St, Chicago 2002 Usa');
+  const [subImages, setSubImages] = useState<string[]>([]);
+  const [location, setLocation] = useState('Select Item Location');
   const [itemDescription, setItemDescription] = useState('');
   const [rentalTerms, setRentalTerms] = useState('');
   const [instructions, setInstructions] = useState('');
@@ -44,7 +47,7 @@ export default function ListAnItemScreen() {
   const [securityDeposit, setSecurityDeposit] = useState('');
   const [condition, setCondition] = useState('New (like new)');
   const [accessibility, setAccessibility] = useState('');
-  const [availability, setAvailability] = useState<{ dates: string[], startTime: string, endTime: string }>({
+  const [availability, setAvailability] = useState<{ dates: { date: string, isAvailable: boolean }[], startTime: string, endTime: string }>({
     dates: [],
     startTime: '10:30:00',
     endTime: '17:30:00'
@@ -248,8 +251,9 @@ export default function ListAnItemScreen() {
 
   const uploadIfNeeded = async (uri?: string) => {
     if (!uri) return undefined;
+    
     // Check if it's a local URI (not starting with http)
-    if (uri.startsWith('file://') || uri.startsWith('content://') || !uri.startsWith('http')) {
+    if (uri.startsWith('file://') || uri.startsWith('content://') || (!uri.startsWith('http') && !uri.startsWith('/'))) {
       try {
         const uploadResult = await fileService.uploadImage(uri);
         return uploadResult.url;
@@ -258,6 +262,12 @@ export default function ListAnItemScreen() {
         throw new Error('Failed to upload image. Please try again.');
       }
     }
+
+    // If it's already an absolute URL starting with our BASE_URL, strip it
+    if (uri.startsWith(Config.BASE_URL)) {
+      return uri.replace(`${Config.BASE_URL}/`, '');
+    }
+
     return uri;
   };
 
@@ -292,12 +302,13 @@ export default function ListAnItemScreen() {
         securityDeposit: securityDeposit ? parseFloat(securityDeposit) : 0,
         rateType: rentalRate === 'Hour' ? 'hourly' : rentalRate === 'Day' ? 'daily' : rentalRate === 'Weekly' ? 'weekly' : 'monthly',
         accessibility: accessibility,
-        availabilities: availability.dates.map(date => ({
-          availableDate: date,
+        availabilities: availability.dates.map(d => ({
+          availableDate: d.date,
           startTime: availability.startTime,
           endTime: availability.endTime,
-          isAvailable: true
+          isAvailable: d.isAvailable
         })),
+        subImages: subImages, // Passed for Zod validation
         ...buildCategoryDetails(),
       };
 
@@ -317,6 +328,7 @@ export default function ListAnItemScreen() {
         if (fieldErrors.description) fieldErrors.itemDescription = fieldErrors.description;
         if (fieldErrors.phone) fieldErrors.phoneNumber = fieldErrors.phone;
         if (fieldErrors.price) fieldErrors.rentalFee = fieldErrors.price;
+        if (fieldErrors.subImages) fieldErrors.subImages = fieldErrors.subImages;
 
         setErrors(fieldErrors);
         setErrorMessage('Please fix the errors in the form');
@@ -325,11 +337,22 @@ export default function ListAnItemScreen() {
         return;
       }
 
-      // 4. Upload Documents & Image
+      // 4. Upload Documents & Images
       const uploadedImageUrl = await uploadIfNeeded(selectedImage);
       
+      const uploadedSubImages = await Promise.all(
+        subImages.map(async (uri) => {
+          const uploadedUri = await uploadIfNeeded(uri);
+          return uploadedUri;
+        })
+      );
+      
       // Update category details with uploaded document URLs
-      const finalPayload: any = { ...validation.data, imageUrl: uploadedImageUrl };
+      const finalPayload: any = { 
+        ...validation.data, 
+        imageUrl: uploadedImageUrl,
+        subImages: uploadedSubImages.filter(Boolean) as string[]
+      };
       
       // Ensure null values are converted to undefined for backend compatibility if needed
       if (finalPayload.condition === null) finalPayload.condition = undefined;
@@ -490,13 +513,20 @@ export default function ListAnItemScreen() {
 
         {/* Image Upload */}
         <View className="mb-6">
-          <Text className="text-sm font-bold text-black mb-2">Image</Text>
+          <Text className="text-sm font-bold text-black mb-2">Main Image</Text>
           <UploadBox 
             height={160} 
             imageUri={selectedImage}
             onImageSelect={setSelectedImage}
+            label="Click here to upload main Image"
           />
         </View>
+
+        <MultipleImageUpload 
+          images={subImages} 
+          onImagesChange={setSubImages} 
+          error={errors.subImages}
+        />
 
         {/* Location */}
         <View className="mb-6">

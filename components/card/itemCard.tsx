@@ -10,6 +10,9 @@ import { getImageUrl } from '@/utils/image';
 import { useCreateThreadMutation, useGetUserThreadsQuery } from '@/api/chat.service';
 import { useRecordInteractionMutation } from '@/api/item.service';
 import { useUser } from '@/context/userContext';
+import { Colors } from '@/constants/theme';
+import { Spacing } from '@/constants/spacing';
+import { Typography, FontSize } from '@/constants/typography';
 
 interface ItemCardProps {
   item: {
@@ -98,8 +101,12 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
     <TouchableOpacity
       activeOpacity={0.9}
       onPress={handlePress}
-      className="w-full bg-white rounded-[24px] mb-4 border border-gray-100 overflow-hidden"
+      className="w-full mb-4 overflow-hidden"
       style={{
+        backgroundColor: Colors.background,
+        borderRadius: Spacing.borderRadiusCard,
+        borderWidth: 1,
+        borderColor: Colors.border,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
@@ -120,38 +127,44 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
               className="absolute top-3 right-3"
               onPress={handleSave}
           >
-            <Ionicons name={saved ? "heart" : "heart-outline"} size={22} color={saved ? "#FF0000" : "#000"} />
+            <Ionicons name={saved ? "heart" : "heart-outline"} size={22} color={saved ? Colors.error : Colors.textPrimary} />
           </TouchableOpacity>
         )}
       </View>
 
       <View className="p-3">
         <View className="flex-row flex-wrap items-baseline">
-          <Text className="text-[#2FA2B9] font-bold text-xs">{item.price}</Text>
-          {item.extraPrice && <Text className="text-gray-400 text-[9px] ml-0.5">{item.extraPrice}</Text>}
+          <Text style={[Typography.label, { color: Colors.primary, fontSize: FontSize.sm }]}>{item.price}</Text>
+          {item.extraPrice && <Text style={[Typography.caption, { color: Colors.textMuted, marginLeft: 2 }]}>{item.extraPrice}</Text>}
         </View>
 
-        <Text className="font-bold text-sm mt-1 text-[#0B0C15]" numberOfLines={1}>
+        <Text 
+          style={[Typography.bodySmall, { fontWeight: '700', color: Colors.textPrimary, marginTop: 4 }]} 
+          numberOfLines={1}
+        >
           {item.title}
         </Text>
 
         <View className="flex-row items-center mt-1">
-          <Text className="text-gray-400 text-[10px]" numberOfLines={1}>Owner: {typeof item.owner === 'string' ? item.owner : 'N/A'}</Text>
-          <View className="ml-1 w-3 h-3 bg-[#2D8CFF] rounded-full items-center justify-center">
+          <Text style={[Typography.caption, { color: Colors.textMuted }]} numberOfLines={1}>Owner: {typeof item.owner === 'string' ? item.owner : 'N/A'}</Text>
+          <View 
+            className="ml-1 w-3 h-3 rounded-full items-center justify-center"
+            style={{ backgroundColor: '#2D8CFF' }}
+          >
             <Ionicons name="checkmark" size={8} color="white" />
           </View>
         </View>
 
         <View className="flex-row items-center mt-1">
-            <Text className="text-gray-500 font-bold text-[10px] mr-1">
+            <Text style={[Typography.caption, { fontWeight: '700', color: Colors.textSecondary, marginRight: 4 }]}>
               {typeof item.rating === 'number' ? item.rating.toFixed(1) : (parseFloat(String(item.rating)) || 0).toFixed(1)}
             </Text>
-            <Ionicons name="star" size={12} color="#FFCC00" />
+            <Ionicons name="star" size={12} color={Colors.warning} />
         </View>
         
         <View className="flex-row items-center mt-0.5">
-          <Ionicons name="location-outline" size={12} color="#2FA2B9" />
-          <Text className="text-[#2FA2B9] text-[10px] font-medium ml-1">
+          <Ionicons name="location-outline" size={12} color={Colors.primary} />
+          <Text style={[Typography.caption, { color: Colors.primary, fontWeight: '500', marginLeft: 4 }]}>
             {item.distance} - {item.location}
           </Text>
         </View>
@@ -159,18 +172,20 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
         <View className="flex-row items-center mt-3 gap-x-2">
           <TouchableOpacity 
             onPress={handleCall}
-            className="flex-1 bg-[#2FA2B9] rounded-xl py-2.5 items-center flex-row justify-center gap-x-1"
+            className="flex-1 rounded-xl py-2.5 items-center flex-row justify-center gap-x-1"
+            style={{ backgroundColor: Colors.primary }}
           >
-            <Ionicons name="call" size={12} color="white" />
-            <Text className="text-white text-[10px] font-bold">Contact</Text>
+            <Ionicons name="call" size={12} color={Colors.background} />
+            <Text style={[Typography.caption, { color: Colors.background, fontWeight: '700' }]}>Contact</Text>
           </TouchableOpacity>
           
           {!isGuest && (
             <TouchableOpacity
-              className="w-9 h-9 rounded-full border border-gray-100 items-center justify-center"
+              className="w-9 h-9 rounded-full border items-center justify-center"
+              style={{ borderColor: Colors.border }}
               onPress={handleChat}
             >
-              <Ionicons name="chatbubble-ellipses" size={16} color="#666" />
+              <Ionicons name="chatbubble-ellipses" size={16} color={Colors.textSecondary} />
             </TouchableOpacity>
           )}
         </View>

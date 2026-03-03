@@ -11,6 +11,10 @@ import DynamicFilterRenderer from '@/components/shared/DynamicFilterRenderer';
 import LocationDropdown from '@/components/form/LocationDropdown';
 import RangeSlider from '@/components/shared/RangeSlider';
 import SingleSlider from '@/components/shared/SingleSlider';
+import { Colors } from '@/constants/theme';
+import { Typography } from '@/constants/typography';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import PrimaryButton from '@/components/ui/PrimaryButton';
 
 export default function FilterScreen() {
   const router = useRouter();
@@ -53,7 +57,12 @@ export default function FilterScreen() {
         selected ? 'bg-[#2FA2B9] border-[#2FA2B9]' : 'bg-white border-gray-100'
       } ${disabled ? 'opacity-40' : ''}`}
     >
-      <Text className={`text-sm font-medium ${selected ? 'text-white' : 'text-gray-500'}`}>
+      <Text 
+        style={[
+          Typography.bodySmall, 
+          { fontWeight: '500', color: selected ? Colors.background : Colors.textSecondary }
+        ]}
+      >
         {label}
       </Text>
     </TouchableOpacity>
@@ -62,24 +71,26 @@ export default function FilterScreen() {
   const Section = ({ title, children, subtitle }: { title: string; children: React.ReactNode; subtitle?: string }) => (
     <View className="mb-6">
       <View className="flex-row items-center justify-between mb-4">
-        <Text className="text-base font-bold text-[#1A1A1A]">{title}</Text>
-        {subtitle && <Text className="text-xs text-gray-400 font-medium">{subtitle}</Text>}
+        <Text style={[Typography.bodyLarge, { fontWeight: '700', color: Colors.textPrimary }]}>{title}</Text>
+        {subtitle && <Text style={[Typography.caption, { color: Colors.textMuted, fontWeight: '500' }]}>{subtitle}</Text>}
       </View>
       {children}
     </View>
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-      <View className="flex-row items-center justify-between py-4 border-b border-gray-50" style={PaddingStyles.page}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="close" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text className="text-lg font-bold text-black">Filters</Text>
-        <TouchableOpacity onPress={resetFilters}>
-            <Text className="text-[#2FA2B9] text-sm font-medium">Reset</Text>
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView 
+      style={{ backgroundColor: Colors.background }} 
+      className="flex-1" 
+      edges={['top']}
+    >
+      <ScreenHeader 
+        title="Filters" 
+        showBack={true}
+        onBackPress={() => router.back()}
+        rightIcon="refresh"
+        onRightIconPress={resetFilters}
+      />
 
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1 pt-4" style={PaddingStyles.page}>
         {/* COMMON FILTERS FIRST */}
@@ -96,21 +107,33 @@ export default function FilterScreen() {
 
         <Section title="Location">
           <TouchableOpacity 
-            className={`flex-row items-center bg-gray-50 rounded-xl p-4 border ${
-              (distance !== 'All' && !selectedLocation?.lat) ? 'border-red-500 bg-red-50/10' : 'border-gray-100'
-            }`}
+            className="flex-row items-center rounded-xl p-4 border"
+            style={{
+              backgroundColor: Colors.surface,
+              borderColor: (distance !== 'All' && !selectedLocation?.lat) ? Colors.error : Colors.border,
+            }}
             onPress={() => setShowLocationDropdown(true)}
           >
-            <Ionicons name="location-outline" size={20} color={(distance !== 'All' && !selectedLocation?.lat) ? '#EF4444' : '#2FA2B9'} />
+            <Ionicons 
+              name="location-outline" 
+              size={20} 
+              color={(distance !== 'All' && !selectedLocation?.lat) ? Colors.error : Colors.primary} 
+            />
             <View className="flex-1 ml-3">
-              <Text className={`text-gray-700 font-medium ${(!selectedLocation?.lat && distance !== 'All') ? 'text-red-500' : ''}`} numberOfLines={2}>
+              <Text 
+                style={[
+                  Typography.bodyMedium, 
+                  { fontWeight: '500', color: (distance !== 'All' && !selectedLocation?.lat) ? Colors.error : Colors.textPrimary }
+                ]}
+                numberOfLines={2}
+              >
                 {selectedLocation?.address || 'Select location'}
               </Text>
               {(distance !== 'All' && !selectedLocation?.lat) && (
-                <Text className="text-red-500 text-[10px] font-bold mt-1">Select your location to calculate distance</Text>
+                <Text style={[Typography.caption, { color: Colors.error, fontWeight: '700', marginTop: 4 }]}>Select your location to calculate distance</Text>
               )}
             </View>
-            <Ionicons name="chevron-forward" size={16} color="#A0A0A0" />
+            <Ionicons name="chevron-forward" size={16} color={Colors.textMuted} />
           </TouchableOpacity>
         </Section>
 
@@ -146,10 +169,15 @@ export default function FilterScreen() {
         <Section title="Brand">
            <TextInput
              placeholder="Search by brand..."
-             placeholderTextColor="#9CA3AF"
+             placeholderTextColor={Colors.textMuted}
              value={brand}
              onChangeText={setBrand}
-             className="w-full h-12 bg-gray-50 border border-gray-100 rounded-xl px-4 text-gray-900"
+             className="w-full h-12 border rounded-xl px-4"
+             style={{
+               backgroundColor: Colors.surface,
+               borderColor: Colors.border,
+               color: Colors.textPrimary,
+             }}
            />
         </Section>
 
@@ -210,17 +238,21 @@ export default function FilterScreen() {
         <View className="h-20" />
       </ScrollView>
 
-      <View className="flex-row items-center py-4 border-t border-gray-50 bg-white" style={PaddingStyles.page}>
-        <TouchableOpacity 
-          className="flex-1 h-14 rounded-full border border-[#2FA2B9] items-center justify-center mr-4"
+      <View 
+        className="flex-row items-center py-4 border-t bg-white" 
+        style={[PaddingStyles.page, { borderTopColor: Colors.border }]}
+      >
+        <PrimaryButton 
+          title="Clear all" 
+          variant="outlined" 
           onPress={resetFilters}
-        >
-          <Text className="text-[#2FA2B9] font-bold">Clear all</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
+          style={{ flex: 1, marginRight: 16 }}
+        />
+        <PrimaryButton 
+          title="Show Results" 
           onPress={() => {
               if (distance !== 'All' && !selectedLocation?.lat) {
-                return; // Error shown above, just stop
+                return;
               }
               const appliedFilters = { 
                 categoryId: categoryId || '', 
@@ -245,15 +277,13 @@ export default function FilterScreen() {
                 });
               } else {
                 router.push({
-                  pathname: '/(tabs)/search',
-                  params: appliedFilters
+                   pathname: '/(tabs)/search',
+                   params: appliedFilters
                 });
               }
           }}
-          className="flex-[1.5] h-14 rounded-full bg-[#2FA2B9] items-center justify-center shadow-lg shadow-[#2FA2B9]/20"
-        >
-          <Text className="text-white font-bold">Show Results</Text>
-        </TouchableOpacity>
+          style={{ flex: 1.5 }}
+        />
       </View>
 
       <LocationDropdown
