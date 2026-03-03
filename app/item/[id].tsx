@@ -31,6 +31,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import SuccessPopup from '@/components/AlertPopup/SuccessPopup';
 import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
 import ConfirmationPopup from '@/components/AlertPopup/ConfirmationPopup';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { Colors } from '@/constants/theme';
+import { Typography } from '@/constants/typography';
+import { Spacing } from '@/constants/spacing';
 
 
 
@@ -155,18 +159,26 @@ export default function ItemDetailsScreen() {
 
   if (isLoading) {
     return (
-      <View className="items-center justify-center flex-1 bg-white">
-        <ActivityIndicator size="large" color="#2FA2B9" />
+      <View 
+        style={{ backgroundColor: Colors.background }} 
+        className="items-center justify-center flex-1"
+      >
+        <ActivityIndicator size="large" color={Colors.primary} />
       </View>
     );
   }
 
   if (error || !item) {
     return (
-      <View className="items-center justify-center flex-1 bg-white">
-        <Text>{(error as any)?.data?.message || 'Item not found'}</Text>
+      <View 
+        style={{ backgroundColor: Colors.background }} 
+        className="items-center justify-center flex-1"
+      >
+        <Text style={[Typography.bodyMedium, { color: Colors.textPrimary }]}>
+          {(error as any)?.data?.message || 'Item not found'}
+        </Text>
         <TouchableOpacity onPress={() => router.back()} className="mt-4">
-          <Text className="font-bold text-cyan-500">Go Back</Text>
+          <Text style={[Typography.bodyLarge, { color: Colors.primary, fontWeight: '700' }]}>Go Back</Text>
         </TouchableOpacity>
       </View>
     );
@@ -187,35 +199,39 @@ export default function ItemDetailsScreen() {
   const itemImages = item.imageUrl ? [getImageUrl(item.imageUrl)] : itemImagesFallback;
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+    <SafeAreaView 
+      style={{ backgroundColor: Colors.background }} 
+      className="flex-1" 
+      edges={['top']}
+    >
       <StatusBar style="dark" />
 
       {/* Header */}
-      <View className="flex-row items-center justify-between py-4" style={PaddingStyles.page}>
-        <TouchableOpacity 
-          onPress={() => router.back()}
-          className="items-center justify-center w-10 h-10 rounded-full bg-gray-50"
-        >
-          <Ionicons name="chevron-back" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text className="text-lg font-bold">Item details</Text>
-        <View className="flex-row items-center gap-x-2">
+      <ScreenHeader 
+        title="Item details"
+        showBack={true}
+        onBackPress={() => router.back()}
+        rightElement={
+          <View className="flex-row items-center gap-x-2">
             <TouchableOpacity 
-                className="items-center justify-center w-10 h-10 rounded-full bg-gray-50"
+                className="items-center justify-center w-10 h-10 rounded-full"
+                style={{ backgroundColor: Colors.surface }}
                 onPress={() => setIsShareVisible(true)}
             >
-                <Ionicons name="share-outline" size={22} color="#000" />
+                <Ionicons name="share-outline" size={22} color={Colors.textPrimary} />
             </TouchableOpacity>
             {!isGuest && (
               <TouchableOpacity 
-                  className="items-center justify-center w-10 h-10 rounded-full bg-gray-50"
+                  className="items-center justify-center w-10 h-10 rounded-full"
+                  style={{ backgroundColor: Colors.surface }}
                   onPress={handleSave}
               >
-                  <Ionicons name={saved ? "heart" : "heart-outline"} size={22} color={saved ? "#FF0000" : "#000"} />
+                  <Ionicons name={saved ? "heart" : "heart-outline"} size={22} color={saved ? Colors.error : Colors.textPrimary} />
               </TouchableOpacity>
             )}
-        </View>
-      </View>
+          </View>
+        }
+      />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 150 }}>
             {/* Images Component */}
@@ -224,23 +240,31 @@ export default function ItemDetailsScreen() {
             <View style={PaddingStyles.page} className="mt-6">
             <View className="flex-row items-center mb-4 gap-x-4">
                 <View className="flex-row items-center">
-                    <Ionicons name="star" size={14} color="#FFD700" />
-                    <Text className="ml-1 text-xs font-bold">{reviewsData?.averageRating?.toFixed(1) || '0.0'} ({reviewsData?.totalReviews || 0} Reviews)</Text>
+                    <Ionicons name="star" size={14} color={Colors.warning} />
+                    <Text 
+                      style={[Typography.bodySmall, { fontWeight: '700', marginLeft: 4, color: Colors.textPrimary }]}
+                    >
+                      {reviewsData?.averageRating?.toFixed(1) || '0.0'} ({reviewsData?.totalReviews || 0} Reviews)
+                    </Text>
                 </View>
                 <View className="flex-row items-center">
-                    <Ionicons name="location-outline" size={14} color="#2FA2B9" />
-                    <Text className="text-xs text-[#2FA2B9] font-medium ml-1">
-                        {item.address?.address?.split(',')[0] || 'Nugegoda'}
+                    <Ionicons name="location-outline" size={14} color={Colors.primary} />
+                    <Text 
+                      style={[Typography.bodySmall, { color: Colors.primary, fontWeight: '500', marginLeft: 4 }]}
+                    >
+                        {item?.address?.address?.split(',')[0] || 'Nugegoda'}
                     </Text>
                 </View>
             </View>
 
             <View className="flex-row items-center gap-x-2">
-                <Text className="text-2xl font-bold">{item.title}</Text>
+                <Text style={[Typography.h2, { color: Colors.textPrimary }]}>{item?.title}</Text>
             </View>
 
-            <Text className="mt-2 text-sm leading-5 text-gray-500">
-                {item.description}
+            <Text 
+                style={[Typography.bodyMedium, { color: Colors.textSecondary, marginTop: 8, lineHeight: 20 }]}
+            >
+                {item?.description}
             </Text>
 
             {/* Global Item Tags */}
@@ -255,20 +279,26 @@ export default function ItemDetailsScreen() {
 
             {/* Rental Fee Section */}
             <View className="mt-8">
-                <Text className="mb-4 text-base font-bold">Rental Fee</Text>
+                <Text style={[Typography.h4, { color: Colors.textPrimary, marginBottom: 16 }]}>Rental Fee</Text>
                 <View className="flex-row items-baseline mb-4 gap-x-1">
-                    <Text className="text-[#2FA2B9] text-sm font-bold">Rs: {item.price || '1500.00'}</Text>
-                    <Text className="text-xs text-gray-400">- Daily Rental</Text>
+                    <Text style={[Typography.bodyLarge, { color: Colors.primary, fontWeight: '700' }]}>Rs: {item?.price || '1500.00'}</Text>
+                    <Text style={[Typography.bodySmall, { color: Colors.textMuted }]}>- Daily Rental</Text>
                 </View>
                 
                 <View className="flex-row gap-x-4">
-                    <View className="flex-1 p-4 border border-gray-100 bg-gray-50 rounded-2xl">
-                        <Text className="text-sm font-bold text-gray-800">Rs: 12150.00</Text>
-                        <Text className="mt-1 text-xs text-gray-400">14 days</Text>
+                    <View 
+                      className="flex-1 p-4 border rounded-2xl"
+                      style={{ borderColor: Colors.border, backgroundColor: Colors.surface }}
+                    >
+                        <Text style={[Typography.bodyMedium, { fontWeight: '700', color: Colors.textPrimary }]}>Rs: 12150.00</Text>
+                        <Text style={[Typography.bodySmall, { color: Colors.textMuted, marginTop: 4 }]}>14 days</Text>
                     </View>
-                    <View className="flex-1 p-4 border border-gray-100 bg-gray-50 rounded-2xl">
-                        <Text className="text-sm font-bold text-gray-800">Rs: 2100.00</Text>
-                        <Text className="mt-1 text-xs text-gray-400">7 days</Text>
+                    <View 
+                      className="flex-1 p-4 border rounded-2xl"
+                      style={{ borderColor: Colors.border, backgroundColor: Colors.surface }}
+                    >
+                        <Text style={[Typography.bodyMedium, { fontWeight: '700', color: Colors.textPrimary }]}>Rs: 2100.00</Text>
+                        <Text style={[Typography.bodySmall, { color: Colors.textMuted, marginTop: 4 }]}>7 days</Text>
                     </View>
                 </View>
             </View>
@@ -294,7 +324,7 @@ export default function ItemDetailsScreen() {
                 </View>
             </View>  */}
 
-            <AvailabilityCalendarView itemId={Array.isArray(id) ? id[0] : id} />
+            <AvailabilityCalendarView itemId={Number(Array.isArray(id) ? id[0] : id)} />
 
             {/* Owner Section Component */}
             <OwnerAbout 
@@ -308,11 +338,14 @@ export default function ItemDetailsScreen() {
             {!isOwnListing && !isGuest && (
                 <View className="mt-8">
                     <TouchableOpacity 
-                        className="flex-row items-center justify-center p-4 bg-gray-50 border border-gray-100 rounded-2xl"
+                        className="flex-row items-center justify-center p-4 border rounded-2xl"
+                        style={{ backgroundColor: Colors.surface, borderColor: Colors.border }}
                         onPress={() => setIsReviewPopupVisible(true)}
                     >
-                        <Ionicons name="pencil" size={18} color="#2FA2B9" />
-                        <Text className="ml-2 text-sm font-bold text-[#2FA2B9]">
+                        <Ionicons name="pencil" size={18} color={Colors.primary} />
+                        <Text 
+                          style={[Typography.bodyMedium, { fontWeight: '700', color: Colors.primary, marginLeft: 8 }]}
+                        >
                             {myReview ? 'Edit your review' : 'Write a Review'}
                         </Text>
                     </TouchableOpacity>
@@ -330,14 +363,23 @@ export default function ItemDetailsScreen() {
             <TrustBanners />*/}
 
             {/* Tabs */}
-            <View className="flex-row mt-8 border-b border-gray-100">
+            <View 
+              className="flex-row mt-8 border-b"
+              style={{ borderBottomColor: Colors.border }}
+            >
                 {['Description', 'Rental Terms', 'Instructions to use'].map((tab) => (
                     <TouchableOpacity 
                         key={tab} 
                         onPress={() => setActiveTab(tab)}
-                        className={`pb-2 mr-6 ${activeTab === tab ? 'border-b-2 border-cyan-500' : ''}`}
+                        className="pb-2 mr-6"
+                        style={activeTab === tab ? { borderBottomWidth: 2, borderBottomColor: Colors.primary } : {}}
                     >
-                        <Text className={`text-xs font-bold ${activeTab === tab ? 'text-cyan-600' : 'text-gray-400'}`}>
+                        <Text 
+                          style={[
+                            Typography.bodySmall, 
+                            { fontWeight: '700', color: activeTab === tab ? Colors.primary : Colors.textMuted }
+                          ]}
+                        >
                             {tab}
                         </Text>
                     </TouchableOpacity>
@@ -346,32 +388,36 @@ export default function ItemDetailsScreen() {
 
             {/* Tab Content */}
             <View className="mt-4">
-                <Text className="mb-2 text-xs font-bold text-gray-700">
+                <Text 
+                  style={[Typography.bodySmall, { fontWeight: '700', color: Colors.textPrimary, marginBottom: 8 }]}
+                >
                   {activeTab === 'Description' ? 'Overview' : activeTab} :
                 </Text>
-                <Text className="text-xs text-gray-500 leading-5">
-                    {item.description}
+                <Text 
+                  style={[Typography.bodySmall, { color: Colors.textSecondary, lineHeight: 18 }]}
+                >
+                    {item?.description}
                 </Text>
                 
                 {activeTab === 'Rental Terms' && (
-                  <Text className="text-xs text-gray-500 mt-2 leading-5">
-                    {item.rentalTerms || 'No specific rental terms provided.'}
+                  <Text style={[Typography.bodySmall, { color: Colors.textSecondary, marginTop: 8, lineHeight: 18 }]}>
+                    {item?.rentalTerms || 'No specific rental terms provided.'}
                   </Text>
                 )}
 
                 {activeTab === 'Instructions to use' && (
-                  <Text className="text-xs text-gray-500 mt-2 leading-5">
-                    {item.instructions || 'No specific instructions provided.'}
+                  <Text style={[Typography.bodySmall, { color: Colors.textSecondary, marginTop: 8, lineHeight: 18 }]}>
+                    {item?.instructions || 'No specific instructions provided.'}
                   </Text>
                 )}
 
                 <TouchableOpacity className="mt-4">
-                    <Text className="text-[#2FA2B9] text-xs font-bold underline">Read More</Text>
+                    <Text style={[Typography.bodySmall, { color: Colors.primary, fontWeight: '700', textDecorationLine: 'underline' }]}>Read More</Text>
                 </TouchableOpacity>
             </View>
 
             {/* Location Map Component */}
-            {item.address?.lat && item.address?.lng ? (
+            {item?.address?.lat && item?.address?.lng ? (
               <LocationMap 
                 latitude={Number(item.address.lat)} 
                 longitude={Number(item.address.lng)} 
@@ -379,13 +425,16 @@ export default function ItemDetailsScreen() {
               />
             ) : (
               <View className="mt-8">
-                <Text className="mb-2 text-base font-bold">Location</Text>
-                <Text className="text-[10px] text-gray-400 mb-4">
-                   {item.address?.address || 'Location information not available'}
+                <Text style={[Typography.h4, { color: Colors.textPrimary, marginBottom: 8 }]}>Location</Text>
+                <Text style={[Typography.bodySmall, { color: Colors.textMuted, marginBottom: 16 }]}>
+                   {item?.address?.address || 'Location information not available'}
                 </Text>
-                <View className="items-center justify-center h-48 bg-gray-100 rounded-3xl">
-                   <Ionicons name="map-outline" size={48} color="#9CA3AF" />
-                   <Text className="mt-2 text-xs text-gray-400">Map coordinates not available</Text>
+                <View 
+                  className="items-center justify-center h-48 rounded-3xl"
+                  style={{ backgroundColor: Colors.surface }}
+                >
+                   <Ionicons name="map-outline" size={48} color={Colors.textMuted} />
+                   <Text style={[Typography.bodySmall, { color: Colors.textMuted, marginTop: 8 }]}>Map coordinates not available</Text>
                 </View>
               </View>
             )}
@@ -394,7 +443,7 @@ export default function ItemDetailsScreen() {
             {combinedSimilarItems && combinedSimilarItems.length > 0 && (
               <View className="mt-8">
                 <View className="flex-row items-center justify-between mb-4">
-                  <Text className="text-base font-bold">
+                  <Text style={[Typography.h4, { color: Colors.textPrimary }]}>
                     Similar Items
                   </Text>
                 </View>

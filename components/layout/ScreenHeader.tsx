@@ -1,4 +1,6 @@
+import { Colors } from '@/constants/theme';
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
+import { Typography } from '@/constants/typography';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -11,6 +13,7 @@ interface ScreenHeaderProps {
   fallbackRoute?: string; // Route to navigate to when there's no back history
   rightIcon?: string;
   onRightIconPress?: () => void;
+  rightElement?: React.ReactNode;
   containerStyle?: string;
 }
 
@@ -21,6 +24,7 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
   fallbackRoute,
   rightIcon = 'ellipsis-horizontal',
   onRightIconPress,
+  rightElement,
   containerStyle = '',
 }) => {
   const router = useRouter();
@@ -39,28 +43,43 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
   };
 
   return (
-    <View className={`flex-row items-center justify-between px-${getTailwindSpacing(Spacing.pageHorizontal)} py-${getTailwindSpacing(Spacing.lg)} bg-white ${containerStyle}`}>
+    <View 
+      className={`flex-row items-center justify-between px-${getTailwindSpacing(Spacing.pageHorizontal)} ${containerStyle}`}
+      style={{ 
+        height: Spacing.headerHeight,
+        backgroundColor: Colors.background,
+      }}
+    >
       <View className="w-10 h-10">
         {showBack && (
           <TouchableOpacity 
             onPress={handleBack}
-            className="w-10 h-10 items-center justify-center rounded-full bg-gray-50"
+            className="w-10 h-10 items-center justify-center rounded-full"
+            style={{ backgroundColor: Colors.surface }}
           >
-            <Ionicons name="chevron-back" size={24} color="#000" />
+            <Ionicons name="chevron-back" size={24} color={Colors.textPrimary} />
           </TouchableOpacity>
         )}
       </View>
       
-      <Text className="text-lg font-semibold text-black" numberOfLines={1}>
+      <Text 
+        style={[Typography.h4, { color: Colors.textPrimary }]} 
+        numberOfLines={1}
+      >
         {title}
       </Text>
       
-      <TouchableOpacity 
-        onPress={onRightIconPress}
-        className="w-10 h-10 items-center justify-center rounded-full bg-gray-50"
-      >
-        <Ionicons name={rightIcon as any} size={24} color="#000" />
-      </TouchableOpacity>
+      {rightElement ? (
+        rightElement
+      ) : (
+        <TouchableOpacity 
+          onPress={onRightIconPress}
+          className="w-10 h-10 items-center justify-center rounded-full"
+          style={{ backgroundColor: Colors.surface }}
+        >
+          <Ionicons name={rightIcon as any} size={24} color={Colors.textPrimary} />
+        </TouchableOpacity>
+      )}
     </View>
   );
 };

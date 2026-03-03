@@ -11,6 +11,8 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next'; // Assuming translation is used elsewhere or good to have
 import { ScrollView, Text, TextInput, View, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { Colors } from '@/constants/theme';
+import { Typography } from '@/constants/typography';
 import * as ImagePicker from 'expo-image-picker';
 import { compressImage } from '@/utils/imageCompressor';
 import SuccessPopup from '@/components/AlertPopup/SuccessPopup';
@@ -210,7 +212,10 @@ export default function ProfileDetailsScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView 
+      style={{ backgroundColor: Colors.background }} 
+      className="flex-1"
+    >
       <StatusBar style="dark" />
 
       {/* Header */}
@@ -239,10 +244,13 @@ export default function ProfileDetailsScreen() {
             {/* Profile Section */}
         <View className="items-center py-6">
           {/* Profile Image */}
-          <View className="w-32 h-32 rounded-full bg-orange-200 overflow-hidden mb-4 relative">
+          <View 
+            className="w-32 h-32 rounded-full overflow-hidden mb-4 relative"
+            style={{ backgroundColor: Colors.surface }}
+          >
              {isUploading ? (
-                <View className="w-full h-full items-center justify-center bg-gray-200">
-                    <ActivityIndicator color="#2FA2B9" />
+                <View className="w-full h-full items-center justify-center">
+                    <ActivityIndicator color={Colors.primary} />
                 </View>
              ) : (
                 <Image
@@ -263,7 +271,7 @@ export default function ProfileDetailsScreen() {
           </View>
 
           {/* Name */}
-          <Text className="text-xl font-bold text-black mb-1">
+          <Text style={[Typography.h3, { color: Colors.textPrimary, marginBottom: 4 }]}>
             {userData.name}
           </Text>
 
@@ -276,7 +284,7 @@ export default function ProfileDetailsScreen() {
         <View>
           {/* Name Field */}
           <View className="mb-4">
-            <Text className="text-base font-semibold text-black mb-2">Name</Text>
+            <Text style={[Typography.bodyMedium, { fontWeight: '600', color: Colors.textPrimary, marginBottom: 8 }]}>Name</Text>
             <TextInput
               value={userData.name}
               onChangeText={(text) => setUserData({ ...userData, name: text })}
@@ -292,19 +300,23 @@ export default function ProfileDetailsScreen() {
 
           {/* Email Field */}
           <View className="mb-4">
-            <Text className="text-base font-semibold text-black mb-2">Email</Text>
+            <Text style={[Typography.bodyMedium, { fontWeight: '600', color: Colors.textPrimary, marginBottom: 8 }]}>Email</Text>
             <TextInput
               value={userData.email}
               onChangeText={(text) => setUserData({ ...userData, email: text })}
               editable={isEditing}
               keyboardType="email-address"
-              className={`bg-white px-${getTailwindSpacing(Spacing.lg)} py-${getTailwindSpacing(Spacing.lg)} text-base text-black border ${fieldErrors.email ? 'border-red-500' : 'border-gray-200'} rounded-2xl`}
+              className={`px-${getTailwindSpacing(Spacing.lg)} py-${getTailwindSpacing(Spacing.lg)} text-base`}
               style={{
-                color: isEditing ? '#000' : '#666',
+                backgroundColor: Colors.background,
+                borderWidth: 1,
+                borderColor: fieldErrors.email ? Colors.error : Colors.border,
+                borderRadius: Spacing.borderRadiusInput,
+                color: isEditing ? Colors.textPrimary : Colors.textMuted,
               }}
-              placeholderTextColor="#999"
+              placeholderTextColor={Colors.textMuted}
             />
-            {fieldErrors.email && <Text className="text-red-500 text-xs mt-1 ml-2">{fieldErrors.email}</Text>}
+            {fieldErrors.email && <Text style={[Typography.caption, { color: Colors.error, marginTop: 4, marginLeft: 8 }]}>{fieldErrors.email}</Text>}
           </View>
 
           {/* Address Field */}
@@ -369,7 +381,7 @@ export default function ProfileDetailsScreen() {
 
           {/* Location Field */}
           <View className="mb-6">
-            <Text className="text-base font-semibold text-black mb-2">
+            <Text style={[Typography.bodyMedium, { fontWeight: '600', color: Colors.textPrimary, marginBottom: 8 }]}>
               Location
             </Text>
             {isEditing ? (
@@ -381,10 +393,16 @@ export default function ProfileDetailsScreen() {
                 error={fieldErrors.location}
               />
             ) : (
-              <View className={`flex-row items-center bg-white px-${getTailwindSpacing(Spacing.lg)} py-${getTailwindSpacing(Spacing.lg)} border ${fieldErrors.location ? 'border-red-500' : 'border-gray-200'} rounded-2xl`}>
-                <Ionicons name="location-outline" size={20} color="#666" />
+              <View 
+                className={`flex-row items-center px-${getTailwindSpacing(Spacing.lg)} py-${getTailwindSpacing(Spacing.lg)} border rounded-2xl`}
+                style={{
+                  backgroundColor: Colors.background,
+                  borderColor: fieldErrors.location ? Colors.error : Colors.border,
+                }}
+              >
+                <Ionicons name="location-outline" size={20} color={Colors.textMuted} />
                 <Text 
-                  className="flex-1 ml-2 text-base text-gray-500"
+                  style={[Typography.bodyMedium, { color: Colors.textSecondary, flex: 1, marginLeft: 8 }]}
                   numberOfLines={1}
                 >
                   {userData.location || "No location set"}

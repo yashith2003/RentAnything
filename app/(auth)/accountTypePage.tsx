@@ -8,7 +8,9 @@ import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import PrimaryButton from '@/components/ui/PrimaryButton';
-import { PaddingStyles } from '@/constants/spacing';
+import { PaddingStyles, Spacing } from '@/constants/spacing';
+import { Colors } from '@/constants/theme';
+import { Typography } from '@/constants/typography';
 import { useUser } from '@/context/userContext';
 
 import { useTranslation } from 'react-i18next';
@@ -41,7 +43,10 @@ export default function AccountTypePage() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView 
+      style={{ backgroundColor: Colors.background }} 
+      className="flex-1"
+    >
       <StatusBar style="dark" />
       
       <View className="flex-1 pt-4 pb-10" style={PaddingStyles.page}>
@@ -56,10 +61,12 @@ export default function AccountTypePage() {
 
         {/* Content Section */}
         <View className="mt-16 items-center">
-          <Text className="text-[32px] font-bold text-black text-center">
+          <Text style={[Typography.h1, { color: Colors.textPrimary, textAlign: 'center' }]}>
             {t('accountTypePage.title')}
           </Text>
-          <Text className="text-gray-500 text-center text-base mt-3 px-2 leading-6">
+          <Text 
+            style={[Typography.bodyLarge, { color: Colors.textSecondary, textAlign: 'center', marginTop: 12, paddingHorizontal: 8 }]}
+          >
             {t('accountTypePage.subtitle')}
           </Text>
         </View>
@@ -90,7 +97,7 @@ export default function AccountTypePage() {
             title="Login as a Guest"
             variant="outlined"
             onPress={handleGuestLogin}
-            style={{ marginTop: 8, borderColor: '#ccc' }}
+            style={{ marginTop: 8, borderColor: Colors.border }}
           />
         </View>
 

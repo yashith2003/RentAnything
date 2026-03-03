@@ -10,7 +10,9 @@ import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { Colors } from '@/constants/theme';
+import { Typography } from '@/constants/typography';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import itemService, { useGetItemsQuery, useGetTrendingItemsQuery } from '@/api/item.service';
 import { useEffect } from 'react';
@@ -71,7 +73,11 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+    <SafeAreaView 
+      style={{ backgroundColor: Colors.background }} 
+      className="flex-1" 
+      edges={['top']}
+    >
       <ScrollView showsVerticalScrollIndicator={false} className={`px-${getTailwindSpacing(Spacing.pageHorizontal)}`}>
         {/* Header */}
         <View className="flex-row items-center justify-between py-4">
@@ -82,10 +88,16 @@ export default function HomeScreen() {
               contentFit="contain"
             />
             <View>
-              <Text className="text-xs text-gray-400 font-medium">
+              <Text 
+                style={[Typography.caption, { color: Colors.textMuted }]}
+              >
                 {role?.toLowerCase() === 'guest' ? 'Guest Mode' : (role?.toLowerCase() === 'company' ? t('home.companyAccount') : t('home.individualAccount'))}
               </Text>
-              <Text className="text-sm font-bold text-black">{role?.toLowerCase() === 'guest' ? 'Welcome!' : t('home.welcomeBack')}</Text>
+              <Text 
+                style={[Typography.bodyMedium, { fontWeight: '700', color: Colors.textPrimary }]}
+              >
+                {role?.toLowerCase() === 'guest' ? 'Welcome!' : t('home.welcomeBack')}
+              </Text>
             </View>
           </View>
           {role?.toLowerCase() !== 'guest' && (
@@ -106,8 +118,12 @@ export default function HomeScreen() {
           onPress={() => setShowLocationDropdown(true)}
         >
           <Image source={require('@/assets/icons/location.svg')} style={{ width: 20, height: 20 }} />
-          <Text className="flex-1 ml-3 text-gray-500 font-medium">{displayLocation}</Text>
-          <Text className="text-gray-400 text-xs">▼</Text>
+          <Text 
+            style={[Typography.bodyMedium, { color: Colors.textSecondary, flex: 1, marginLeft: 12 }]}
+          >
+            {displayLocation}
+          </Text>
+          <Text style={{ color: Colors.textMuted, fontSize: 10 }}>▼</Text>
         </TouchableOpacity>
 
         {/* Popular Categories */}
@@ -152,9 +168,9 @@ export default function HomeScreen() {
 
         {/* Trending Items Header */}
         <View className="flex-row items-center justify-between mb-4">
-          <Text className="text-xl font-bold">{t('home.trending')}</Text>
+          <Text style={[Typography.h3, { color: Colors.textPrimary }]}>{t('home.trending')}</Text>
           <TouchableOpacity onPress={() => router.push('/trendingItems')}>
-            <Text className="text-gray-400 font-medium">{t('home.viewAll')}</Text>
+            <Text style={[Typography.bodyMedium, { color: Colors.textMuted, fontWeight: '500' }]}>{t('home.viewAll')}</Text>
           </TouchableOpacity>
         </View>
 

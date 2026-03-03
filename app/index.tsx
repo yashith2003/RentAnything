@@ -9,6 +9,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
+import { Typography } from '@/constants/typography';
 
 const { width, height } = Dimensions.get('screen');
 
@@ -80,10 +81,14 @@ export default function OnboardingScreen() {
             <View className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent" />
             
             <SafeAreaView className={`flex-1 px-${getTailwindSpacing(Spacing.pageHorizontal)} justify-start pt-16`}>
-              <Text className="text-white text-[32px] font-bold leading-tight mt-10">
+              <Text 
+                style={[Typography.h1, { color: Colors.background, marginTop: 40 }]}
+              >
                 {item.title}
               </Text>
-              <Text className="text-white/80 text-lg mt-4 leading-normal">
+              <Text 
+                style={[Typography.bodyLarge, { color: 'rgba(255,255,255,0.8)', marginTop: 16 }]}
+              >
                 {item.subtitle}
               </Text>
             </SafeAreaView>
@@ -99,8 +104,8 @@ export default function OnboardingScreen() {
             <View
               key={index}
               style={{
-                backgroundColor: currentIndex === index ? '#fff' : '#454545',
-                width: currentIndex === index ? 8 : 8,
+                backgroundColor: currentIndex === index ? Colors.background : 'rgba(255,255,255,0.3)',
+                width: 8,
                 height: 8,
                 borderRadius: 4,
               }}
@@ -115,7 +120,7 @@ export default function OnboardingScreen() {
           className="w-full py-4 rounded-2xl items-center shadow-lg"
           activeOpacity={0.8}
         >
-          <Text className="text-white text-lg font-bold">
+          <Text style={[Typography.button, { color: Colors.background }]}>
             {currentIndex === onboardingData.length - 1 ? t('onboarding.getStarted') : t('onboarding.next')}
           </Text>
         </TouchableOpacity>

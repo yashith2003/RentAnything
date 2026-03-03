@@ -113,7 +113,7 @@ export const Typography = {
   button: {
     fontSize: FontSize.base,
     fontWeight: FontWeight.semiBold,
-    textTransform: 'none',
+    textTransform: 'none' as const,
   },
   label: {
     fontSize: FontSize.sm,

@@ -1,9 +1,8 @@
-// components/successPopup.tsx
-
 import PrimaryButton from '@/components/ui/PrimaryButton';
 import React from 'react';
 import { Modal, Text, View } from 'react-native';
-
+import { Colors } from '@/constants/theme';
+import { Typography } from '@/constants/typography';
 import { useTranslation } from 'react-i18next';
 
 interface SuccessPopupProps {
@@ -32,17 +31,20 @@ export default function SuccessPopup({
       statusBarTranslucent
     >
       <View className="flex-1 justify-center items-center bg-black/50 px-6">
-        <View className="bg-white rounded-3xl p-8 w-full max-w-sm items-center">
+        <View 
+          className="rounded-3xl p-8 w-full max-w-sm items-center"
+          style={{ backgroundColor: Colors.background }}
+        >
           {/* Celebration Icon */}
           <Text className="text-7xl mb-4">🎉</Text>
 
           {/* Title */}
-          <Text className="text-2xl font-bold text-black mb-3">
+          <Text style={[Typography.h2, { color: Colors.textPrimary, marginBottom: 12, textAlign: 'center' }]}>
             {displayTitle}
           </Text>
 
           {/* Message */}
-          <Text className="text-sm text-gray-500 text-center leading-6 mb-6">
+          <Text style={[Typography.bodySmall, { color: Colors.textSecondary, textAlign: 'center', lineHeight: 22, marginBottom: 24 }]}>
             {displayMessage}
           </Text>
 

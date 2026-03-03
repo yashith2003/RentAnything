@@ -1,9 +1,9 @@
-// components/modal/ErrorPopup.tsx
-
 import PrimaryButton from '@/components/ui/PrimaryButton';
 import React from 'react';
 import { Modal, Text, View, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { Colors } from '@/constants/theme';
+import { Typography } from '@/constants/typography';
 
 interface ErrorPopupProps {
   visible: boolean;
@@ -31,19 +31,25 @@ export default function ErrorPopup({
       statusBarTranslucent
     >
       <View className="flex-1 justify-center items-center bg-black/50 px-6">
-        <View className="bg-white rounded-3xl p-8 w-full max-w-sm items-center">
+        <View 
+          className="rounded-3xl p-8 w-full max-w-sm items-center"
+          style={{ backgroundColor: Colors.background }}
+        >
           {/* Error Icon */}
-          <View className="w-20 h-20 bg-red-50 rounded-full justify-center items-center mb-4">
+          <View 
+            className="w-20 h-20 rounded-full justify-center items-center mb-4"
+            style={{ backgroundColor: Colors.error + '10' }} // Ultra light error bg
+          >
              <Text className="text-4xl">⚠️</Text>
           </View>
 
           {/* Title */}
-          <Text className="text-2xl font-bold text-black mb-3">
+          <Text style={[Typography.h2, { color: Colors.textPrimary, marginBottom: 12, textAlign: 'center' }]}>
             {displayTitle}
           </Text>
 
           {/* Message */}
-          <Text className="text-sm text-gray-500 text-center leading-6 mb-6">
+          <Text style={[Typography.bodySmall, { color: Colors.textSecondary, textAlign: 'center', lineHeight: 22, marginBottom: 24 }]}>
             {displayMessage}
           </Text>
 

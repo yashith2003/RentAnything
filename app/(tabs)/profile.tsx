@@ -12,6 +12,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Typography } from '@/constants/typography';
 
 interface MenuItem {
   icon: string;
@@ -142,7 +143,11 @@ export default function ProfileScreen() {
   const isGuest = role?.toLowerCase() === 'guest';
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+    <SafeAreaView 
+      className="flex-1" 
+      style={{ backgroundColor: Colors.background }}
+      edges={['top']}
+    >
       <StatusBar style="dark" />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
@@ -161,14 +166,14 @@ export default function ProfileScreen() {
 
           {/* Name with Badges */}
           <View className="flex-row items-center gap-1 mb-1">
-            <Text className="text-xl font-bold text-black">
+            <Text style={[Typography.h3, { color: Colors.textPrimary }]}>
               {isGuest ? 'Guest' : (isProfileLoading ? 'Loading...' : userProfile?.name || 'User')}
             </Text>
           </View>
 
           {/* Email */}
           {!isGuest && (
-            <Text className="text-sm text-gray-500 mb-1">
+            <Text style={[Typography.bodySmall, { color: Colors.textSecondary, marginBottom: 4 }]}>
               {userProfile?.email || ''}
             </Text>
           )}
@@ -177,7 +182,11 @@ export default function ProfileScreen() {
         {/* Menu Items */}
         <View className="px-6 pb-6">
           {menuItems.map((item, index) => (
-            <View key={index} className="mb-2 bg-white border border-gray-100 rounded-[20px] px-2">
+            <View 
+              key={index} 
+              className="mb-2 rounded-[20px] px-2 border"
+              style={{ backgroundColor: Colors.surface, borderColor: Colors.border }}
+            >
                 <ActionListItem 
                     label={item.label}
                     icon={item.icon}
