@@ -114,6 +114,8 @@ export default {
     incident: "සිද්ධි වාර්තා",
     language: "භාෂාව",
     logout: "පිටවන්න",
+    privacyPolicy: "රහස්‍යතා ප්‍රතිපත්තිය",
+    contactUs: "අපව සම්බන්ධ කරගන්න",
     joined: "එකතු වූ දිනය",
   },
 

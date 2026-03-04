@@ -13,19 +13,17 @@ interface ActionButtonsProps {
 export default function ActionButtons({ onCall, onChat, isChatLoading, isChatDisabled, isGuest }: ActionButtonsProps) {
   return (
     <View className="absolute bottom-0 left-0 right-0 bg-white pt-2 pb-8 px-6 flex-row gap-x-4 border-t border-gray-100">
-      {!isGuest && (
-        <TouchableOpacity 
-          onPress={onChat}
-          disabled={isChatLoading || isChatDisabled}
-          className={`w-14 h-14 border border-gray-200 rounded-2xl items-center justify-center ${isChatDisabled ? 'opacity-50' : ''}`}
-        >
-          {isChatLoading ? (
-              <ActivityIndicator size="small" color="#2FA2B9" />
-          ) : (
-              <Ionicons name="chatbubble-ellipses-outline" size={24} color="#666" />
-          )}
-        </TouchableOpacity>
-      )}
+      <TouchableOpacity 
+        onPress={onChat}
+        disabled={isChatLoading || (!isGuest && isChatDisabled)}
+        className={`w-14 h-14 border border-gray-200 rounded-2xl items-center justify-center ${( !isGuest && isChatDisabled) ? 'opacity-50' : ''}`}
+      >
+        {isChatLoading ? (
+            <ActivityIndicator size="small" color="#2FA2B9" />
+        ) : (
+            <Ionicons name="chatbubble-ellipses-outline" size={24} color="#666" />
+        )}
+      </TouchableOpacity>
       
       <TouchableOpacity 
         onPress={onCall}

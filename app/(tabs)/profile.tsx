@@ -118,6 +118,18 @@ export default function ProfileScreen() {
         onPress: () => router.push('/profile/faq' as any),
       },
       {
+        icon: 'document-text-outline',
+        iconType: 'ionicons',
+        label: t('profile.privacyPolicy'),
+        onPress: () => router.push('/profile/privacyPolicy' as any),
+      },
+      {
+        icon: 'chatbubble-ellipses-outline',
+        iconType: 'ionicons',
+        label: t('profile.contactUs'),
+        onPress: () => router.push('/profile/contactUs' as any),
+      },
+      {
         icon: 'language-outline',
         iconType: 'ionicons',
         label: t('profile.language'),
@@ -135,7 +147,7 @@ export default function ProfileScreen() {
 
     if (isGuest) {
       return allItems.filter(item => 
-        ['profile.faqs', 'profile.language', 'profile.logout'].includes(item.label === t('profile.faqs') ? 'profile.faqs' : item.label === t('profile.language') ? 'profile.language' : item.label === t('profile.logout') ? 'profile.logout' : '')
+        [t('profile.faqs'), t('profile.privacyPolicy'), t('profile.contactUs'), t('profile.language'), t('profile.logout')].includes(item.label)
       );
     }
     

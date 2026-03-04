@@ -3,8 +3,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+import LoginFirst from '../AlertPopup/LoginFirst';
 import { getImageUrl } from '@/utils/image';
 import { Item } from '@/types/schemas';
 import { formatPrice } from '@/utils/formatPrice';
@@ -25,10 +26,15 @@ export default function CategoryItemCard({ item }: Props) {
   const router = useRouter();
   const { role } = useUser();
   const isGuest = role?.toLowerCase() === 'guest';
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
   const { handleChat, isCreatingThread, isOwnListing } = useItemChat(item);
   const [recordInteraction] = useRecordInteractionMutation();
 
   const handleCall = () => {
+    if (isGuest) {
+      setShowLoginPopup(true);
+      return;
+    }
     if (item?.phone) {
       recordInteraction({ itemId: Number(item.id), type: 'CALL' });
       Linking.openURL(`tel:${item.phone}`);
@@ -83,15 +89,19 @@ export default function CategoryItemCard({ item }: Props) {
 
         {/* Buttons */}
         <View className="flex-row gap-x-2 mt-3">
-          {!isGuest && (
-            <TouchableOpacity
-              onPress={handleChat}
-              disabled={isCreatingThread || isOwnListing}
-              className={`w-10 h-10 border border-gray-100 rounded-xl items-center justify-center bg-gray-50 ${isOwnListing ? 'opacity-50' : ''}`}
-            >
-              <Ionicons name="chatbubble-ellipses-outline" size={20} color="#666" />
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity
+            onPress={() => {
+              if (isGuest) {
+                setShowLoginPopup(true);
+                return;
+              }
+              handleChat();
+            }}
+            disabled={(!isGuest && (isCreatingThread || isOwnListing))}
+            className={`w-10 h-10 border border-gray-100 rounded-xl items-center justify-center bg-gray-50 ${(!isGuest && isOwnListing) ? 'opacity-50' : ''}`}
+          >
+            <Ionicons name="chatbubble-ellipses-outline" size={20} color="#666" />
+          </TouchableOpacity>
           
           <TouchableOpacity
             onPress={handleCall}
@@ -102,6 +112,10 @@ export default function CategoryItemCard({ item }: Props) {
           </TouchableOpacity>
         </View>
       </View>
+      <LoginFirst 
+        visible={showLoginPopup} 
+        onClose={() => setShowLoginPopup(false)} 
+      />
     </TouchableOpacity>
   );
 }

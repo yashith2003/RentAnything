@@ -185,8 +185,8 @@ export default function HomeScreen() {
         <View className="flex-row flex-wrap justify-between pb-4 ">
           {isLoading ? (
             <Text className="text-gray-400 text-center w-full py-10">Loading items...</Text>
-          ) : trendingItems && trendingItems.length > 0 ? (
-            trendingItems.slice(0, 10).map((item) => (
+          ) : trendingItems?.items && trendingItems.items.length > 0 ? (
+            trendingItems.items.slice(0, 10).map((item) => (
               <View key={item.id} className="w-[48%]">
                 <ItemCard 
                   item={{
@@ -210,7 +210,7 @@ export default function HomeScreen() {
             <Text className="text-gray-400 text-center w-full py-10">No items found</Text>
           )}
         </View>
-         {trendingItems && trendingItems.length > 0 && (
+         {trendingItems?.items && trendingItems.items.length > 0 && (
            <TouchableOpacity onPress={() => router.push('/trendingItems')}>
               <Text className="text-gray-400 font-medium text-center mb-8">{t('home.viewAll')}</Text>
             </TouchableOpacity>

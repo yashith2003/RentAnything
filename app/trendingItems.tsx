@@ -49,7 +49,7 @@ export default function TrendingItemsScreen() {
   }, [refetch]);
 
   const handleLoadMore = () => {
-    if (!isFetching && items && items.length >= page * 10) {
+    if (!isFetching && items?.items && items.items.length >= page * 10) {
       setPage(prev => prev + 1);
     }
   };
@@ -111,7 +111,7 @@ export default function TrendingItemsScreen() {
       />
 
       <FlatList
-        data={items}
+        data={items?.items || []}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View className="flex-1 px-1 mb-4" style={{ maxWidth: '50%' }}>

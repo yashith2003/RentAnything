@@ -12,7 +12,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import SearchList from '../search/searchList';
 import SearchMap from '../search/searchMap';
 import { useSearch } from '@/hooks/useSearch';
-import { useGetCategoriesQuery } from '@/api/category.service';
+import { useGetCategoriesQuery, Category } from '@/api/category.service';
+import { Image } from 'expo-image';
 import { Colors } from '@/constants/theme';
 
 
@@ -23,8 +24,7 @@ export default function SearchScreen() {
   const { categoryId: paramCatId, searchQuery: paramQuery, ...filtersAsParams } = params;
 
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>(paramCatId ? Number(paramCatId) : undefined);
-  const [expandedCategoryId, setExpandedCategoryId] = useState<number | undefined>(paramCatId ? Number(paramCatId) : undefined);
-  const [showAllSubCategories, setShowAllSubCategories] = useState(false);
+  const [expandedCategoryId, setExpandedCategoryId] = useState<number | undefined>();
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   
   const { data: categories = [] } = useGetCategoriesQuery();
@@ -32,38 +32,73 @@ export default function SearchScreen() {
 
   // Sub-category icon mapping (Placeholders using Ionicons names)
   const subCategoryIcons: { [key: string]: any } = {
-    // Electronics
-    'Computer': 'desktop-outline',
-    'Tablets': 'tablet-portrait-outline',
-    'Phones': 'phone-portrait-outline',
-    'Drones': 'airplane-outline',
-    'TV': 'tv-outline',
-    'Cameras': 'camera-outline',
-    'Headphones': 'headset-outline',
     // Vehicle
     'Car': 'car-outline',
     'Bike': 'bicycle-outline',
     'Truck': 'bus-outline',
     'Cycle': 'bicycle-outline',
     'Scooter': 'speedometer-outline',
+    'Van': 'car-sport-outline',
+    'Bus': 'bus-outline',
+    'Boat': 'boat-outline',
     // Home
     'Furniture': 'bed-outline',
     'Decoration': 'flower-outline',
     'Appliances': 'hammer-outline',
     'Kitchen': 'restaurant-outline',
     'Bedding': 'receipt-outline',
+    'Gardening': 'leaf-outline',
+    'Lighting': 'bulb-outline',
+    'Tools': 'construct-outline',
     // Fashion
     'Men': 'man-outline',
     'Women': 'woman-outline',
     'Kids': 'happy-outline',
     'Accessories': 'watch-outline',
     'Shoes': 'footsteps-outline',
+    'Bags': 'briefcase-outline',
+    'Watches': 'watch-outline',
+    'Jewelry': 'diamond-outline',
     // Sport
     'Gym': 'barbell-outline',
     'Cricket': 'baseball-outline',
     'Football': 'football-outline',
     'Tennis': 'tennisball-outline',
     'Badminton': 'fitness-outline',
+    'Camping': 'tent-outline',
+    'Hiking': 'footsteps-outline',
+    'Swimming': 'water-outline',
+    // Fallback for Electronics if local image not found
+    'Headphones': 'headset-outline',
+    'Speakers': 'volume-high-outline',
+    'Computer': 'desktop-outline',
+    'Computers': 'desktop-outline',
+    'Phone': 'phone-portrait-outline',
+    'Phones': 'phone-portrait-outline',
+    'Tablet': 'tablet-portrait-outline',
+    'Tablets': 'tablet-portrait-outline',
+    'Camera': 'camera-outline',
+    'Cameras': 'camera-outline',
+    'Drone': 'airplane-outline',
+    'Drones': 'airplane-outline',
+    'Dron': 'airplane-outline',
+    'TV': 'tv-outline',
+  };
+
+  // Local assets for Electronics sub-categories
+  const electronicsLocalIcons: { [key: string]: any } = {
+    'Computer': require('../../assets/images/ElectronicsSubCategories/ComputerIcon.png'),
+    'Computers': require('../../assets/images/ElectronicsSubCategories/ComputerIcon.png'),
+    'Tablet': require('../../assets/images/ElectronicsSubCategories/TabletIcon.png'),
+    'Tablets': require('../../assets/images/ElectronicsSubCategories/TabletIcon.png'),
+    'Phone': require('../../assets/images/ElectronicsSubCategories/MobileIcon.png'),
+    'Phones': require('../../assets/images/ElectronicsSubCategories/MobileIcon.png'),
+    'Dron': require('../../assets/images/ElectronicsSubCategories/DronIcon.png'),
+    'Drone': require('../../assets/images/ElectronicsSubCategories/DronIcon.png'),
+    'Drones': require('../../assets/images/ElectronicsSubCategories/DronIcon.png'),
+    'TV': require('../../assets/images/ElectronicsSubCategories/TVIcon.png'),
+    'Camera': require('../../assets/images/ElectronicsSubCategories/CameraIcon.png'),
+    'Cameras': require('../../assets/images/ElectronicsSubCategories/CameraIcon.png'),
   };
 
   useEffect(() => {
@@ -97,7 +132,7 @@ export default function SearchScreen() {
   }
   
   // Add sub-category to filters if selected and it's not the top-level
-  const selectedCategory = categories.find(c => c.id === selectedCategoryId);
+  const selectedCategory = categories.find((c: Category) => c.id === selectedCategoryId);
   if (selectedCategory && selectedCategory.parentCategory) {
     activeFilters.push({ key: 'categoryId', label: selectedCategory.name, value: selectedCategory.id });
   }
@@ -138,9 +173,9 @@ export default function SearchScreen() {
       const catId = Number(paramCatId);
       setSelectedCategoryId(catId);
       
-      const cat = categories.find(c => c.id === catId);
+      const cat = categories.find((c: Category) => c.id === catId);
       if (cat?.parentCategory) {
-        setExpandedCategoryId(cat.parentCategory.id);
+        setExpandedCategoryId(undefined);
       } else {
         setExpandedCategoryId(catId);
       }
@@ -184,10 +219,8 @@ export default function SearchScreen() {
               onSelectCategory={(cat) => {
                 if (expandedCategoryId === cat.id) {
                   setExpandedCategoryId(undefined);
-                  setShowAllSubCategories(false);
                 } else {
                   setExpandedCategoryId(cat.id);
-                  setShowAllSubCategories(false);
                 }
               }} 
             />
@@ -197,31 +230,50 @@ export default function SearchScreen() {
           {expandedCategoryId && (
             <View className="mb-6" style={PaddingStyles.page}>
                 <View className="flex-row flex-wrap justify-start">
-                    {(categories.find(c => c.id === expandedCategoryId)?.subCategories || [])
-                        .slice(0, showAllSubCategories ? 999 : 5)
-                        .map((sub, index) => (
+                    {(categories.find((c: Category) => c.id === expandedCategoryId)?.subCategories || [])
+                        .slice(0, 5)
+                        .map((sub: Category, index: number) => (
                             <TouchableOpacity 
                                 key={sub.id} 
                                 onPress={() => {
                                     setSelectedCategoryId(sub.id);
+                                    setExpandedCategoryId(undefined);
                                     router.setParams({ categoryId: sub.id.toString() });
                                 }}
                                 className={`w-[28%] items-center mb-6 mr-[5%] p-2 rounded-2xl border ${selectedCategoryId === sub.id ? 'border-[#2FA2B9] bg-cyan-50' : 'border-transparent'}`}
                             >
                                 <View className="w-12 h-12 bg-gray-50 rounded-xl items-center justify-center mb-2">
-                                    <Ionicons name={(subCategoryIcons[sub.name] || 'layers-outline') as any} size={24} color="#2FA2B9" />
+                                    {electronicsLocalIcons[sub.name] ? (
+                                        <Image 
+                                            source={electronicsLocalIcons[sub.name]} 
+                                            style={{ width: 32, height: 32 }}
+                                            contentFit="contain"
+                                        />
+                                    ) : (
+                                        <Ionicons name={(subCategoryIcons[sub.name] || 'layers-outline') as any} size={24} color="#2FA2B9" />
+                                    )}
                                 </View>
                                 <Text className={`text-[10px] font-medium text-center ${selectedCategoryId === sub.id ? 'text-[#2FA2B9]' : 'text-gray-500'}`}>{sub.name}</Text>
                             </TouchableOpacity>
                         ))}
                     
-                    {!showAllSubCategories && (categories.find(c => c.id === expandedCategoryId)?.subCategories?.length || 0) > 5 && (
+                    {(categories.find((c: Category) => c.id === expandedCategoryId)?.subCategories?.length || 0) > 5 && (
                         <TouchableOpacity 
-                            onPress={() => setShowAllSubCategories(true)}
+                            onPress={() => router.push({
+                                pathname: '/search/SearchCategory',
+                                params: { 
+                                    categoryId: expandedCategoryId,
+                                    searchQuery: query 
+                                }
+                            })}
                             className="w-[28%] items-center mb-6 p-2"
                         >
                             <View className="w-12 h-12 bg-gray-50 rounded-xl items-center justify-center mb-2">
-                                <Ionicons name="ellipsis-horizontal" size={24} color="#9CA3AF" />
+                                <Image 
+                                    source={require('../../assets/images/ViewMoreIcon.png')} 
+                                    style={{ width: 32, height: 32 }}
+                                    contentFit="contain"
+                                />
                             </View>
                             <Text className="text-[10px] font-medium text-gray-400 text-center">View more</Text>
                         </TouchableOpacity>

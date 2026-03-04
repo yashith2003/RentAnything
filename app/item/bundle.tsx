@@ -99,7 +99,7 @@ export default function BundleScreen() {
               <View key={item.id} className="w-[48%] bg-white border border-gray-100 rounded-[24px] overflow-hidden mb-6 shadow-sm shadow-black/5">
                 <View className="relative">
                     <Image source={{ uri: item.image }} style={{ width: '100%', height: 120 }} contentFit="cover" />
-                    <TouchableOpacity className="absolute top-2 right-2 w-8 h-8 items-center justify-center bg-white/80 rounded-full">
+                    <TouchableOpacity className="absolute top-2 right-2 w-8 h-8 items-center justify-center bg-white/47 rounded-full">
                         <Ionicons name="heart-outline" size={16} color="#000" />
                     </TouchableOpacity>
                 </View>

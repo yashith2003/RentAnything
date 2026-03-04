@@ -114,6 +114,8 @@ export default {
     incident: "Incident Report",
     language: "Language",
     logout: "Logout",
+    privacyPolicy: "Privacy Policy",
+    contactUs: "Contact Us",
     joined: "Joined",
   },
 

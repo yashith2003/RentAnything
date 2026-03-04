@@ -28,7 +28,7 @@ export default function SearchList({ categoryId, searchQuery, filters }: SearchL
     setPage(1);
   }, [searchQuery, categoryId]);
 
-  const { data: items, isLoading, isFetching } = useSearchItemsQuery({
+  const { data: response, isLoading, isFetching } = useSearchItemsQuery({
     q: searchQuery || '',
     category: categoryId,
     page,
@@ -38,8 +38,11 @@ export default function SearchList({ categoryId, searchQuery, filters }: SearchL
     skip: !searchQuery && !categoryId && Object.keys(filters).length === 0
   });
 
+  const items = response?.items || [];
+  const total = response?.total || 0;
+
   const loadMore = () => {
-    if (!isLoading && !isFetching && items && items.length >= limit * page) {
+    if (!isLoading && !isFetching && items.length < total) {
       setPage(prev => prev + 1);
     }
   };
@@ -65,13 +68,13 @@ export default function SearchList({ categoryId, searchQuery, filters }: SearchL
       {/* Products Count */}
       <View className="mb-4" style={PaddingStyles.page}>
         <Text style={[Typography.bodyMedium, { color: Colors.textSecondary }]}>
-          {items?.length || 0} {items?.length === 1 ? 'product' : 'products'} found
+          {total} {total === 1 ? 'product' : 'products'} found
         </Text>
       </View>
 
       {/* Products Grid */}
       <View className="flex-row flex-wrap justify-between pb-10" style={PaddingStyles.page}>
-        {items?.map((item) => {
+        {items.map((item) => {
           const cardItem = {
             id: item.id,
             image: getImageUrl(item.imageUrl),
@@ -93,7 +96,7 @@ export default function SearchList({ categoryId, searchQuery, filters }: SearchL
             </View>
           );
         })}
-        {(!items || items.length === 0) && !isLoading && (
+        {(items.length === 0) && !isLoading && (
           <View className="w-full items-center py-10">
             <Text style={[Typography.bodyMedium, { color: Colors.textMuted }]}>No products found</Text>
           </View>

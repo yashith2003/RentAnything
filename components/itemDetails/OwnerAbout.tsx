@@ -3,8 +3,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { Text, TouchableOpacity, View, ActivityIndicator, Linking } from 'react-native';
+import LoginFirst from '../AlertPopup/LoginFirst';
 import { useGetUserReviewsQuery } from '@/api/review.service';
 import { getImageUrl } from '@/utils/image';
 import { useRecordInteractionMutation } from '@/api/item.service';
@@ -31,6 +32,7 @@ interface OwnerAboutProps {
 export default function OwnerAbout({ owner, onChat, isChatLoading, isChatDisabled, isGuest }: OwnerAboutProps) {
   const router = useRouter();
   const { id: itemId } = useLocalSearchParams();
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [recordInteraction] = useRecordInteractionMutation();
   const { data: ownerReviewsData } = useGetUserReviewsQuery(
     { userId: Number(owner.id) }, 
@@ -38,6 +40,10 @@ export default function OwnerAbout({ owner, onChat, isChatLoading, isChatDisable
   );
 
   const handleCall = () => {
+    if (isGuest) {
+      setShowLoginPopup(true);
+      return;
+    }
     if (owner.phone && itemId) {
       recordInteraction({ itemId: Number(itemId), type: 'CALL' });
       Linking.openURL(`tel:${owner.phone}`);
@@ -82,24 +88,32 @@ export default function OwnerAbout({ owner, onChat, isChatLoading, isChatDisable
           >
             <Ionicons name="call-outline" size={20} color="#6B7280" />
           </TouchableOpacity>
-          {!isGuest && (
-            <TouchableOpacity
-              className={`w-10 h-10 items-center justify-center rounded-full bg-gray-50 border border-gray-100 ${isChatDisabled ? 'opacity-50' : ''}`}
-              onPress={onChat}
-              disabled={isChatLoading || isChatDisabled}
-            >
-              {isChatLoading ? (
-                  <ActivityIndicator size="small" color="#2FA2B9" />
-              ) : (
-                  <Ionicons name="chatbubble-ellipses-outline" size={20} color={isChatDisabled ? "#9CA3AF" : "#6B7280"} />
-              )}
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity
+            className={`w-10 h-10 items-center justify-center rounded-full bg-gray-50 border border-gray-100 ${(!isGuest && isChatDisabled) ? 'opacity-50' : ''}`}
+            onPress={() => {
+              if (isGuest) {
+                setShowLoginPopup(true);
+                return;
+              }
+              onChat?.();
+            }}
+            disabled={(!isGuest && (isChatLoading || isChatDisabled))}
+          >
+            {isChatLoading ? (
+                <ActivityIndicator size="small" color="#2FA2B9" />
+            ) : (
+                <Ionicons name="chatbubble-ellipses-outline" size={20} color={(!isGuest && isChatDisabled) ? "#9CA3AF" : "#6B7280"} />
+            )}
+          </TouchableOpacity>
         </View>
       </View>
       <Text className="text-gray-400 text-xs mt-4 leading-5 mb-5">
         {owner.description || 'No description available'}
       </Text>
+      <LoginFirst 
+        visible={showLoginPopup} 
+        onClose={() => setShowLoginPopup(false)} 
+      />
     </View>
   );
 }

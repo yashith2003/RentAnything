@@ -30,6 +30,7 @@ import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator, Linking } 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SuccessPopup from '@/components/AlertPopup/SuccessPopup';
 import ErrorPopup from '@/components/AlertPopup/ErrorPopup';
+import LoginFirst from '@/components/AlertPopup/LoginFirst';
 import ConfirmationPopup from '@/components/AlertPopup/ConfirmationPopup';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Colors } from '@/constants/theme';
@@ -78,6 +79,7 @@ export default function ItemDetailsScreen() {
     message: '',
   });
   const [isShareVisible, setIsShareVisible] = useState(false);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
   
   const { isSaved, toggleItem } = useSavedItems();
   const saved = id ? isSaved(Number(id)) : false;
@@ -87,6 +89,10 @@ export default function ItemDetailsScreen() {
   const [submitReview, { isLoading: isSubmittingReview }] = useSubmitReviewMutation();
 
   const handleSave = async () => {
+    if (isGuest) {
+      setShowLoginPopup(true);
+      return;
+    }
     if (id) {
        await toggleItem(Number(id));
     }
@@ -97,6 +103,18 @@ export default function ItemDetailsScreen() {
   });
 
   const [recordInteraction] = useRecordInteractionMutation();
+  const { handleChat, isCreatingThread, isOwnListing, error: chatError, notice: chatNotice, clearMessages: clearChatMessages } = useItemChat(item);
+
+  const itemImages = React.useMemo(() => {
+    let images: string[] = [];
+    if (item?.imageUrl) {
+      images.push(getImageUrl(item.imageUrl));
+    }
+    if (item?.subImages && item.subImages.length > 0) {
+      images = images.concat(item.subImages.map(img => getImageUrl(img)));
+    }
+    return images.length > 0 ? images : itemImagesFallback;
+  }, [item]);
 
   // Track product view
   useEffect(() => {
@@ -104,9 +122,12 @@ export default function ItemDetailsScreen() {
       recordInteraction({ itemId: Number(id), type: 'VIEW' });
     }
   }, [id, recordInteraction]);
-  const { handleChat, isCreatingThread, isOwnListing, error: chatError, notice: chatNotice, clearMessages: clearChatMessages } = useItemChat(item);
 
   const handleCall = () => {
+    if (isGuest) {
+      setShowLoginPopup(true);
+      return;
+    }
     if (item?.phone) {
       recordInteraction({ itemId: Number(id), type: 'CALL' });
       Linking.openURL(`tel:${item.phone}`);
@@ -142,9 +163,8 @@ export default function ItemDetailsScreen() {
   );
 
   const combinedSimilarItems = React.useMemo(() => {
-    const ownerItems = ownerCategoryItems || [];
-    const trendingItems = trendingCategoryItems || [];
-  
+    const ownerItems = ownerCategoryItems?.items || [];
+    const trendingItems = trendingCategoryItems?.items || [];
     const merged = [...ownerItems, ...trendingItems];
   
     const unique = merged
@@ -196,16 +216,6 @@ export default function ItemDetailsScreen() {
     description: item.owner?.individualUser?.description || item.owner?.company?.description || undefined
   };
 
-  const itemImages = React.useMemo(() => {
-    let images: string[] = [];
-    if (item?.imageUrl) {
-      images.push(getImageUrl(item.imageUrl));
-    }
-    if (item?.subImages && item.subImages.length > 0) {
-      images = images.concat(item.subImages.map(img => getImageUrl(img)));
-    }
-    return images.length > 0 ? images : itemImagesFallback;
-  }, [item]);
 
   return (
     <SafeAreaView 
@@ -229,15 +239,13 @@ export default function ItemDetailsScreen() {
             >
                 <Ionicons name="share-outline" size={22} color={Colors.textPrimary} />
             </TouchableOpacity>
-            {!isGuest && (
-              <TouchableOpacity 
-                  className="items-center justify-center w-10 h-10 rounded-full"
-                  style={{ backgroundColor: Colors.surface }}
-                  onPress={handleSave}
-              >
-                  <Ionicons name={saved ? "heart" : "heart-outline"} size={22} color={saved ? Colors.error : Colors.textPrimary} />
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity 
+                className="items-center justify-center w-10 h-10 rounded-full"
+                style={{ backgroundColor: 'rgba(255, 255, 255, 0.47)' }}
+                onPress={handleSave}
+            >
+                <Ionicons name={saved ? "heart" : "heart-outline"} size={22} color={saved ? Colors.error : Colors.textPrimary} />
+            </TouchableOpacity>
           </View>
         }
       />
@@ -533,6 +541,11 @@ export default function ItemDetailsScreen() {
         onClose={() => setIsShareVisible(false)}
         itemId={Number(id)}
         itemTitle={item?.title || ''}
+      />
+
+      <LoginFirst 
+        visible={showLoginPopup} 
+        onClose={() => setShowLoginPopup(false)} 
       />
     </SafeAreaView>
   );

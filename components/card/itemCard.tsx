@@ -4,8 +4,9 @@ import { SavedItem, useSavedItems } from '@/context/SavedItemsContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { Text, TouchableOpacity, View, Linking } from 'react-native';
+import LoginFirst from '../AlertPopup/LoginFirst';
 import { getImageUrl } from '@/utils/image';
 import { useCreateThreadMutation, useGetUserThreadsQuery } from '@/api/chat.service';
 import { useRecordInteractionMutation } from '@/api/item.service';
@@ -40,6 +41,7 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
   const isGuest = role?.toLowerCase() === 'guest';
   const { isSaved, toggleItem } = useSavedItems();
   const saved = isSaved(Number(item.id));
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
 
   const [createThread] = useCreateThreadMutation();
   const { data: threads } = useGetUserThreadsQuery();
@@ -54,10 +56,18 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
   };
 
   const handleSave = async () => {
+    if (isGuest) {
+      setShowLoginPopup(true);
+      return;
+    }
     await toggleItem(Number(item.id));
   };
 
   const handleCall = () => {
+    if (isGuest) {
+      setShowLoginPopup(true);
+      return;
+    }
     if (item.phone) {
       recordInteraction({ itemId: Number(item.id), type: 'CALL' });
       Linking.openURL(`tel:${item.phone}`);
@@ -67,6 +77,10 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
   };
 
   const handleChat = async () => {
+    if (isGuest) {
+      setShowLoginPopup(true);
+      return;
+    }
     try {
       recordInteraction({ itemId: Number(item.id), type: 'CHAT' });
       const otherUserId = item.ownerId || (item as any).owner?.id;
@@ -122,14 +136,13 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
           placeholder="https://via.placeholder.com/400?text=Loading..."
           transition={200}
         />
-        {!isGuest && (
-          <TouchableOpacity 
-              className="absolute top-3 right-3"
-              onPress={handleSave}
-          >
-            <Ionicons name={saved ? "heart" : "heart-outline"} size={22} color={saved ? Colors.error : Colors.textPrimary} />
-          </TouchableOpacity>
-        )}
+            <TouchableOpacity 
+                className="items-center justify-center w-10 h-10 rounded-full absolute top-3 right-3"
+                style={{ backgroundColor: 'rgba(255, 255, 255, 0.47)' }}
+                onPress={handleSave}
+            >
+                <Ionicons name={saved ? "heart" : "heart-outline"} size={22} color={saved ? Colors.error : Colors.textPrimary} />
+            </TouchableOpacity>
       </View>
 
       <View className="p-3">
@@ -179,15 +192,13 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
             <Text style={[Typography.caption, { color: Colors.background, fontWeight: '700' }]}>Contact</Text>
           </TouchableOpacity>
           
-          {!isGuest && (
-            <TouchableOpacity
-              className="w-9 h-9 rounded-full border items-center justify-center"
-              style={{ borderColor: Colors.border }}
-              onPress={handleChat}
-            >
-              <Ionicons name="chatbubble-ellipses" size={16} color={Colors.textSecondary} />
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity
+            className="w-9 h-9 rounded-full border items-center justify-center"
+            style={{ borderColor: Colors.border }}
+            onPress={handleChat}
+          >
+            <Ionicons name="chatbubble-ellipses" size={16} color={Colors.textSecondary} />
+          </TouchableOpacity>
         </View>
 
         {/* Delivery Info */}
@@ -202,6 +213,10 @@ export default function ItemCard({ item, onPress }: ItemCardProps) {
           </Text>
         </View>
       </View>
+      <LoginFirst 
+        visible={showLoginPopup} 
+        onClose={() => setShowLoginPopup(false)} 
+      />
     </TouchableOpacity>
   );
 }

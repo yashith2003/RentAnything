@@ -16,7 +16,7 @@ export const useSearch = (categoryId?: number, initialLimit: number = 20, filter
     setPage(1);
   };
 
-  const { data: results, isLoading, isFetching, error, refetch } = useSearchItemsQuery(
+  const { data: response, isLoading, isFetching, error, refetch } = useSearchItemsQuery(
     { 
       q: debouncedQuery, 
       category: categoryId, 
@@ -27,8 +27,11 @@ export const useSearch = (categoryId?: number, initialLimit: number = 20, filter
     { skip: debouncedQuery.length === 0 && !categoryId }
   );
 
+  const results = response?.items || [];
+  const total = response?.total || 0;
+
   const loadMore = () => {
-    if (!isLoading && !isFetching && results && results.length >= initialLimit * page) {
+    if (!isLoading && !isFetching && results.length < total) {
       setPage(prev => prev + 1);
     }
   };
@@ -38,12 +41,13 @@ export const useSearch = (categoryId?: number, initialLimit: number = 20, filter
     setQuery,
     debouncedQuery,
     triggerSearch,
-    results: (debouncedQuery.length === 0 && !categoryId) ? [] : results,
+    results,
+    total,
     isLoading,
     isFetching,
     error,
     loadMore,
-    hasMore: results && results.length >= initialLimit * page,
+    hasMore: results.length < total,
     refetch,
   };
 };

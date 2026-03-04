@@ -30,36 +30,41 @@ export interface CreateItemDto {
 export const itemApi = apiSlice.injectEndpoints({
   overrideExisting: true,
   endpoints: (builder) => ({
-    getItems: builder.query<Item[], { category?: string; filters?: any } | void>({
+    getItems: builder.query<{ items: Item[]; total: number }, { category?: string; filters?: any } | void>({
       query: (params) => ({
         url: '/items',
         params: params ? { cat: params.category, ...params.filters } : {},
       }),
       // Handle infinite scroll merging
       serializeQueryArgs: ({ endpointName, queryArgs }) => {
-        // Exclude 'page' from the cache key so all pages share the same cache entry
         const { filters, ...rest } = queryArgs || {};
         const { page, ...otherFilters } = filters || {};
         return { ...rest, filters: otherFilters };
       },
-      merge: (currentCache, newItems, { arg }) => {
+      merge: (currentCache, newResponse, { arg }) => {
         if (arg?.filters?.page === 1) {
-          return newItems;
+          return newResponse;
         }
-        const existingIds = new Set(currentCache.map(i => i.id));
-        const filteredNewItems = newItems.filter(i => !existingIds.has(i.id));
-        return [...currentCache, ...filteredNewItems];
+        const existingIds = new Set(currentCache.items.map(i => i.id));
+        const filteredNewItems = newResponse.items.filter(i => !existingIds.has(i.id));
+        return {
+          items: [...currentCache.items, ...filteredNewItems],
+          total: newResponse.total,
+        };
       },
       forceRefetch({ currentArg, previousArg }) {
         return currentArg !== previousArg;
       },
-      transformResponse: validateResponse(z.array(ItemSchema)),
+      transformResponse: validateResponse(z.object({
+        items: z.array(ItemSchema),
+        total: z.number(),
+      })),
       providesTags: (result) =>
         result
-          ? [...result.map(({ id }) => ({ type: 'Item' as const, id })), { type: 'Item', id: 'LIST' }]
+          ? [...result.items.map(({ id }) => ({ type: 'Item' as const, id })), { type: 'Item', id: 'LIST' }]
           : [{ type: 'Item', id: 'LIST' }],
     }),
-    getTrendingItems: builder.query<Item[], { category?: string; filters?: any } | void>({
+    getTrendingItems: builder.query<{ items: Item[]; total: number }, { category?: string; filters?: any } | void>({
       query: (params) => ({
         url: '/items/trending',
         params: params ? { cat: params.category, ...params.filters } : {},
@@ -69,17 +74,26 @@ export const itemApi = apiSlice.injectEndpoints({
         const { page, ...otherFilters } = filters || {};
         return { ...rest, filters: otherFilters };
       },
-      merge: (currentCache, newItems, { arg }) => {
-        if (arg?.filters?.page === 1) return newItems;
-        const existingIds = new Set(currentCache.map(i => i.id));
-        const filteredNewItems = newItems.filter(i => !existingIds.has(i.id));
-        return [...currentCache, ...filteredNewItems];
+      merge: (currentCache, newResponse, { arg }) => {
+        if (arg?.filters?.page === 1) return newResponse;
+        const existingIds = new Set(currentCache.items.map(i => i.id));
+        const filteredNewItems = newResponse.items.filter(i => !existingIds.has(i.id));
+        return {
+          items: [...currentCache.items, ...filteredNewItems],
+          total: newResponse.total,
+        };
       },
       forceRefetch({ currentArg, previousArg }) {
         return currentArg !== previousArg;
       },
-      transformResponse: validateResponse(z.array(ItemSchema)),
-      providesTags: ['Item'],
+      transformResponse: validateResponse(z.object({
+        items: z.array(ItemSchema),
+        total: z.number(),
+      })),
+      providesTags: (result) =>
+        result
+          ? [...result.items.map(({ id }) => ({ type: 'Item' as const, id })), { type: 'Item', id: 'LIST' }]
+          : [{ type: 'Item', id: 'LIST' }],
     }),
     recordInteraction: builder.mutation<void, { itemId: number; type: 'VIEW' | 'CALL' | 'CHAT' }>({
       query: ({ itemId, type }) => ({
@@ -136,25 +150,31 @@ export const itemApi = apiSlice.injectEndpoints({
       transformResponse: (response: any) => response.data || response,
       providesTags: [{ type: 'Item', id: 'MY_REVIEWS' }],
     }),
-    searchItems: builder.query<Item[], { q: string; category?: number; page?: number; limit?: number; lat?: number; lng?: number; distance?: string }>({
+    searchItems: builder.query<{ items: Item[]; total: number }, { q: string; category?: number; page?: number; limit?: number; lat?: number; lng?: number; distance?: string }>({
       query: (params) => ({
         url: '/items/search',
         params,
       }),
-      serializeQueryArgs: ({ endpointName, queryArgs }) => {
+      serializeQueryArgs: ({ queryArgs }) => {
         const { page, ...otherParams } = queryArgs;
         return { ...otherParams };
       },
-      merge: (currentCache, newItems, { arg }) => {
-        if (arg?.page === 1) return newItems;
-        const existingIds = new Set(currentCache.map(i => i.id));
-        const filteredNewItems = newItems.filter(i => !existingIds.has(i.id));
-        return [...currentCache, ...filteredNewItems];
+      merge: (currentCache, newResponse, { arg }) => {
+        if (arg?.page === 1) return newResponse;
+        const existingIds = new Set(currentCache.items.map(i => i.id));
+        const filteredNewItems = newResponse.items.filter(i => !existingIds.has(i.id));
+        return {
+          items: [...currentCache.items, ...filteredNewItems],
+          total: newResponse.total,
+        };
       },
       forceRefetch({ currentArg, previousArg }) {
         return currentArg !== previousArg;
       },
-      transformResponse: validateResponse(z.array(ItemSchema)),
+      transformResponse: validateResponse(z.object({
+        items: z.array(ItemSchema),
+        total: z.number(),
+      })),
       providesTags: ['Item'],
     }),
   }),

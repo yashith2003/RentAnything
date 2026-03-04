@@ -114,6 +114,8 @@ export default {
     incident: "சம்பவ அறிக்கை",
     language: "மொழி",
     logout: "வெளியேறு",
+    privacyPolicy: "தனியுரிமைக் கொள்கை",
+    contactUs: "எங்களைத் தொடர்பு கொள்ளவும்",
     joined: "சேர்ந்த தேதி",
   },
 

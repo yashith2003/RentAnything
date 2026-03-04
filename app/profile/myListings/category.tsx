@@ -5,13 +5,11 @@ import { Spacing, getTailwindSpacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
-import { FlatList, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { FlatList, Text, Pressable, View, ActivityIndicator, TextInput, ScrollView, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
+import { Ionicons } from '@expo/vector-icons';
 import categoryService, { Category } from '@/api/category.service';
-import { ActivityIndicator } from 'react-native';
 
 // Map backend category names to local images
 const categoryImages: { [key: string]: any } = {
@@ -65,7 +63,9 @@ export default function CategoryScreen() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [subSearchQuery, setSubSearchQuery] = useState('');
 
   React.useEffect(() => {
     loadCategories();
@@ -97,117 +97,151 @@ export default function CategoryScreen() {
 
   const getSubCategories = () => {
     if (!selectedCategory) return [];
-    return selectedCategory.subCategories || [];
+    return (selectedCategory.subCategories || []).filter(sub => 
+      sub.name.toLowerCase().includes(subSearchQuery.toLowerCase())
+    );
   };
+
+  useEffect(() => {
+    setSubSearchQuery('');
+  }, [selectedCategory]);
 
   const renderSidebarItem = ({ item }: { item: Category }) => {
     const isSelected = selectedCategory?.id === item.id;
     return (
-      <TouchableOpacity
-        onPress={() => setSelectedCategory(item)}
-        className="py-3 px-2 items-center"
+      <Pressable 
+        onPress={() => setSelectedCategory(item)} 
+        style={{ paddingVertical: 16, paddingHorizontal: 8, alignItems: 'center' }}
       >
         <View 
-          className={`w-14 h-14 rounded-full items-center justify-center border ${
-            isSelected ? 'border-[#2FA2B9] bg-white' : 'border-gray-200 bg-white'
-          }`}
+          style={{ 
+            width: 56, 
+            height: 56, 
+            borderRadius: 28, 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            borderWidth: 1, 
+            borderColor: isSelected ? '#2FA2B9' : '#E5E7EB', 
+            backgroundColor: 'white',
+            elevation: isSelected ? 2 : 0,
+          }}
         >
-             <Image 
-                source={categoryImages[item.name] || categoryImages['default']} 
-                style={{ width: 28, height: 28 }}
-                contentFit="contain"
-            />
+          <Image 
+            source={categoryImages[item.name] || categoryImages['default']} 
+            style={{ width: 28, height: 28 }}
+            contentFit="contain"
+          />
         </View>
-        <Text 
-          className={`text-[10px] text-center mt-2 ${isSelected ? 'font-bold text-[#2FA2B9]' : 'text-gray-500'}`}
-          numberOfLines={1}
-        >
+        <Text style={{ fontSize: 10, textAlign: 'center', marginTop: 8, fontWeight: isSelected ? 'bold' : 'normal', color: isSelected ? '#2FA2B9' : '#6B7280' }} numberOfLines={1}>
           {item.name}
         </Text>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
   const renderGridItem = ({ item }: { item: Category }) => {
+    const isSelected = selectedSubCategoryId === item.id.toString();
     return (
-      <View className="items-center mb-6 w-1/3">
-        <TouchableOpacity
+      <View style={{ alignItems: 'center', marginBottom: 32, width: '33.33%' }}>
+        <Pressable 
           onPress={() => {
-              router.push({
-                pathname: '/profile/myListings/listanItem',
-                params: { categoryId: item.id, categoryName: item.name }
-              } as any);
+            setSelectedSubCategoryId(item.id.toString());
+            router.push({
+              pathname: '/profile/myListings/listanItem',
+              params: { categoryId: item.id, categoryName: item.name }
+            } as any);
+          }} 
+          style={{ 
+            width: 75, 
+            height: 85, 
+            borderRadius: 10, 
+            backgroundColor: isSelected ? '#F0F9FB' : '#FFF', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            marginBottom: 2, 
+            borderWidth: 1, 
+            borderColor: isSelected ? '#2FA2B9' : '#FFF',
           }}
-          className="w-16 h-16 rounded-full bg-gray-50 items-center justify-center mb-2 border border-gray-100 shadow-sm"
         >
           <Image 
             source={categoryImages[item.name] || categoryImages['default']} 
-            style={{ width: 32, height: 32 }}
+            style={{ width: 32, height: 32, marginBottom: 8 }}
             contentFit="contain"
           />
-        </TouchableOpacity>
-        <Text className="text-xs text-center text-gray-700 font-medium">
-          {item.name}
-        </Text>
+          <Text style={{ fontSize: 11, textAlign: 'center', color: isSelected ? '#2FA2B9' : '#374151', fontWeight: isSelected ? '700' : '500', paddingHorizontal: 4 }} numberOfLines={2}>{item.name}</Text>
+        </Pressable>
       </View>
     );
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <StatusBar style="dark" />
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }} edges={['top']}>
+      <StatusBar barStyle="dark-content" />
       <ScreenHeader title="Category" />
 
-      <View className="px-5 pt-2 pb-4">
-        <Text className="text-xl font-bold text-black">Select Category</Text>
-        <Text className="text-sm text-gray-400 mt-1">Please select category to list an item.</Text>
+      {/* Search Bar */}
+      <View style={{ paddingHorizontal: 16, paddingVertical: 12, flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9FAFB', borderRadius: 12, paddingHorizontal: 12, height: 48, borderWidth: 1, borderColor: '#F3F4F6' }}>
+          <Ionicons name="search-outline" size={20} color="#9CA3AF" />
+          <TextInput
+            placeholder="Search"
+            placeholderTextColor="#9CA3AF"
+            value={subSearchQuery}
+            onChangeText={setSubSearchQuery}
+            style={{ flex: 1, marginLeft: 8, fontSize: 16, color: '#000' }}
+          />
+        </View>
+      </View>
+
+      <View style={{ paddingHorizontal: 20, paddingTop: 2, paddingBottom: 16 }}>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#000' }}>Select Category</Text>
+        <Text style={{ fontSize: 14, color: '#9CA3AF', marginTop: 4 }}>Please select category to list an item.</Text>
       </View>
 
       {loading ? (
-        <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="large" color={Colors.primary} />
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator size="large" color={Colors.primary} />
         </View>
       ) : (
-        <View className="flex-1 flex-row">
-            {/* Left Sidebar */}
-            <View className="w-[28%] bg-[#F9FAFB] border-r border-gray-100">
-                <FlatList
-                    data={getMainCategories()}
-                    renderItem={renderSidebarItem}
-                    keyExtractor={(item) => item.id.toString()}
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{ paddingBottom: 20 }}
-                />
-            </View>
+        <View style={{ flex: 1, flexDirection: 'row' }}>
+          {/* Left Sidebar */}
+          <View style={{ width: '28%', backgroundColor: '#F9FAFB', borderRightWidth: 1, borderRightColor: '#F3F4F6', borderTopRightRadius: 16, borderTopLeftRadius: 16, borderBottomLeftRadius: 16, borderBottomRightRadius: 16,  overflow: 'hidden' }}>
+            <FlatList
+              data={getMainCategories()}
+              renderItem={renderSidebarItem}
+              keyExtractor={(item) => item.id.toString()}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 20 }}
+            />
+          </View>
 
-            {/* Right Content */}
-            <View className="flex-1 bg-white p-4">
-                <FlatList
-                    data={getSubCategories()}
-                    renderItem={renderGridItem}
-                    keyExtractor={(item) => item.id.toString()}
-                    numColumns={3}
-                    showsVerticalScrollIndicator={false}
-                    columnWrapperStyle={{ justifyContent: 'flex-start' }}
-                    contentContainerStyle={{ paddingBottom: 20 }}
-                    ListEmptyComponent={
-                        <View className="mt-10 items-center">
-                            <Text className="text-gray-400 text-center">No subcategories found.</Text>
-                            <TouchableOpacity 
-                                onPress={() => {
-                                     router.push({
-                                        pathname: '/profile/myListings/listanItem',
-                                        params: { categoryId: selectedCategory?.id, categoryName: selectedCategory?.name }
-                                      } as any);
-                                }}
-                                className="mt-4 px-4 py-2 bg-primary/10 rounded-full"
-                            >
-                                <Text className="text-primary font-bold text-xs">Select {selectedCategory?.name}</Text>
-                            </TouchableOpacity>
-                        </View>
-                    }
-                />
-            </View>
+          {/* Right Content */}
+          <View style={{ flex: 1, backgroundColor: 'white', padding: 16 }}>
+            <FlatList
+              data={getSubCategories()}
+              renderItem={renderGridItem}
+              keyExtractor={(item) => item.id.toString()}
+              numColumns={3}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 20 }}
+              ListEmptyComponent={
+                <View style={{ marginTop: 40, alignItems: 'center' }}>
+                  <Text style={{ color: '#9CA3AF', textAlign: 'center' }}>No subcategories found.</Text>
+                  <Pressable 
+                    onPress={() => {
+                      router.push({
+                        pathname: '/profile/myListings/listanItem',
+                        params: { categoryId: selectedCategory?.id, categoryName: selectedCategory?.name }
+                      } as any);
+                    }}
+                    style={{ marginTop: 16, paddingHorizontal: 16, paddingVertical: 8, backgroundColor: '#F0F9FB', borderRadius: 20 }}
+                  >
+                    <Text style={{ color: '#2FA2B9', fontWeight: 'bold', fontSize: 12 }}>Select {selectedCategory?.name}</Text>
+                  </Pressable>
+                </View>
+              }
+            />
+          </View>
         </View>
       )}
     </SafeAreaView>
